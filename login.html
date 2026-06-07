@@ -39,14 +39,11 @@ body {
   color: var(--bone);
   font-family: var(--fb);
   overflow: hidden;
-  cursor: none;
 }
 
 /* ── CURSOR ── */
-.cursor { position:fixed;width:10px;height:10px;background:var(--ore);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .2s,height .2s,background .2s; }
-.cursor-ring { position:fixed;width:34px;height:34px;border:1.5px solid rgba(224,92,26,.35);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .28s var(--ease),height .28s var(--ease),opacity .28s; }
-body:has(input:hover) .cursor, body:has(button:hover) .cursor, body:has(a:hover) .cursor { width:14px;height:14px;background:var(--ore2); }
-body:has(input:hover) .cursor-ring, body:has(button:hover) .cursor-ring, body:has(a:hover) .cursor-ring { width:50px;height:50px;opacity:.5; }
+
+
 
 /* ── GRAIN ── */
 body::after { content:'';position:fixed;inset:0;z-index:999;pointer-events:none;opacity:.028;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E"); }
@@ -196,7 +193,7 @@ body::after { content:'';position:fixed;inset:0;z-index:999;pointer-events:none;
   letter-spacing: 1px; text-transform: uppercase;
   color: var(--fog); background: transparent;
   border: none; border-radius: 4px;
-  cursor: none; transition: all .2s var(--ease);
+  cursor: pointer; transition: all .2s var(--ease);
 }
 .auth-tab.active {
   background: var(--ore); color: var(--chalk);
@@ -248,7 +245,7 @@ body::after { content:'';position:fixed;inset:0;z-index:999;pointer-events:none;
 .pw-wrap input { width: 100%; padding-right: 44px; }
 .pw-toggle {
   position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
-  background: none; border: none; cursor: none;
+  background: none; border: none; cursor: pointer;
   color: var(--fog); font-size: 16px; transition: color .2s;
 }
 .pw-toggle:hover { color: var(--bone); }
@@ -260,7 +257,7 @@ body::after { content:'';position:fixed;inset:0;z-index:999;pointer-events:none;
   letter-spacing: 1.5px; text-transform: uppercase;
   background: var(--ore); color: var(--chalk);
   border: none; border-radius: 4px;
-  cursor: none; margin-top: 8px;
+  cursor: pointer; margin-top: 8px;
   transition: all .25s var(--ease);
   clip-path: polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));
   position: relative; overflow: hidden;
@@ -354,8 +351,7 @@ body::after { content:'';position:fixed;inset:0;z-index:999;pointer-events:none;
 
 /* ── RESPONSIVE ── */
 @media (max-width: 860px) {
-  body { overflow-y: auto; cursor: auto; }
-  .cursor, .cursor-ring { display: none; }
+  body { overflow-y: auto; }
   .page { grid-template-columns: 1fr; height: auto; }
   .left { display: none; }
   .right { padding: 48px 24px; min-height: 100vh; }
@@ -364,8 +360,6 @@ body::after { content:'';position:fixed;inset:0;z-index:999;pointer-events:none;
 </head>
 <body>
 
-<div class="cursor" id="cursor"></div>
-<div class="cursor-ring" id="cursorRing"></div>
 
 <div class="page">
 
@@ -575,14 +569,6 @@ const supabase = window.supabase
   : null;
 
 /* ── Cursor ── */
-const cur = document.getElementById('cursor');
-const ring = document.getElementById('cursorRing');
-let mx=0, my=0, rx=0, ry=0;
-document.addEventListener('mousemove', e => {
-  mx=e.clientX; my=e.clientY;
-  cur.style.left=mx+'px'; cur.style.top=my+'px';
-});
-(function loop(){ rx+=(mx-rx)*.12; ry+=(my-ry)*.12; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(loop); })();
 
 /* ── Tab switching ── */
 function switchTab(tab) {
