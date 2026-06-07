@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>LUKANE RV — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,800;0,900;1,700&family=Barlow:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --coal:  #0c0d0f;
+  --coal2: #141618;
+  --coal3: #1c1e22;
+  --coal4: #242830;
+  --wire:  #2e333d;
+  --ore:   #e05c1a;
+  --ore2:  #f07030;
+  --bone:  #f0ece3;
+  --fog:   #8a9099;
+  --chalk: #ffffff;
+  --green: #2ecc71;
+  --red:   #e74c3c;
+  --gold:  #d4a820;
+  --blue:  #3b82f6;
+  --fd: 'Barlow Condensed', sans-serif;
+  --fb: 'Barlow', sans-serif;
+  --fm: 'JetBrains Mono', monospace;
+  --ease: cubic-bezier(.25,.46,.45,.94);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body { background: var(--coal); color: var(--bone); font-family: var(--fb); overflow-x: hidden; }
+
+/* grain */
+body::after { content:''; position:fixed; inset:0; z-index:1000; pointer-events:none; opacity:.028; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E"); }
+
+/* ════════════════════════════════
+   TRIAL BANNER
+════════════════════════════════ */
+.trial-banner {
+  background: linear-gradient(90deg, rgba(224,92,26,.15), rgba(212,168,32,.1));
+  border-bottom: 1px solid rgba(224,92,26,.25);
+  padding: 10px 28px;
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 13px;
+  position: sticky; top: 0; z-index: 200;
+}
+.trial-banner-left { display: flex; align-items: center; gap: 10px; }
+.trial-pill {
+  font-family: var(--fm); font-size: 10px; font-weight: 500;
+  letter-spacing: 2px; text-transform: uppercase;
+  background: var(--ore); color: var(--chalk);
+  padding: 3px 10px; border-radius: 2px;
+}
+.trial-pill.urgent { background: var(--red); animation: urgentPulse 2s infinite; }
+@keyframes urgentPulse { 0%,100%{opacity:1} 50%{opacity:.7} }
+.trial-text { color: var(--fog); }
+.trial-text strong { color: var(--bone); }
+.trial-days {
+  font-family: var(--fm); font-size: 22px; font-weight: 500;
+  color: var(--ore); margin: 0 4px;
+}
+.trial-days.urgent { color: var(--red); }
+.btn-upgrade-sm {
+  font-family: var(--fd); font-size: 13px; font-weight: 800;
+  letter-spacing: 1px; text-transform: uppercase;
+  background: var(--ore); color: var(--chalk);
+  border: none; border-radius: 3px; padding: 7px 16px;
+  cursor: pointer; transition: all .2s var(--ease);
+  clip-path: polygon(0 0,calc(100% - 6px) 0,100% 6px,100% 100%,6px 100%,0 calc(100% - 6px));
+}
+.btn-upgrade-sm:hover { background: var(--ore2); transform: translateY(-1px); }
+
+/* ════════════════════════════════
+   APP LAYOUT
+════════════════════════════════ */
+.app { display: flex; min-height: calc(100vh - 41px); }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 220px; flex-shrink: 0;
+  background: var(--coal2);
+  border-right: 1px solid var(--wire);
+  display: flex; flex-direction: column;
+  position: sticky; top: 41px; height: calc(100vh - 41px);
+}
+.sidebar-logo {
+  padding: 22px 20px 18px;
+  border-bottom: 1px solid var(--wire);
+}
+.logo { font-family: var(--fd); font-size: 24px; font-weight: 900; letter-spacing: 1px; color: var(--chalk); text-decoration: none; }
+.logo .accent { color: var(--ore); }
+.logo-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ore); display: inline-block; margin-left: 2px; margin-bottom: 1px; animation: blink 2.4s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.15} }
+
+.nav { padding: 14px 10px; flex: 1; }
+.nav-section { font-family: var(--fm); font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--wire); padding: 8px 12px 4px; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: 6px;
+  cursor: pointer; font-size: 13.5px; font-weight: 500;
+  color: var(--fog); transition: all .15s;
+  margin-bottom: 2px; text-decoration: none;
+  border: none; background: none; width: 100%; text-align: left;
+}
+.nav-item:hover { background: var(--coal3); color: var(--bone); }
+.nav-item.active { background: rgba(224,92,26,.12); color: var(--ore); }
+.nav-icon { width: 18px; text-align: center; font-size: 14px; flex-shrink: 0; }
+.nav-badge { margin-left: auto; background: var(--ore); color: #000; font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 99px; }
+
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--wire);
+}
+.user-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.user-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: rgba(224,92,26,.15); border: 1px solid rgba(224,92,26,.3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0;
+}
+.user-name { font-size: 13px; font-weight: 600; color: var(--chalk); line-height: 1.2; }
+.user-dealer { font-size: 11px; color: var(--fog); }
+.btn-logout {
+  width: 100%; padding: 7px; font-family: var(--fm); font-size: 11px;
+  letter-spacing: 1px; text-transform: uppercase;
+  background: transparent; border: 1px solid var(--wire);
+  color: var(--fog); border-radius: 4px; cursor: pointer;
+  transition: all .2s;
+}
+.btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+/* ── MAIN ── */
+.main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 28px;
+  border-bottom: 1px solid var(--wire);
+  background: var(--coal2);
+  position: sticky; top: 41px; z-index: 100;
+}
+.topbar-title { font-family: var(--fd); font-size: 20px; font-weight: 900; letter-spacing: .5px; }
+.topbar-actions { display: flex; gap: 10px; align-items: center; }
+
+.content { flex: 1; padding: 24px 28px; overflow-y: auto; }
+
+/* ── BUTTONS ── */
+.btn {
+  font-family: var(--fd); font-size: 15px; font-weight: 800;
+  letter-spacing: 1px; text-transform: uppercase;
+  padding: 10px 20px; border-radius: 4px; border: none;
+  cursor: pointer; transition: all .2s var(--ease);
+}
+.btn-primary { background: var(--ore); color: var(--chalk); clip-path: polygon(0 0,calc(100% - 7px) 0,100% 7px,100% 100%,7px 100%,0 calc(100% - 7px)); }
+.btn-primary:hover { background: var(--ore2); transform: translateY(-1px); }
+.btn-ghost { background: var(--coal3); color: var(--bone); border: 1px solid var(--wire); }
+.btn-ghost:hover { border-color: var(--ore); color: var(--ore); }
+.btn-sm { padding: 7px 14px; font-size: 13px; }
+.btn-xs { padding: 4px 10px; font-size: 11px; }
+
+/* ── STATS ── */
+.stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 22px; }
+.stat-card {
+  background: var(--coal2); border: 1px solid var(--wire);
+  border-radius: 6px; padding: 20px 22px;
+  position: relative; overflow: hidden;
+  transition: border-color .2s;
+}
+.stat-card:hover { border-color: rgba(224,92,26,.3); }
+.stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background: var(--ore); transform: scaleX(0); transform-origin: left; transition: transform .3s var(--ease); }
+.stat-card:hover::before { transform: scaleX(1); }
+.stat-label { font-family: var(--fm); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--fog); margin-bottom: 10px; }
+.stat-value { font-family: var(--fd); font-size: 42px; font-weight: 900; letter-spacing: -1px; line-height: 1; }
+.stat-delta { font-size: 12px; color: var(--fog); margin-top: 6px; }
+.stat-delta.up { color: var(--green); }
+.stat-delta.down { color: var(--red); }
+
+/* ── TABLE ── */
+.section { background: var(--coal2); border: 1px solid var(--wire); border-radius: 6px; overflow: hidden; margin-bottom: 20px; }
+.section-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--wire); }
+.section-title { font-family: var(--fd); font-size: 16px; font-weight: 800; letter-spacing: .5px; }
+table { width: 100%; border-collapse: collapse; }
+th { font-family: var(--fm); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--fog); padding: 10px 18px; text-align: left; border-bottom: 1px solid var(--wire); }
+td { padding: 12px 18px; font-size: 13px; border-bottom: 1px solid rgba(46,51,61,.5); }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,.02); cursor: pointer; }
+.claim-id { font-family: var(--fm); font-size: 11px; color: var(--ore); }
+.mfr-chip { padding: 2px 8px; border-radius: 3px; font-size: 10.5px; font-weight: 600; background: var(--coal3); border: 1px solid var(--wire); font-family: var(--fm); }
+
+/* badges */
+.badge { padding: 3px 9px; border-radius: 2px; font-family: var(--fm); font-size: 10px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; }
+.badge-new     { background: rgba(224,92,26,.15); color: var(--ore2); }
+.badge-open    { background: rgba(59,130,246,.12); color: var(--blue); }
+.badge-approved{ background: rgba(46,204,113,.12); color: var(--green); }
+.badge-refused { background: rgba(231,76,60,.12);  color: var(--red); }
+.badge-pending { background: rgba(212,168,32,.12); color: var(--gold); }
+
+/* prob bar inline */
+.prob-inline { display: flex; align-items: center; gap: 8px; }
+.prob-bar-sm { width: 60px; height: 4px; background: var(--coal4); border-radius: 99px; overflow: hidden; }
+.prob-fill-sm { height: 100%; border-radius: 99px; }
+
+/* empty state */
+.empty { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 56px 20px; color: var(--fog); }
+.empty-icon { font-size: 40px; opacity: .35; }
+.empty-title { font-family: var(--fd); font-size: 22px; font-weight: 800; color: var(--bone); }
+.empty-text { font-size: 14px; text-align: center; max-width: 300px; line-height: 1.6; }
+
+/* ── NEW CLAIM FORM (slide panel) ── */
+.panel-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.6);
+  z-index: 300; opacity: 0; pointer-events: none;
+  transition: opacity .3s;
+}
+.panel-overlay.open { opacity: 1; pointer-events: all; }
+.slide-panel {
+  position: fixed; right: 0; top: 0; bottom: 0; width: 560px;
+  background: var(--coal2); border-left: 1px solid var(--wire);
+  z-index: 301; transform: translateX(100%);
+  transition: transform .35s var(--ease);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.slide-panel.open { transform: translateX(0); }
+.panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 24px; border-bottom: 1px solid var(--wire);
+  flex-shrink: 0;
+}
+.panel-title { font-family: var(--fd); font-size: 22px; font-weight: 900; letter-spacing: .5px; }
+.panel-body { flex: 1; overflow-y: auto; padding: 24px; }
+.panel-footer { padding: 16px 24px; border-top: 1px solid var(--wire); display: flex; gap: 10px; justify-content: flex-end; flex-shrink: 0; }
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group.full { grid-column: 1 / -1; }
+.form-label { font-family: var(--fm); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--fog); }
+.form-input, .form-select, .form-textarea {
+  background: var(--coal); border: 1px solid var(--wire);
+  border-radius: 4px; color: var(--bone);
+  font-family: var(--fb); font-size: 13.5px;
+  padding: 10px 13px; outline: none; transition: border-color .2s;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--ore); }
+.form-textarea { resize: vertical; min-height: 90px; }
+.form-select option { background: var(--coal3); }
+
+/* AI result panel */
+.ai-result {
+  background: linear-gradient(135deg, rgba(224,92,26,.07), rgba(212,168,32,.05));
+  border: 1px solid rgba(224,92,26,.2);
+  border-radius: 6px; padding: 16px; margin-top: 16px;
+}
+.ai-result-label {
+  font-family: var(--fm); font-size: 10px; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--ore); margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--ore); animation: blink 2s infinite; }
+.ai-text-out {
+  font-family: var(--fm); font-size: 12px; color: rgba(240,236,227,.65);
+  line-height: 1.7; white-space: pre-wrap;
+  min-height: 48px;
+}
+.ai-tabs { display: flex; border-bottom: 1px solid var(--wire); margin-bottom: 12px; }
+.ai-tab { padding: 8px 14px; font-size: 12px; font-weight: 500; cursor: pointer; color: var(--fog); border-bottom: 2px solid transparent; transition: all .15s; }
+.ai-tab.active { color: var(--ore); border-bottom-color: var(--ore); }
+
+/* prob meter */
+.prob-meter { margin-top: 10px; }
+.prob-meter-label { display: flex; justify-content: space-between; font-family: var(--fm); font-size: 11px; color: var(--fog); margin-bottom: 5px; }
+.prob-meter-bar { height: 6px; background: var(--coal4); border-radius: 99px; overflow: hidden; }
+.prob-meter-fill { height: 100%; border-radius: 99px; transition: width .8s var(--ease); }
+
+/* parts table */
+.parts-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 4px; }
+.parts-table th { font-family: var(--fm); font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--fog); padding: 6px 10px; border-bottom: 1px solid rgba(46,51,61,.5); text-align: left; }
+.parts-table td { padding: 8px 10px; border-bottom: 1px solid rgba(46,51,61,.3); color: rgba(240,236,227,.7); }
+.parts-table tr:last-child td { border-bottom: none; }
+.part-code { font-family: var(--fm); color: var(--ore); font-size: 11px; }
+
+/* spinner */
+.spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.2); border-top-color: var(--chalk); border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle; margin-right: 6px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ════════════════════════════════
+   TRIAL EXPIRED OVERLAY
+════════════════════════════════ */
+.expired-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(12,13,15,.97);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  backdrop-filter: blur(8px);
+  animation: fadeIn .4s var(--ease);
+}
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+.expired-inner { width: 100%; max-width: 900px; }
+.expired-top { text-align: center; margin-bottom: 48px; }
+.expired-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--fm); font-size: 11px; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--red);
+  border: 1px solid rgba(231,76,60,.3);
+  border-radius: 2px; padding: 6px 14px; margin-bottom: 24px;
+}
+.expired-badge::before { content: '●'; font-size: 7px; }
+.expired-h1 {
+  font-family: var(--fd); font-size: clamp(48px, 6vw, 80px);
+  font-weight: 900; line-height: .88; letter-spacing: -2px;
+  color: var(--chalk); margin-bottom: 16px;
+}
+.expired-h1 .stroke { color: transparent; -webkit-text-stroke: 1.5px var(--red); }
+.expired-sub { font-size: 16px; color: var(--fog); max-width: 440px; margin: 0 auto; line-height: 1.65; }
+
+/* pricing cards */
+.exp-plans { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+.exp-plan {
+  background: var(--coal2); border: 1px solid var(--wire);
+  border-radius: 6px; padding: 32px 28px;
+  position: relative; overflow: hidden;
+  transition: all .25s var(--ease);
+}
+.exp-plan::after { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:var(--wire); transition: background .25s; }
+.exp-plan:hover { border-color: rgba(224,92,26,.35); transform: translateY(-4px); box-shadow: 0 20px 60px rgba(0,0,0,.4); }
+.exp-plan:hover::after { background: var(--ore); }
+.exp-plan.featured { background: var(--ore); border-color: var(--ore); }
+.exp-plan.featured::after { background: rgba(255,255,255,.25); }
+.exp-plan.featured:hover { background: var(--ore2); }
+
+.plan-tag { font-family: var(--fm); font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--ore); margin-bottom: 20px; }
+.exp-plan.featured .plan-tag { color: rgba(255,255,255,.65); }
+.plan-price { font-family: var(--fd); font-size: 58px; font-weight: 900; letter-spacing: -2px; line-height: 1; color: var(--chalk); }
+.plan-price sup { font-size: 24px; letter-spacing: 0; margin-right: 2px; vertical-align: top; margin-top: 12px; display: inline-block; }
+.plan-period { font-size: 13px; color: var(--fog); margin-top: 5px; margin-bottom: 24px; }
+.exp-plan.featured .plan-period { color: rgba(255,255,255,.6); }
+.plan-divider { height: 1px; background: var(--wire); margin-bottom: 22px; }
+.exp-plan.featured .plan-divider { background: rgba(255,255,255,.2); }
+.plan-features { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+.plan-features li { font-size: 13.5px; color: var(--fog); display: flex; gap: 10px; align-items: flex-start; line-height: 1.4; }
+.exp-plan.featured .plan-features li { color: rgba(255,255,255,.8); }
+.plan-features li .ck { color: var(--green); flex-shrink: 0; font-weight: 700; }
+.exp-plan.featured .plan-features li .ck { color: rgba(255,255,255,.9); }
+.btn-plan {
+  width: 100%; padding: 13px;
+  font-family: var(--fd); font-size: 16px; font-weight: 800;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  border-radius: 4px; cursor: pointer;
+  transition: all .2s var(--ease);
+  clip-path: polygon(0 0,calc(100% - 7px) 0,100% 7px,100% 100%,7px 100%,0 calc(100% - 7px));
+}
+.btn-plan-outline { background: transparent; border: 1.5px solid var(--wire); color: var(--fog); }
+.btn-plan-outline:hover { border-color: var(--ore); color: var(--ore); }
+.btn-plan-solid { background: var(--chalk); border: none; color: var(--coal); }
+.btn-plan-solid:hover { background: var(--bone); }
+.plan-popular { position: absolute; top: 16px; right: 16px; font-family: var(--fd); font-size: 10px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; background: rgba(255,255,255,.2); color: var(--chalk); padding: 3px 10px; border-radius: 2px; }
+
+.exp-footer { text-align: center; margin-top: 28px; font-family: var(--fm); font-size: 11px; color: var(--wire); letter-spacing: 1px; }
+
+/* ── TOAST ── */
+.toast-wrap { position: fixed; bottom: 24px; right: 24px; z-index: 999; display: flex; flex-direction: column; gap: 8px; }
+.toast { background: var(--coal2); border: 1px solid var(--wire); border-radius: 6px; padding: 12px 16px; font-size: 13px; display: flex; align-items: flex-start; gap: 10px; box-shadow: 0 8px 32px rgba(0,0,0,.4); animation: toastIn .25s var(--ease); max-width: 300px; }
+.toast.success { border-color: rgba(46,204,113,.3); }
+.toast.error   { border-color: rgba(231,76,60,.3); }
+@keyframes toastIn { from{transform:translateX(120%);opacity:0} to{transform:translateX(0);opacity:1} }
+.toast-title { font-weight: 600; font-size: 13px; }
+.toast-msg { color: var(--fog); font-size: 12px; margin-top: 2px; line-height: 1.4; }
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px) {
+  .stats-grid { grid-template-columns: repeat(2,1fr); }
+  .sidebar { display: none; }
+  .slide-panel { width: 100%; }
+  .exp-plans { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════ TRIAL BANNER ══════════════ -->
+<div class="trial-banner" id="trialBanner" style="display:none;">
+  <div class="trial-banner-left">
+    <span class="trial-pill" id="trialPill">ESSAI</span>
+    <span class="trial-text">
+      Il vous reste <span class="trial-days" id="trialDaysDisplay">14</span> jour(s) d'essai gratuit.
+      <strong>Passez à un plan payant pour continuer.</strong>
+    </span>
+  </div>
+  <button class="btn-upgrade-sm" onclick="showExpired()">Voir les abonnements →</button>
+</div>
+
+<!-- ══════════════ APP ══════════════ -->
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <a class="logo" href="index.html">LUKANE <span class="accent">RV</span><span class="logo-dot"></span></a>
+    </div>
+    <nav class="nav">
+      <div class="nav-section">Principal</div>
+      <button class="nav-item active" onclick="setView('dashboard', this)">
+        <span class="nav-icon">📊</span> Dashboard
+      </button>
+      <button class="nav-item" onclick="setView('claims', this)">
+        <span class="nav-icon">📋</span> Claims
+        <span class="nav-badge" id="newBadge" style="display:none;">0</span>
+      </button>
+      <button class="nav-item" onclick="setView('analytics', this)">
+        <span class="nav-icon">📈</span> Analytiques
+      </button>
+      <div class="nav-section" style="margin-top:8px;">Compte</div>
+      <button class="nav-item" onclick="setView('settings', this)">
+        <span class="nav-icon">⚙️</span> Paramètres
+      </button>
+      <button class="nav-item" onclick="showExpired()">
+        <span class="nav-icon">💳</span> Abonnement
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-row">
+        <div class="user-avatar">🧑</div>
+        <div>
+          <div class="user-name" id="sidebarName">—</div>
+          <div class="user-dealer" id="sidebarDealer">—</div>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="handleLogout()">Déconnexion</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <span class="topbar-title" id="topbarTitle">Dashboard</span>
+      <div class="topbar-actions">
+        <button class="btn btn-primary btn-sm" onclick="openPanel()" id="newClaimBtn">+ Nouveau claim</button>
+      </div>
+    </div>
+
+    <div class="content" id="mainContent">
+
+      <!-- ══ DASHBOARD VIEW ══ -->
+      <div id="view-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Claims totaux</div>
+            <div class="stat-value" style="color:var(--ore);" id="statTotal">0</div>
+            <div class="stat-delta" id="statTotalDelta">Aucun claim encore</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">En cours</div>
+            <div class="stat-value" style="color:var(--blue);" id="statOpen">0</div>
+            <div class="stat-delta" id="statOpenDelta">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Approuvés</div>
+            <div class="stat-value" style="color:var(--green);" id="statApproved">0</div>
+            <div class="stat-delta up" id="statApprovedDelta">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Refusés</div>
+            <div class="stat-value" style="color:var(--red);" id="statRefused">0</div>
+            <div class="stat-delta down" id="statRefusedDelta">—</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header">
+            <span class="section-title">Claims récents</span>
+            <button class="btn btn-ghost btn-sm" onclick="setView('claims', null)">Voir tous →</button>
+          </div>
+          <div id="dashRecentClaims"></div>
+        </div>
+      </div>
+
+      <!-- ══ CLAIMS VIEW ══ -->
+      <div id="view-claims" style="display:none;">
+        <div class="section">
+          <div class="section-header">
+            <span class="section-title">Tous les claims</span>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <select class="form-select" style="padding:6px 10px;font-size:12px;width:auto;" id="filterStatus" onchange="renderClaims()">
+                <option value="">Tous les statuts</option>
+                <option value="new">Nouveau</option>
+                <option value="open">Ouvert</option>
+                <option value="approved">Approuvé</option>
+                <option value="refused">Refusé</option>
+                <option value="pending">En attente</option>
+              </select>
+            </div>
+          </div>
+          <div id="allClaimsTable"></div>
+        </div>
+      </div>
+
+      <!-- ══ ANALYTICS VIEW ══ -->
+      <div id="view-analytics" style="display:none;">
+        <div class="section">
+          <div class="empty">
+            <div class="empty-icon">📈</div>
+            <div class="empty-title">ANALYTIQUES</div>
+            <div class="empty-text">Les rapports et tendances seront disponibles une fois vos premiers claims soumis.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ SETTINGS VIEW ══ -->
+      <div id="view-settings" style="display:none;">
+        <div class="section">
+          <div class="section-header"><span class="section-title">Paramètres du compte</span></div>
+          <div style="padding:24px;display:flex;flex-direction:column;gap:20px;max-width:480px;">
+            <div class="form-group">
+              <label class="form-label">Nom du concessionnaire</label>
+              <input class="form-input" id="settingsDealer" placeholder="—"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Courriel</label>
+              <input class="form-input" id="settingsEmail" type="email" placeholder="—"/>
+            </div>
+            <button class="btn btn-primary btn-sm" style="width:fit-content;" onclick="toast('success','Sauvegardé','Vos paramètres ont été mis à jour.')">Sauvegarder</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </main>
+</div>
+
+<!-- ══════════════ SLIDE PANEL — NOUVEAU CLAIM ══════════════ -->
+<div class="panel-overlay" id="panelOverlay" onclick="closePanel()"></div>
+<div class="slide-panel" id="slidePanel">
+  <div class="panel-header">
+    <span class="panel-title">Nouveau claim</span>
+    <button class="btn btn-ghost btn-sm" onclick="closePanel()">✕ Fermer</button>
+  </div>
+  <div class="panel-body">
+    <div class="form-grid" id="claimFormGrid">
+      <div class="form-group">
+        <label class="form-label">Manufacturier</label>
+        <select class="form-select" id="fMfr">
+          <option>Grand Design</option>
+          <option>Jayco</option>
+          <option>Forest River</option>
+          <option>Winnebago</option>
+          <option>Keystone RV</option>
+          <option>Coachmen</option>
+          <option>Heartland</option>
+          <option>Thor Industries</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Année</label>
+        <select class="form-select" id="fYear">
+          <option>2025</option><option>2024</option><option>2023</option><option>2022</option><option>2021</option>
+        </select>
+      </div>
+      <div class="form-group full">
+        <label class="form-label">Modèle / Unité</label>
+        <input class="form-input" id="fUnit" placeholder="ex: Grand Design Reflection 303RLS"/>
+      </div>
+      <div class="form-group full">
+        <label class="form-label">VIN</label>
+        <input class="form-input" id="fVin" placeholder="17 caractères" style="font-family:var(--fm);letter-spacing:1px;"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nom du technicien</label>
+        <input class="form-input" id="fTech" placeholder="Prénom Nom"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Bon de travail</label>
+        <input class="form-input" id="fBt" placeholder="BT-2025-XXXX"/>
+      </div>
+      <div class="form-group full">
+        <label class="form-label">Catégorie de défaut</label>
+        <select class="form-select" id="fCat">
+          <option value="">-- Sélectionner --</option>
+          <option>Électrique / 12V</option>
+          <option>Électrique / 120V</option>
+          <option>Plomberie / eau froide</option>
+          <option>Plomberie / eau chaude</option>
+          <option>Slide room / extension</option>
+          <option>Structure / châssis</option>
+          <option>Toiture / étanchéité</option>
+          <option>Chauffage / Furnace</option>
+          <option>Climatisation / A/C</option>
+          <option>Réfrigérateur</option>
+          <option>Awning / store</option>
+          <option>Portes et fenêtres</option>
+          <option>Levelers / stabilisateurs</option>
+          <option>Autre</option>
+        </select>
+      </div>
+      <div class="form-group full">
+        <label class="form-label">Description du technicien (en tes mots)</label>
+        <textarea class="form-textarea" id="fDesc" placeholder="Décris le problème simplement — l'IA va reformuler en langage officiel..."></textarea>
+      </div>
+      <div class="form-group full">
+        <button class="btn btn-primary" id="analyzeBtn" onclick="analyzeWithAI()" style="width:100%;">⚡ Analyser avec l'IA</button>
+      </div>
+    </div>
+
+    <!-- AI RESULTS -->
+    <div id="aiResults" style="display:none;">
+      <div class="ai-tabs">
+        <div class="ai-tab active" onclick="switchAiTab('desc',this)">📝 Description</div>
+        <div class="ai-tab" onclick="switchAiTab('parts',this)">🔩 Pièces</div>
+        <div class="ai-tab" onclick="switchAiTab('prob',this)">🎯 Probabilité</div>
+      </div>
+
+      <div id="aiTab-desc" class="ai-result">
+        <div class="ai-result-label"><div class="pulse"></div>Description officielle</div>
+        <div class="ai-text-out" id="aiDescText"></div>
+        <button class="btn btn-ghost btn-xs" style="margin-top:10px;" onclick="copyAiDesc()">📋 Copier</button>
+      </div>
+
+      <div id="aiTab-parts" class="ai-result" style="display:none;">
+        <div class="ai-result-label"><div class="pulse"></div>Pièces suggérées</div>
+        <table class="parts-table" id="partsTable">
+          <thead><tr><th>Code</th><th>Pièce</th><th>Qté</th></tr></thead>
+          <tbody id="partsBody"></tbody>
+        </table>
+      </div>
+
+      <div id="aiTab-prob" class="ai-result" style="display:none;">
+        <div class="ai-result-label"><div class="pulse"></div>Probabilité d'approbation</div>
+        <div class="prob-meter">
+          <div class="prob-meter-label">
+            <span>Probabilité</span>
+            <span id="probPct" style="font-weight:700;"></span>
+          </div>
+          <div class="prob-meter-bar">
+            <div class="prob-meter-fill" id="probFill"></div>
+          </div>
+        </div>
+        <div id="probReason" style="margin-top:12px;font-size:13px;color:var(--fog);background:var(--coal);padding:10px 13px;border-radius:4px;border:1px solid var(--wire);line-height:1.6;"></div>
+      </div>
+    </div>
+  </div>
+  <div class="panel-footer">
+    <button class="btn btn-ghost btn-sm" onclick="closePanel()">Annuler</button>
+    <button class="btn btn-primary btn-sm" id="saveClaimBtn" onclick="saveClaim()">💾 Enregistrer</button>
+  </div>
+</div>
+
+<!-- ══════════════ EXPIRED OVERLAY ══════════════ -->
+<div class="expired-overlay" id="expiredOverlay" style="display:none;">
+  <div class="expired-inner">
+    <div class="expired-top">
+      <div class="expired-badge">Période d'essai terminée</div>
+      <h1 class="expired-h1">VOTRE ESSAI<br/>EST <span class="stroke">EXPIRÉ.</span></h1>
+      <p class="expired-sub">Merci d'avoir essayé LUKANE RV ! Choisissez un plan pour continuer à gérer vos claims et accéder à toutes les fonctionnalités IA.</p>
+    </div>
+
+    <div class="exp-plans">
+      <div class="exp-plan">
+        <div class="plan-tag">// Démarrage</div>
+        <div class="plan-price"><sup>$</sup>79</div>
+        <div class="plan-period">par mois · 1 utilisateur</div>
+        <div class="plan-divider"></div>
+        <ul class="plan-features">
+          <li><span class="ck">✓</span> Claims illimités</li>
+          <li><span class="ck">✓</span> 1 formulaire connecté</li>
+          <li><span class="ck">✓</span> Analyse IA complète</li>
+          <li><span class="ck">✓</span> Tous les manufacturiers</li>
+          <li><span class="ck">✓</span> Support par email</li>
+        </ul>
+        <button class="btn-plan btn-plan-outline" onclick="selectPlan('starter')">Choisir ce plan</button>
+      </div>
+
+      <div class="exp-plan featured">
+        <div class="plan-popular">⭐ Populaire</div>
+        <div class="plan-tag">// Professionnel</div>
+        <div class="plan-price"><sup>$</sup>149</div>
+        <div class="plan-period">par mois · jusqu'à 5 utilisateurs</div>
+        <div class="plan-divider"></div>
+        <ul class="plan-features">
+          <li><span class="ck">✓</span> Tout du plan Démarrage</li>
+          <li><span class="ck">✓</span> 5 techniciens inclus</li>
+          <li><span class="ck">✓</span> Formulaires illimités</li>
+          <li><span class="ck">✓</span> Prédiction IA avancée</li>
+          <li><span class="ck">✓</span> Analytiques & rapports</li>
+          <li><span class="ck">✓</span> Support prioritaire</li>
+        </ul>
+        <button class="btn-plan btn-plan-solid" onclick="selectPlan('pro')">Choisir ce plan</button>
+      </div>
+
+      <div class="exp-plan">
+        <div class="plan-tag">// Réseau</div>
+        <div class="plan-price" style="font-size:44px;letter-spacing:-1px;">Devis</div>
+        <div class="plan-period">multi-succursales</div>
+        <div class="plan-divider"></div>
+        <ul class="plan-features">
+          <li><span class="ck">✓</span> Utilisateurs illimités</li>
+          <li><span class="ck">✓</span> Plusieurs emplacements</li>
+          <li><span class="ck">✓</span> Dashboard consolidé</li>
+          <li><span class="ck">✓</span> Intégrations sur mesure</li>
+          <li><span class="ck">✓</span> Gestionnaire dédié</li>
+        </ul>
+        <button class="btn-plan btn-plan-outline" onclick="selectPlan('network')">Nous contacter</button>
+      </div>
+    </div>
+
+    <div class="exp-footer">// Paiement sécurisé · Annulation en tout temps · info@lukanerv.ca</div>
+  </div>
+</div>
+
+<!-- TOASTS -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+/* ════════════════════════════════════════
+   SUPABASE CONFIG
+════════════════════════════════════════ */
+const SUPABASE_URL  = 'https://VOTRE_PROJECT_ID.supabase.co';
+const SUPABASE_ANON = 'VOTRE_ANON_KEY';
+const ANTHROPIC_MODEL = 'claude-sonnet-4-20250514';
+
+const sb = window.supabase?.createClient(SUPABASE_URL, SUPABASE_ANON) || null;
+
+/* ════════════════════════════════════════
+   STATE
+════════════════════════════════════════ */
+let USER    = null;
+let CLAIMS  = [];
+let AI_DATA = { desc:'', parts:[], prob:null };
+
+/* ════════════════════════════════════════
+   TRIAL LOGIC
+   - Stocké dans localStorage (démo)
+   - En prod : utilise user metadata Supabase
+════════════════════════════════════════ */
+const TRIAL_DAYS = 14;
+
+function getTrialInfo(userEmail) {
+  const key = `lukane_trial_${userEmail || 'demo'}`;
+  let stored = localStorage.getItem(key);
+  if (!stored) {
+    const startDate = new Date().toISOString();
+    localStorage.setItem(key, startDate);
+    stored = startDate;
+  }
+  const start    = new Date(stored);
+  const now      = new Date();
+  const elapsed  = Math.floor((now - start) / (1000 * 60 * 60 * 24));
+  const remaining = Math.max(0, TRIAL_DAYS - elapsed);
+  return { start, elapsed, remaining, expired: remaining === 0 };
+}
+
+function initTrial(email) {
+  const trial = getTrialInfo(email);
+
+  if (trial.expired) {
+    showExpired();
+    return;
+  }
+
+  // Show banner
+  const banner = document.getElementById('trialBanner');
+  banner.style.display = 'flex';
+
+  const daysEl = document.getElementById('trialDaysDisplay');
+  const pill   = document.getElementById('trialPill');
+  daysEl.textContent = trial.remaining;
+
+  if (trial.remaining <= 3) {
+    daysEl.classList.add('urgent');
+    pill.classList.add('urgent');
+    pill.textContent = '⚠️ ESSAI';
+  }
+
+  // Recheck every minute
+  setInterval(() => {
+    const t = getTrialInfo(email);
+    if (t.expired) showExpired();
+  }, 60000);
+}
+
+/* ════════════════════════════════════════
+   SESSION / AUTH
+════════════════════════════════════════ */
+async function initApp() {
+  // Demo mode (no Supabase)
+  if (!sb || SUPABASE_URL.includes('VOTRE_PROJECT_ID')) {
+    USER = {
+      email: 'demo@lukanerv.ca',
+      user_metadata: {
+        first_name: 'Marc',
+        last_name:  'Tremblay',
+        dealer:     'RV Pro Montréal'
+      }
+    };
+    loadUserUI();
+    initTrial(USER.email);
+    loadDemoData();
+    return;
+  }
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { window.location.href = 'login.html'; return; }
+    USER = session.user;
+    loadUserUI();
+    initTrial(USER.email);
+  } catch(e) {
+    window.location.href = 'login.html';
+  }
+}
+
+function loadUserUI() {
+  if (!USER) return;
+  const meta   = USER.user_metadata || {};
+  const name   = [meta.first_name, meta.last_name].filter(Boolean).join(' ') || USER.email;
+  const dealer = meta.dealer || '—';
+  document.getElementById('sidebarName').textContent   = name;
+  document.getElementById('sidebarDealer').textContent = dealer;
+  document.getElementById('settingsDealer').value = dealer;
+  document.getElementById('settingsEmail').value  = USER.email || '';
+}
+
+function handleLogout() {
+  if (sb && !SUPABASE_URL.includes('VOTRE')) sb.auth.signOut();
+  window.location.href = 'login.html';
+}
+
+/* ════════════════════════════════════════
+   DEMO DATA
+════════════════════════════════════════ */
+function loadDemoData() {
+  CLAIMS = [
+    { id:'CLM-2025-0441', mfr:'Grand Design', unit:'2025 Grand Design Reflection 303RLS', vin:'4X4FGRB2XR1234567', year:'2025', category:'Slide room / extension', rawDesc:'slide sort pas, fait un bruit de broyage', tech:'Marc Tremblay', bt:'BT-2025-0441', status:'new', date:'2025-06-05', prob:84, aiDesc:'Dysfonctionnement du mécanisme d\'extension du slide côté passager. Bruit de friction mécanique lors du déploiement.', parts:[{code:'GD-SLIDE-RACK-14',name:'Rack slide room',qty:1},{code:'GD-MOTOR-12V-SL',name:'Motoréducteur 12V',qty:1}] },
+    { id:'CLM-2025-0440', mfr:'Jayco', unit:'2024 Jayco Eagle 321RSTS', vin:'1UJBJ0BP6M1A12345', year:'2024', category:'Toiture / étanchéité', rawDesc:'fuite eau fenêtre avant quand il pleut', tech:'Sophie Gagné', bt:'BT-2025-0440', status:'approved', date:'2025-06-03', prob:91, aiDesc:'Infiltration d\'eau constatée au joint de la fenêtre avant.', parts:[] },
+    { id:'CLM-2025-0439', mfr:'Forest River', unit:'2025 Forest River Rockwood 2608BS', vin:'4X4FGRB29R1098765', year:'2025', category:'Climatisation / A/C', rawDesc:'A/C freeze pas le soir seulement', tech:'Marc Tremblay', bt:'BT-2025-0439', status:'pending', date:'2025-06-01', prob:67, aiDesc:'', parts:[] },
+    { id:'CLM-2025-0438', mfr:'Winnebago', unit:'2024 Winnebago Voyage 2831RL', vin:'1UJBJ0BL9P1B67890', year:'2024', category:'Réfrigérateur', rawDesc:'frigo 12V ne refroidit pas', tech:'Sophie Gagné', bt:'BT-2025-0438', status:'refused', date:'2025-05-28', prob:28, aiDesc:'', parts:[] },
+  ];
+  renderAll();
+}
+
+/* ════════════════════════════════════════
+   NAVIGATION
+════════════════════════════════════════ */
+const VIEWS = { dashboard:'Dashboard', claims:'Claims', analytics:'Analytiques', settings:'Paramètres' };
+
+function setView(view, btn) {
+  Object.keys(VIEWS).forEach(v => {
+    document.getElementById(`view-${v}`).style.display = v === view ? 'block' : 'none';
+  });
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  document.getElementById('topbarTitle').textContent = VIEWS[view] || view;
+  document.getElementById('newClaimBtn').style.display = (view === 'dashboard' || view === 'claims') ? 'flex' : 'none';
+  if (view === 'claims') renderClaims();
+}
+
+/* ════════════════════════════════════════
+   RENDER
+════════════════════════════════════════ */
+function renderAll() {
+  updateStats();
+  renderRecentClaims();
+  renderClaims();
+  const newCount = CLAIMS.filter(c => c.status === 'new').length;
+  const badge = document.getElementById('newBadge');
+  badge.style.display = newCount > 0 ? 'inline' : 'none';
+  badge.textContent = newCount;
+}
+
+function updateStats() {
+  const total    = CLAIMS.length;
+  const open     = CLAIMS.filter(c => ['new','open'].includes(c.status)).length;
+  const approved = CLAIMS.filter(c => c.status === 'approved').length;
+  const refused  = CLAIMS.filter(c => c.status === 'refused').length;
+  document.getElementById('statTotal').textContent    = total;
+  document.getElementById('statOpen').textContent     = open;
+  document.getElementById('statApproved').textContent = approved;
+  document.getElementById('statRefused').textContent  = refused;
+  document.getElementById('statTotalDelta').textContent   = total ? `${CLAIMS.filter(c=>c.status==='new').length} nouveaux` : 'Aucun claim encore';
+  document.getElementById('statOpenDelta').textContent    = `${open} à traiter`;
+  document.getElementById('statApprovedDelta').textContent = approved ? `Taux ${Math.round(approved/total*100)}%` : '—';
+  document.getElementById('statRefusedDelta').textContent  = refused ? `${refused} à réviser` : '—';
+}
+
+function claimRowHTML(c) {
+  const probColor = c.prob >= 75 ? 'var(--green)' : c.prob >= 50 ? 'var(--gold)' : 'var(--red)';
+  const statusMap = { new:'badge-new', open:'badge-open', approved:'badge-approved', refused:'badge-refused', pending:'badge-pending' };
+  const statusLabel = { new:'NOUVEAU', open:'OUVERT', approved:'APPROUVÉ', refused:'REFUSÉ', pending:'EN ATTENTE' };
+  return `<tr onclick="openClaimDetail('${c.id}')">
+    <td><span class="claim-id">${c.id}</span></td>
+    <td><span class="mfr-chip">${c.mfr}</span></td>
+    <td style="font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.unit}</td>
+    <td style="font-size:12px;color:var(--fog);">${c.tech||'—'}</td>
+    <td style="font-size:12px;color:var(--fog);">${c.date}</td>
+    <td>
+      ${c.prob > 0 ? `<div class="prob-inline">
+        <div class="prob-bar-sm"><div class="prob-fill-sm" style="width:${c.prob}%;background:${probColor};"></div></div>
+        <span style="font-family:var(--fm);font-size:11px;color:${probColor};">${c.prob}%</span>
+      </div>` : '<span style="color:var(--fog);font-size:12px;">—</span>'}
+    </td>
+    <td><span class="badge ${statusMap[c.status]||'badge-open'}">${statusLabel[c.status]||c.status}</span></td>
+  </tr>`;
+}
+
+function tableWrap(rows) {
+  if (!rows.length) return `<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">AUCUN CLAIM</div><div class="empty-text">Créez votre premier claim avec le bouton "+ Nouveau claim".</div></div>`;
+  return `<table><thead><tr><th>ID</th><th>Manufacturier</th><th>Unité</th><th>Technicien</th><th>Date</th><th>Probabilité</th><th>Statut</th></tr></thead><tbody>${rows.join('')}</tbody></table>`;
+}
+
+function renderRecentClaims() {
+  const recent = [...CLAIMS].slice(0, 5);
+  document.getElementById('dashRecentClaims').innerHTML = tableWrap(recent.map(claimRowHTML));
+}
+
+function renderClaims() {
+  const filter = document.getElementById('filterStatus')?.value || '';
+  const filtered = filter ? CLAIMS.filter(c => c.status === filter) : CLAIMS;
+  document.getElementById('allClaimsTable').innerHTML = tableWrap(filtered.map(claimRowHTML));
+}
+
+function openClaimDetail(id) {
+  const c = CLAIMS.find(x => x.id === id);
+  if (!c) return;
+  toast('info', c.id, `${c.mfr} · ${c.status.toUpperCase()}`);
+}
+
+/* ════════════════════════════════════════
+   PANEL
+════════════════════════════════════════ */
+function openPanel() {
+  document.getElementById('panelOverlay').classList.add('open');
+  document.getElementById('slidePanel').classList.add('open');
+  document.getElementById('aiResults').style.display = 'none';
+  AI_DATA = { desc:'', parts:[], prob:null };
+}
+function closePanel() {
+  document.getElementById('panelOverlay').classList.remove('open');
+  document.getElementById('slidePanel').classList.remove('open');
+}
+
+/* ════════════════════════════════════════
+   CLAUDE API
+════════════════════════════════════════ */
+async function callClaude(prompt, system) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: ANTHROPIC_MODEL,
+      max_tokens: 1000,
+      system,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+  const d = await res.json();
+  return d.content?.map(b => b.text || '').join('') || '';
+}
+
+async function analyzeWithAI() {
+  const mfr  = document.getElementById('fMfr').value;
+  const unit = document.getElementById('fUnit').value.trim();
+  const year = document.getElementById('fYear').value;
+  const cat  = document.getElementById('fCat').value;
+  const desc = document.getElementById('fDesc').value.trim();
+
+  if (!unit || !cat || desc.length < 8) {
+    toast('error', 'Champs manquants', 'Remplis le modèle, la catégorie et la description.');
+    return;
+  }
+
+  const btn = document.getElementById('analyzeBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Analyse IA…';
+
+  const ctx = `Manufacturier: ${mfr}\nModèle: ${unit}\nAnnée: ${year}\nCatégorie: ${cat}\nDescription brute: ${desc}`;
+
+  try {
+    const [rawDesc, rawParts, rawProb] = await Promise.all([
+      callClaude(ctx, `Tu es expert en garanties VR (${mfr}). Rédige une description professionnelle du défaut en français, 3-5 phrases, en langage attendu par le manufacturier. Uniquement la description, pas d'intro.`),
+      callClaude(ctx, `Expert pièces VR. Suggère les pièces nécessaires. Réponds UNIQUEMENT en JSON valide sans backticks: {"parts":[{"code":"CODE","name":"Nom","qty":1}]} Maximum 5 pièces.`),
+      callClaude(ctx, `Expert garanties VR. Évalue la probabilité d'approbation. Réponds UNIQUEMENT en JSON valide sans backticks: {"probability":75,"reason":"Raison courte en français"}`)
+    ]);
+
+    AI_DATA.desc = rawDesc;
+    try { AI_DATA.parts = JSON.parse(rawParts.replace(/```json|```/g,'').trim()).parts || []; } catch{}
+    try { AI_DATA.prob  = JSON.parse(rawProb.replace(/```json|```/g,'').trim()); } catch{}
+
+    // Populate UI
+    document.getElementById('aiDescText').textContent = AI_DATA.desc;
+
+    const tbody = document.getElementById('partsBody');
+    tbody.innerHTML = AI_DATA.parts.length
+      ? AI_DATA.parts.map(p => `<tr><td><span class="part-code">${p.code}</span></td><td>${p.name}</td><td>${p.qty}</td></tr>`).join('')
+      : '<tr><td colspan="3" style="color:var(--fog);font-size:12px;">Aucune pièce suggérée</td></tr>';
+
+    if (AI_DATA.prob) {
+      const pct   = AI_DATA.prob.probability;
+      const color = pct >= 75 ? 'var(--green)' : pct >= 50 ? 'var(--gold)' : 'var(--red)';
+      document.getElementById('probPct').textContent  = `${pct}%`;
+      document.getElementById('probPct').style.color  = color;
+      document.getElementById('probFill').style.width  = `${pct}%`;
+      document.getElementById('probFill').style.background = color;
+      document.getElementById('probReason').textContent = `💡 ${AI_DATA.prob.reason}`;
+    }
+
+    document.getElementById('aiResults').style.display = 'block';
+    switchAiTab('desc', document.querySelector('.ai-tab'));
+
+  } catch(e) {
+    toast('error', 'Erreur IA', 'Impossible de contacter Claude. Vérifiez votre connexion.');
+  }
+
+  btn.disabled = false;
+  btn.textContent = '⚡ Relancer l\'analyse';
+}
+
+function switchAiTab(tab, el) {
+  ['desc','parts','prob'].forEach(t => {
+    document.getElementById(`aiTab-${t}`).style.display = t === tab ? 'block' : 'none';
+  });
+  document.querySelectorAll('.ai-tab').forEach(t => t.classList.remove('active'));
+  if (el) el.classList.add('active');
+  else document.querySelectorAll('.ai-tab')[0]?.classList.add('active');
+}
+
+function copyAiDesc() {
+  navigator.clipboard?.writeText(AI_DATA.desc);
+  toast('success', 'Copié !', 'Description copiée dans le presse-papiers.');
+}
+
+function saveClaim() {
+  const unit = document.getElementById('fUnit').value.trim();
+  const cat  = document.getElementById('fCat').value;
+  if (!unit || !cat) { toast('error', 'Champs manquants', 'Remplis au minimum le modèle et la catégorie.'); return; }
+
+  const claim = {
+    id:       `CLM-${new Date().getFullYear()}-${String(Math.floor(Math.random()*9000)+1000)}`,
+    mfr:      document.getElementById('fMfr').value,
+    unit,
+    vin:      document.getElementById('fVin').value.trim(),
+    year:     document.getElementById('fYear').value,
+    category: cat,
+    rawDesc:  document.getElementById('fDesc').value.trim(),
+    tech:     document.getElementById('fTech').value.trim(),
+    bt:       document.getElementById('fBt').value.trim(),
+    status:   'new',
+    date:     new Date().toISOString().slice(0,10),
+    prob:     AI_DATA.prob?.probability || 0,
+    aiDesc:   AI_DATA.desc,
+    parts:    AI_DATA.parts,
+  };
+
+  CLAIMS.unshift(claim);
+  renderAll();
+  closePanel();
+
+  // Reset form
+  ['fUnit','fVin','fTech','fBt','fDesc'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('fCat').value = '';
+  AI_DATA = { desc:'', parts:[], prob:null };
+
+  toast('success', 'Claim enregistré !', `${claim.id} · ${claim.mfr}`);
+}
+
+/* ════════════════════════════════════════
+   EXPIRED / PRICING
+════════════════════════════════════════ */
+function showExpired() {
+  document.getElementById('expiredOverlay').style.display = 'flex';
+}
+
+function selectPlan(plan) {
+  const msgs = {
+    starter: 'Plan Démarrage — 79$/mois. Vous serez redirigé vers le paiement.',
+    pro:     'Plan Professionnel — 149$/mois. Vous serez redirigé vers le paiement.',
+    network: 'Plan Réseau — Contactez-nous à info@lukanerv.ca pour un devis personnalisé.',
+  };
+  toast('info', 'Abonnement', msgs[plan]);
+  // En prod : rediriger vers Stripe checkout
+  // window.location.href = `https://buy.stripe.com/...`
+}
+
+/* ════════════════════════════════════════
+   TOAST
+════════════════════════════════════════ */
+function toast(type, title, msg) {
+  const icons = { success:'✅', error:'❌', info:'ℹ️' };
+  const wrap = document.getElementById('toastWrap');
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span style="font-size:16px;flex-shrink:0;">${icons[type]||'ℹ️'}</span><div><div class="toast-title">${title}</div>${msg?`<div class="toast-msg">${msg}</div>`:''}</div>`;
+  wrap.appendChild(el);
+  setTimeout(() => el.remove(), 4500);
+}
+
+/* ════════════════════════════════════════
+   BOOT
+════════════════════════════════════════ */
+initApp();
+</script>
+</body>
+</html>
