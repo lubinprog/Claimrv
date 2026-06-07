@@ -51,6 +51,8 @@ nav.scrolled{padding:14px 56px;background:rgba(12,13,15,.97);}
 .nav-links a:hover{color:var(--bone);}
 .nav-cta{font-family:var(--fd);font-size:16px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;background:var(--ore);color:var(--chalk);padding:10px 24px;border-radius:3px;text-decoration:none;transition:all .2s var(--ease);border:none;cursor:none;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));}
 .nav-cta:hover{background:var(--ore2);transform:translateY(-1px);}
+.nav-login{font-family:var(--fd);font-size:15px;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:transparent;color:var(--fog);padding:10px 18px;border-radius:3px;text-decoration:none;transition:all .2s var(--ease);border:1px solid var(--wire);}
+.nav-login:hover{border-color:var(--ore);color:var(--ore);}
 
 /* ── HERO ── */
 .hero{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;position:relative;overflow:hidden;}
@@ -349,7 +351,10 @@ footer{background:var(--coal2);border-top:1px solid var(--wire);padding:32px 56p
     <a href="#tarifs">Tarifs</a>
     <a href="#faq">FAQ</a>
   </div>
-  <a href="#essai" class="nav-cta">Essai 14 jours gratuit</a>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <a href="login.html" class="nav-login">Se connecter</a>
+    <a href="#essai" class="nav-cta">Essai 14 jours gratuit</a>
+  </div>
 </nav>
 
 <!-- HERO -->
@@ -366,7 +371,7 @@ footer{background:var(--coal2);border-top:1px solid var(--wire);padding:32px 56p
     </h1>
     <p class="hero-sub">Le premier logiciel IA conçu pour les concessionnaires VR canadiens.<br/><strong>Tous les manufacturiers.</strong> Vos formulaires mobiles existants. Un seul tableau de bord intelligent.</p>
     <div class="hero-actions">
-      <a href="#essai" class="btn-fire">Commencer gratuitement</a>
+      <a href="login.html?tab=signup" class="btn-fire">Commencer gratuitement</a>
       <a href="#comment" class="btn-ghost">Voir comment ça marche <span>→</span></a>
     </div>
     <div class="hero-stats">
