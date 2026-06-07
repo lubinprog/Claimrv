@@ -812,6 +812,10 @@ async function checkSession() {
   } catch(e) {}
 }
 checkSession();
+
+/* ── Auto-switch tab based on URL param ── */
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('tab') === 'signup') switchTab('signup');
 </script>
 </body>
 </html>
