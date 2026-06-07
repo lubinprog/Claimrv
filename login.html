@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>LUKANE RV — Connexion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Barlow:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+:root {
+  --coal:  #0c0d0f;
+  --coal2: #141618;
+  --coal3: #1c1e22;
+  --coal4: #242830;
+  --wire:  #2e333d;
+  --ore:   #e05c1a;
+  --ore2:  #f07030;
+  --bone:  #f0ece3;
+  --fog:   #8a9099;
+  --chalk: #ffffff;
+  --green: #2ecc71;
+  --red:   #e74c3c;
+  --fd: 'Barlow Condensed', sans-serif;
+  --fb: 'Barlow', sans-serif;
+  --fm: 'JetBrains Mono', monospace;
+  --ease: cubic-bezier(.25,.46,.45,.94);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { height: 100%; }
+body {
+  height: 100%;
+  background: var(--coal);
+  color: var(--bone);
+  font-family: var(--fb);
+  overflow: hidden;
+  cursor: none;
+}
+
+/* ── CURSOR ── */
+.cursor { position:fixed;width:10px;height:10px;background:var(--ore);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .2s,height .2s,background .2s; }
+.cursor-ring { position:fixed;width:34px;height:34px;border:1.5px solid rgba(224,92,26,.35);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .28s var(--ease),height .28s var(--ease),opacity .28s; }
+body:has(input:hover) .cursor, body:has(button:hover) .cursor, body:has(a:hover) .cursor { width:14px;height:14px;background:var(--ore2); }
+body:has(input:hover) .cursor-ring, body:has(button:hover) .cursor-ring, body:has(a:hover) .cursor-ring { width:50px;height:50px;opacity:.5; }
+
+/* ── GRAIN ── */
+body::after { content:'';position:fixed;inset:0;z-index:999;pointer-events:none;opacity:.028;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E"); }
+
+/* ── LAYOUT ── */
+.page {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 100vh;
+}
+
+/* ── LEFT PANEL — brand ── */
+.left {
+  position: relative;
+  background: var(--coal2);
+  border-right: 1px solid var(--wire);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 48px 56px;
+  overflow: hidden;
+}
+
+/* animated grid */
+.left-grid {
+  position: absolute; inset: 0; z-index: 0;
+  background-image:
+    linear-gradient(rgba(224,92,26,.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(224,92,26,.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(ellipse 90% 90% at 30% 50%, black 30%, transparent 100%);
+  animation: gridDrift 24s linear infinite;
+}
+@keyframes gridDrift { from{background-position:0 0} to{background-position:40px 40px} }
+
+/* glow orb */
+.left-glow {
+  position: absolute;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(224,92,26,.15), transparent 65%);
+  top: 50%; left: -10%; transform: translateY(-50%);
+  pointer-events: none; z-index: 0;
+  animation: glowPulse 7s ease-in-out infinite;
+}
+@keyframes glowPulse { 0%,100%{opacity:.6;transform:translateY(-50%) scale(1)} 50%{opacity:1;transform:translateY(-52%) scale(1.1)} }
+
+.left-top { position: relative; z-index: 1; }
+.left-bottom { position: relative; z-index: 1; }
+
+/* logo */
+.logo {
+  font-family: var(--fd);
+  font-size: 32px; font-weight: 900;
+  letter-spacing: 1px; color: var(--chalk);
+  display: flex; align-items: center; gap: 4px;
+  text-decoration: none;
+}
+.logo .accent { color: var(--ore); }
+.logo-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--ore); margin-left: 2px;
+  animation: blink 2.4s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.15} }
+
+/* big headline */
+.left-headline {
+  font-family: var(--fd);
+  font-size: clamp(52px, 5vw, 78px);
+  font-weight: 900;
+  line-height: .88;
+  letter-spacing: -1.5px;
+  color: var(--chalk);
+  margin-top: 80px;
+}
+.left-headline .stroke {
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--ore);
+}
+.left-headline .block { display: block; }
+
+.left-sub {
+  font-size: 15px; font-weight: 300;
+  color: var(--fog); line-height: 1.7;
+  margin-top: 20px; max-width: 320px;
+}
+
+/* stats row */
+.left-stats {
+  display: flex; gap: 36px;
+  margin-top: 48px;
+}
+.lst-val {
+  font-family: var(--fd); font-size: 36px; font-weight: 900;
+  color: var(--ore); line-height: 1; letter-spacing: -1px;
+}
+.lst-label {
+  font-family: var(--fm); font-size: 10px;
+  color: var(--fog); margin-top: 4px;
+  letter-spacing: 1.5px; text-transform: uppercase;
+}
+
+/* feature chips */
+.left-chips {
+  display: flex; flex-direction: column; gap: 10px;
+}
+.chip {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 13px; color: var(--fog);
+}
+.chip-icon {
+  width: 32px; height: 32px; border-radius: 4px;
+  background: rgba(224,92,26,.1);
+  border: 1px solid rgba(224,92,26,.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0;
+}
+
+/* ── RIGHT PANEL — form ── */
+.right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 56px;
+  overflow-y: auto;
+}
+
+.auth-box {
+  width: 100%;
+  max-width: 400px;
+  animation: fadeUp .6s var(--ease) both;
+}
+@keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+/* tabs */
+.auth-tabs {
+  display: flex;
+  background: var(--coal2);
+  border: 1px solid var(--wire);
+  border-radius: 6px;
+  padding: 4px;
+  margin-bottom: 36px;
+}
+.auth-tab {
+  flex: 1; padding: 10px;
+  font-family: var(--fd); font-size: 15px; font-weight: 800;
+  letter-spacing: 1px; text-transform: uppercase;
+  color: var(--fog); background: transparent;
+  border: none; border-radius: 4px;
+  cursor: none; transition: all .2s var(--ease);
+}
+.auth-tab.active {
+  background: var(--ore); color: var(--chalk);
+  box-shadow: 0 4px 16px rgba(224,92,26,.3);
+}
+
+/* form title */
+.auth-title {
+  font-family: var(--fd);
+  font-size: 42px; font-weight: 900;
+  letter-spacing: -1px; line-height: .9;
+  color: var(--chalk); margin-bottom: 8px;
+}
+.auth-sub {
+  font-size: 14px; color: var(--fog);
+  margin-bottom: 32px; line-height: 1.5;
+}
+
+/* fields */
+.field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 16px; }
+.field label {
+  font-family: var(--fm); font-size: 10px; font-weight: 500;
+  letter-spacing: 2px; text-transform: uppercase; color: var(--fog);
+}
+.field input {
+  background: var(--coal2);
+  border: 1px solid var(--wire);
+  border-radius: 4px;
+  color: var(--bone);
+  font-family: var(--fb); font-size: 14px;
+  padding: 13px 16px;
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+.field input::placeholder { color: rgba(138,144,153,.5); }
+.field input:focus {
+  border-color: var(--ore);
+  box-shadow: 0 0 0 3px rgba(224,92,26,.1);
+}
+.field input.error { border-color: var(--red); box-shadow: 0 0 0 3px rgba(231,76,60,.1); }
+.field-error {
+  font-family: var(--fm); font-size: 11px; color: var(--red);
+  display: none; margin-top: 2px;
+}
+.field-error.visible { display: block; }
+
+/* password wrapper */
+.pw-wrap { position: relative; }
+.pw-wrap input { width: 100%; padding-right: 44px; }
+.pw-toggle {
+  position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: none;
+  color: var(--fog); font-size: 16px; transition: color .2s;
+}
+.pw-toggle:hover { color: var(--bone); }
+
+/* submit btn */
+.btn-submit {
+  width: 100%; padding: 15px;
+  font-family: var(--fd); font-size: 18px; font-weight: 800;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  background: var(--ore); color: var(--chalk);
+  border: none; border-radius: 4px;
+  cursor: none; margin-top: 8px;
+  transition: all .25s var(--ease);
+  clip-path: polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));
+  position: relative; overflow: hidden;
+}
+.btn-submit::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg,rgba(255,255,255,.12),transparent);
+  opacity: 0; transition: opacity .2s;
+}
+.btn-submit:hover:not(:disabled) { background: var(--ore2); transform: translateY(-1px); box-shadow: 0 8px 28px rgba(224,92,26,.35); }
+.btn-submit:hover::after { opacity: 1; }
+.btn-submit:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+.btn-submit.loading { pointer-events: none; }
+
+/* divider */
+.divider {
+  display: flex; align-items: center; gap: 12px;
+  margin: 24px 0;
+}
+.divider-line { flex: 1; height: 1px; background: var(--wire); }
+.divider-text { font-family: var(--fm); font-size: 10px; color: var(--fog); letter-spacing: 2px; text-transform: uppercase; }
+
+/* forgot */
+.forgot {
+  text-align: right; margin-top: -8px; margin-bottom: 8px;
+}
+.forgot a {
+  font-family: var(--fm); font-size: 11px; color: var(--fog);
+  text-decoration: none; transition: color .2s; letter-spacing: .5px;
+}
+.forgot a:hover { color: var(--ore); }
+
+/* terms */
+.terms {
+  font-size: 12px; color: var(--fog); text-align: center;
+  margin-top: 20px; line-height: 1.6;
+}
+.terms a { color: var(--ore); text-decoration: none; }
+.terms a:hover { text-decoration: underline; }
+
+/* alert boxes */
+.alert {
+  border-radius: 4px; padding: 12px 16px;
+  font-family: var(--fm); font-size: 12px; line-height: 1.5;
+  margin-bottom: 20px; display: none;
+}
+.alert.visible { display: block; }
+.alert-error { background: rgba(231,76,60,.1); border: 1px solid rgba(231,76,60,.25); color: #f1948a; }
+.alert-success { background: rgba(46,204,113,.1); border: 1px solid rgba(46,204,113,.25); color: #82e0aa; }
+
+/* success state */
+.success-state {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+  padding: 40px 20px;
+}
+.success-state.visible { display: flex; }
+.success-icon-wrap {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: rgba(46,204,113,.1);
+  border: 2px solid rgba(46,204,113,.3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px;
+  animation: popIn .4s var(--ease) both;
+}
+@keyframes popIn { from{transform:scale(.5);opacity:0} to{transform:scale(1);opacity:1} }
+.success-title { font-family: var(--fd); font-size: 32px; font-weight: 900; color: var(--chalk); }
+.success-text { font-size: 14px; color: var(--fog); line-height: 1.7; max-width: 280px; }
+
+/* loading spinner */
+.spinner {
+  display: inline-block; width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,.3);
+  border-top-color: var(--chalk);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  vertical-align: middle; margin-right: 8px;
+}
+@keyframes spin { to{transform:rotate(360deg)} }
+
+/* footer note */
+.auth-footer {
+  margin-top: 28px;
+  font-family: var(--fm); font-size: 10px;
+  color: var(--wire); text-align: center;
+  letter-spacing: 1px;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 860px) {
+  body { overflow-y: auto; cursor: auto; }
+  .cursor, .cursor-ring { display: none; }
+  .page { grid-template-columns: 1fr; height: auto; }
+  .left { display: none; }
+  .right { padding: 48px 24px; min-height: 100vh; }
+}
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<div class="page">
+
+  <!-- ══ LEFT PANEL ══ -->
+  <div class="left">
+    <div class="left-grid"></div>
+    <div class="left-glow"></div>
+
+    <div class="left-top">
+      <a class="logo" href="index.html">LUKANE <span class="accent">RV</span><span class="logo-dot"></span></a>
+
+      <div class="left-headline" style="margin-top:64px;">
+        <span class="block">GÉREZ</span>
+        <span class="block">VOS</span>
+        <span class="block stroke">GARANTIES</span>
+        <span class="block">EN MINUTES.</span>
+      </div>
+      <p class="left-sub">L'IA qui rédige, structure et optimise vos claims VR automatiquement. Tous les manufacturiers.</p>
+
+      <div class="left-stats">
+        <div>
+          <div class="lst-val">3×</div>
+          <div class="lst-label">Plus rapide</div>
+        </div>
+        <div>
+          <div class="lst-val">+40%</div>
+          <div class="lst-label">Approbations</div>
+        </div>
+        <div>
+          <div class="lst-val">8+</div>
+          <div class="lst-label">Manufacturiers</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="left-bottom">
+      <div class="left-chips">
+        <div class="chip"><div class="chip-icon">🤖</div>Analyse IA automatique à chaque claim</div>
+        <div class="chip"><div class="chip-icon">📱</div>Compatible avec vos formulaires mobiles</div>
+        <div class="chip"><div class="chip-icon">📊</div>Tableau de bord centralisé temps réel</div>
+        <div class="chip"><div class="chip-icon">🔒</div>Données chiffrées, hébergées au Canada</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ RIGHT PANEL ══ -->
+  <div class="right">
+    <div class="auth-box">
+
+      <!-- Tabs -->
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabLogin" onclick="switchTab('login')">Connexion</button>
+        <button class="auth-tab" id="tabSignup" onclick="switchTab('signup')">Créer un compte</button>
+      </div>
+
+      <!-- ══ LOGIN FORM ══ -->
+      <div id="loginForm">
+        <div class="auth-title">BON<br/>RETOUR.</div>
+        <p class="auth-sub">Connectez-vous à votre espace LUKANE RV.</p>
+
+        <div class="alert alert-error" id="loginError"></div>
+
+        <div class="field">
+          <label>Courriel</label>
+          <input type="email" id="loginEmail" placeholder="votre@courriel.com" autocomplete="email"/>
+        </div>
+
+        <div class="field">
+          <label>Mot de passe</label>
+          <div class="pw-wrap">
+            <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password"/>
+            <button class="pw-toggle" onclick="togglePw('loginPassword', this)" type="button">👁</button>
+          </div>
+        </div>
+
+        <div class="forgot"><a href="#" onclick="showForgot(event)">Mot de passe oublié ?</a></div>
+
+        <button class="btn-submit" id="loginBtn" onclick="handleLogin()">
+          Se connecter
+        </button>
+
+        <div class="divider">
+          <div class="divider-line"></div>
+          <span class="divider-text">ou</span>
+          <div class="divider-line"></div>
+        </div>
+
+        <p style="text-align:center;font-size:13px;color:var(--fog);">
+          Pas encore de compte ? 
+          <a href="#" style="color:var(--ore);text-decoration:none;" onclick="switchTab('signup')">Créer un compte gratuit</a>
+        </p>
+      </div>
+
+      <!-- ══ SIGNUP FORM ══ -->
+      <div id="signupForm" style="display:none;">
+        <div class="auth-title">DÉMARREZ<br/>GRATUITEMENT.</div>
+        <p class="auth-sub">14 jours gratuits. Aucune carte de crédit.</p>
+
+        <div class="alert alert-error" id="signupError"></div>
+        <div class="alert alert-success" id="signupSuccess"></div>
+
+        <div id="signupFields">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div class="field">
+              <label>Prénom</label>
+              <input type="text" id="signupFirst" placeholder="Marc" autocomplete="given-name"/>
+            </div>
+            <div class="field">
+              <label>Nom</label>
+              <input type="text" id="signupLast" placeholder="Tremblay" autocomplete="family-name"/>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Concessionnaire</label>
+            <input type="text" id="signupDealer" placeholder="RV Pro Montréal" autocomplete="organization"/>
+          </div>
+
+          <div class="field">
+            <label>Courriel professionnel</label>
+            <input type="email" id="signupEmail" placeholder="votre@courriel.com" autocomplete="email"/>
+          </div>
+
+          <div class="field">
+            <label>Mot de passe</label>
+            <div class="pw-wrap">
+              <input type="password" id="signupPassword" placeholder="8 caractères minimum" autocomplete="new-password"/>
+              <button class="pw-toggle" onclick="togglePw('signupPassword', this)" type="button">👁</button>
+            </div>
+            <div class="field-error" id="pwError">Le mot de passe doit contenir au moins 8 caractères</div>
+          </div>
+
+          <!-- Password strength -->
+          <div id="pwStrengthWrap" style="margin-top:-8px;margin-bottom:16px;display:none;">
+            <div style="display:flex;gap:4px;margin-bottom:4px;">
+              <div class="pw-bar" id="bar1" style="height:3px;flex:1;border-radius:99px;background:var(--wire);transition:background .3s;"></div>
+              <div class="pw-bar" id="bar2" style="height:3px;flex:1;border-radius:99px;background:var(--wire);transition:background .3s;"></div>
+              <div class="pw-bar" id="bar3" style="height:3px;flex:1;border-radius:99px;background:var(--wire);transition:background .3s;"></div>
+              <div class="pw-bar" id="bar4" style="height:3px;flex:1;border-radius:99px;background:var(--wire);transition:background .3s;"></div>
+            </div>
+            <div id="pwStrengthLabel" style="font-family:var(--fm);font-size:10px;color:var(--fog);letter-spacing:1px;"></div>
+          </div>
+
+          <button class="btn-submit" id="signupBtn" onclick="handleSignup()">
+            Créer mon compte gratuit
+          </button>
+
+          <p class="terms">
+            En créant un compte, vous acceptez nos
+            <a href="#">Conditions d'utilisation</a> et notre
+            <a href="#">Politique de confidentialité</a>.
+          </p>
+        </div>
+
+        <!-- Success state -->
+        <div class="success-state" id="signupSuccessState">
+          <div class="success-icon-wrap">✉️</div>
+          <div class="success-title">VÉRIFIEZ<br/>VOS COURRIELS</div>
+          <p class="success-text">On vous a envoyé un lien de confirmation. Cliquez dessus pour activer votre compte LUKANE RV.</p>
+          <button class="btn-submit" style="margin-top:8px;max-width:240px;" onclick="switchTab('login')">Retour à la connexion</button>
+        </div>
+
+        <div style="margin-top:20px;text-align:center;font-size:13px;color:var(--fog);">
+          Déjà un compte ?
+          <a href="#" style="color:var(--ore);text-decoration:none;" onclick="switchTab('login')">Se connecter</a>
+        </div>
+      </div>
+
+      <!-- ══ FORGOT PASSWORD ══ -->
+      <div id="forgotForm" style="display:none;">
+        <div class="auth-title">MOT DE<br/>PASSE<br/>OUBLIÉ.</div>
+        <p class="auth-sub">Entrez votre courriel pour recevoir un lien de réinitialisation.</p>
+
+        <div class="alert alert-error" id="forgotError"></div>
+        <div class="alert alert-success" id="forgotSuccess"></div>
+
+        <div class="field">
+          <label>Courriel</label>
+          <input type="email" id="forgotEmail" placeholder="votre@courriel.com"/>
+        </div>
+
+        <button class="btn-submit" id="forgotBtn" onclick="handleForgot()">
+          Envoyer le lien
+        </button>
+
+        <div style="margin-top:20px;text-align:center;">
+          <a href="#" style="font-family:var(--fm);font-size:12px;color:var(--fog);text-decoration:none;" onclick="switchTab('login')">← Retour à la connexion</a>
+        </div>
+      </div>
+
+      <div class="auth-footer">// LUKANE RV · Données chiffrées · Hébergé au Canada 🇨🇦</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════
+   SUPABASE CONFIG
+   → Remplace ces valeurs par les tiennes
+     sur supabase.com → Project Settings → API
+════════════════════════════════════════ */
+const SUPABASE_URL  = 'https://zxprifyiqhsxysdfeyti.supabase.co/rest/v1/';
+const SUPABASE_ANON = 'sb_publishable_2qvKlulcBKSsk6wwYfP6yQ_SwII9Nu5';
+
+const supabase = window.supabase
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
+  : null;
+
+/* ── Cursor ── */
+const cur = document.getElementById('cursor');
+const ring = document.getElementById('cursorRing');
+let mx=0, my=0, rx=0, ry=0;
+document.addEventListener('mousemove', e => {
+  mx=e.clientX; my=e.clientY;
+  cur.style.left=mx+'px'; cur.style.top=my+'px';
+});
+(function loop(){ rx+=(mx-rx)*.12; ry+=(my-ry)*.12; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(loop); })();
+
+/* ── Tab switching ── */
+function switchTab(tab) {
+  ['loginForm','signupForm','forgotForm'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+  document.getElementById('tabLogin').classList.toggle('active', tab==='login');
+  document.getElementById('tabSignup').classList.toggle('active', tab==='signup');
+
+  if (tab === 'login')  document.getElementById('loginForm').style.display  = 'block';
+  if (tab === 'signup') document.getElementById('signupForm').style.display = 'block';
+  if (tab === 'forgot') {
+    document.getElementById('forgotForm').style.display = 'block';
+    document.getElementById('tabLogin').classList.remove('active');
+    document.getElementById('tabSignup').classList.remove('active');
+  }
+  clearAlerts();
+}
+
+function showForgot(e) { e.preventDefault(); switchTab('forgot'); }
+
+/* ── Alert helpers ── */
+function showAlert(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg; el.classList.add('visible');
+}
+function clearAlerts() {
+  document.querySelectorAll('.alert').forEach(a => a.classList.remove('visible'));
+}
+
+/* ── Password toggle ── */
+function togglePw(inputId, btn) {
+  const input = document.getElementById(inputId);
+  const show = input.type === 'password';
+  input.type = show ? 'text' : 'password';
+  btn.textContent = show ? '🙈' : '👁';
+}
+
+/* ── Password strength ── */
+document.getElementById('signupPassword')?.addEventListener('input', function() {
+  const pw = this.value;
+  const wrap = document.getElementById('pwStrengthWrap');
+  if (!pw) { wrap.style.display='none'; return; }
+  wrap.style.display = 'block';
+
+  let score = 0;
+  if (pw.length >= 8)  score++;
+  if (pw.length >= 12) score++;
+  if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++;
+  if (/[0-9!@#$%^&*]/.test(pw)) score++;
+
+  const colors  = ['#e74c3c','#e67e22','#f1c40f','#2ecc71'];
+  const labels  = ['FAIBLE','MOYEN','FORT','EXCELLENT'];
+  const bars    = ['bar1','bar2','bar3','bar4'];
+
+  bars.forEach((id, i) => {
+    document.getElementById(id).style.background = i < score ? colors[score-1] : 'var(--wire)';
+  });
+  document.getElementById('pwStrengthLabel').textContent = labels[score-1] || '';
+  document.getElementById('pwStrengthLabel').style.color = colors[score-1] || 'var(--fog)';
+});
+
+/* ── Set button loading state ── */
+function setLoading(btnId, loading, text='') {
+  const btn = document.getElementById(btnId);
+  btn.disabled = loading;
+  btn.innerHTML = loading
+    ? `<span class="spinner"></span> En cours…`
+    : text || btn.dataset.original || btn.textContent;
+  if (!loading && !btn.dataset.original) btn.dataset.original = text;
+}
+
+/* ══ LOGIN ══ */
+async function handleLogin() {
+  clearAlerts();
+  const email    = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+
+  if (!email || !password) {
+    showAlert('loginError', '⚠️ Veuillez remplir tous les champs.');
+    return;
+  }
+
+  setLoading('loginBtn', true);
+
+  /* ── Mode démo (sans Supabase configuré) ── */
+  if (SUPABASE_URL.includes('VOTRE_PROJECT_ID')) {
+    await delay(1200);
+    setLoading('loginBtn', false, 'Se connecter');
+    // Simule une connexion réussie → redirige vers le dashboard
+    window.location.href = 'dashboard.html';
+    return;
+  }
+
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    // Connexion réussie → redirect dashboard
+    window.location.href = 'dashboard.html';
+  } catch (err) {
+    setLoading('loginBtn', false, 'Se connecter');
+    const msg = err.message?.includes('Invalid login')
+      ? '❌ Courriel ou mot de passe incorrect.'
+      : `❌ ${err.message}`;
+    showAlert('loginError', msg);
+  }
+}
+
+/* ══ SIGNUP ══ */
+async function handleSignup() {
+  clearAlerts();
+  const first    = document.getElementById('signupFirst').value.trim();
+  const last     = document.getElementById('signupLast').value.trim();
+  const dealer   = document.getElementById('signupDealer').value.trim();
+  const email    = document.getElementById('signupEmail').value.trim();
+  const password = document.getElementById('signupPassword').value;
+
+  /* Validation */
+  if (!first || !last || !dealer || !email || !password) {
+    showAlert('signupError', '⚠️ Veuillez remplir tous les champs.'); return;
+  }
+  if (!email.includes('@') || !email.includes('.')) {
+    showAlert('signupError', '⚠️ Courriel invalide.'); return;
+  }
+  if (password.length < 8) {
+    document.getElementById('pwError').classList.add('visible');
+    document.getElementById('signupPassword').classList.add('error');
+    return;
+  }
+  document.getElementById('pwError').classList.remove('visible');
+  document.getElementById('signupPassword').classList.remove('error');
+
+  setLoading('signupBtn', true);
+
+  /* ── Mode démo ── */
+  if (SUPABASE_URL.includes('VOTRE_PROJECT_ID')) {
+    await delay(1400);
+    setLoading('signupBtn', false, 'Créer mon compte gratuit');
+    document.getElementById('signupFields').style.display = 'none';
+    document.getElementById('signupSuccessState').classList.add('visible');
+    return;
+  }
+
+  try {
+    const { data, error } = await supabase.auth.signUp({
+      email, password,
+      options: {
+        data: {
+          first_name: first,
+          last_name:  last,
+          dealer:     dealer,
+          plan:       'trial'
+        }
+      }
+    });
+    if (error) throw error;
+
+    setLoading('signupBtn', false, 'Créer mon compte gratuit');
+    document.getElementById('signupFields').style.display = 'none';
+    document.getElementById('signupSuccessState').classList.add('visible');
+
+  } catch (err) {
+    setLoading('signupBtn', false, 'Créer mon compte gratuit');
+    const msg = err.message?.includes('already registered')
+      ? '⚠️ Ce courriel est déjà utilisé. Essayez de vous connecter.'
+      : `❌ ${err.message}`;
+    showAlert('signupError', msg);
+  }
+}
+
+/* ══ FORGOT PASSWORD ══ */
+async function handleForgot() {
+  clearAlerts();
+  const email = document.getElementById('forgotEmail').value.trim();
+
+  if (!email || !email.includes('@')) {
+    showAlert('forgotError', '⚠️ Entrez un courriel valide.'); return;
+  }
+
+  setLoading('forgotBtn', true);
+
+  /* ── Mode démo ── */
+  if (SUPABASE_URL.includes('VOTRE_PROJECT_ID')) {
+    await delay(1000);
+    setLoading('forgotBtn', false, 'Envoyer le lien');
+    showAlert('forgotSuccess', '✅ Si ce courriel existe, vous recevrez un lien sous peu.');
+    return;
+  }
+
+  try {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password.html`
+    });
+    if (error) throw error;
+    showAlert('forgotSuccess', '✅ Si ce courriel existe, vous recevrez un lien sous peu.');
+    setLoading('forgotBtn', false, 'Envoyer le lien');
+  } catch (err) {
+    setLoading('forgotBtn', false, 'Envoyer le lien');
+    showAlert('forgotError', `❌ ${err.message}`);
+  }
+}
+
+/* ── Enter key support ── */
+['loginEmail','loginPassword'].forEach(id => {
+  document.getElementById(id)?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleLogin();
+  });
+});
+['signupFirst','signupLast','signupDealer','signupEmail','signupPassword'].forEach(id => {
+  document.getElementById(id)?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleSignup();
+  });
+});
+document.getElementById('forgotEmail')?.addEventListener('keydown', e => {
+  if (e.key === 'Enter') handleForgot();
+});
+
+/* ── Utility ── */
+const delay = ms => new Promise(r => setTimeout(r, ms));
+
+/* ── Check if already logged in ── */
+async function checkSession() {
+  if (SUPABASE_URL.includes('VOTRE_PROJECT_ID')) return;
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) window.location.href = 'dashboard.html';
+  } catch(e) {}
+}
+checkSession();
+</script>
+</body>
+</html>
