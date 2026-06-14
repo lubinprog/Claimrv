@@ -39,6 +39,7 @@ body {
   color: var(--bone);
   font-family: var(--fb);
   overflow: hidden;
+  overflow-y: auto;
 }
 
 /* ── CURSOR ── */
@@ -65,6 +66,9 @@ body::after { content:'';position:fixed;inset:0;z-index:999;pointer-events:none;
   justify-content: space-between;
   padding: 48px 56px;
   overflow: hidden;
+  height: 100vh;
+  position: sticky;
+  top: 0;
 }
 
 /* animated grid */
@@ -165,16 +169,18 @@ body::after { content:'';position:fixed;inset:0;z-index:999;pointer-events:none;
 /* ── RIGHT PANEL — form ── */
 .right {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   padding: 48px 56px;
   overflow-y: auto;
+  height: 100vh;
 }
 
 .auth-box {
   width: 100%;
   max-width: 400px;
   animation: fadeUp .6s var(--ease) both;
+  padding: 48px 0;
 }
 @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
 
@@ -561,8 +567,8 @@ body::after { content:'';position:fixed;inset:0;z-index:999;pointer-events:none;
    → Remplace ces valeurs par les tiennes
      sur supabase.com → Project Settings → API
 ════════════════════════════════════════ */
-const SUPABASE_URL  = 'https://zxprifyiqhsxysdfeyti.supabase.co/rest/v1/';
-const SUPABASE_ANON = 'sb_publishable_2qvKlulcBKSsk6wwYfP6yQ_SwII9Nu5';
+const SUPABASE_URL  = 'https://VOTRE_PROJECT_ID.supabase.co';
+const SUPABASE_ANON = 'VOTRE_ANON_KEY';
 
 const supabase = window.supabase
   ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
@@ -646,33 +652,39 @@ async function handleLogin() {
   clearAlerts();
   const email    = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value;
+  const btn      = document.getElementById('loginBtn');
 
   if (!email || !password) {
     showAlert('loginError', '⚠️ Veuillez remplir tous les champs.');
     return;
   }
 
-  setLoading('loginBtn', true);
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Connexion…';
 
-  /* ── Mode démo (sans Supabase configuré) ── */
-  if (SUPABASE_URL.includes('VOTRE_PROJECT_ID')) {
-    await delay(1200);
-    setLoading('loginBtn', false, 'Se connecter');
-    // Simule une connexion réussie → redirige vers le dashboard
-    window.location.href = 'dashboard.html';
+  const resetBtn = () => {
+    btn.disabled = false;
+    btn.textContent = 'Se connecter';
+  };
+
+  /* ── Mode démo ── */
+  if (!supabase || SUPABASE_URL.includes('VOTRE_PROJECT_ID')) {
+    setTimeout(() => {
+      resetBtn();
+      window.location.href = 'dashboard.html';
+    }, 1200);
     return;
   }
 
   try {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
-    // Connexion réussie → redirect dashboard
     window.location.href = 'dashboard.html';
   } catch (err) {
-    setLoading('loginBtn', false, 'Se connecter');
-    const msg = err.message?.includes('Invalid login')
+    resetBtn();
+    const msg = (err.message || '').includes('Invalid login')
       ? '❌ Courriel ou mot de passe incorrect.'
-      : `❌ ${err.message}`;
+      : `❌ ${err.message || 'Une erreur est survenue.'}`;
     showAlert('loginError', msg);
   }
 }
@@ -680,18 +692,22 @@ async function handleLogin() {
 /* ══ SIGNUP ══ */
 async function handleSignup() {
   clearAlerts();
+
   const first    = document.getElementById('signupFirst').value.trim();
   const last     = document.getElementById('signupLast').value.trim();
   const dealer   = document.getElementById('signupDealer').value.trim();
   const email    = document.getElementById('signupEmail').value.trim();
   const password = document.getElementById('signupPassword').value;
+  const btn      = document.getElementById('signupBtn');
 
-  /* Validation */
+  /* ── Validation ── */
   if (!first || !last || !dealer || !email || !password) {
-    showAlert('signupError', '⚠️ Veuillez remplir tous les champs.'); return;
+    showAlert('signupError', '⚠️ Veuillez remplir tous les champs.');
+    return;
   }
   if (!email.includes('@') || !email.includes('.')) {
-    showAlert('signupError', '⚠️ Courriel invalide.'); return;
+    showAlert('signupError', '⚠️ Courriel invalide.');
+    return;
   }
   if (password.length < 8) {
     document.getElementById('pwError').classList.add('visible');
@@ -701,20 +717,33 @@ async function handleSignup() {
   document.getElementById('pwError').classList.remove('visible');
   document.getElementById('signupPassword').classList.remove('error');
 
-  setLoading('signupBtn', true);
+  /* ── Loading state ── */
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Création en cours…';
 
-  /* ── Mode démo ── */
-  if (SUPABASE_URL.includes('VOTRE_PROJECT_ID')) {
-    await delay(1400);
-    setLoading('signupBtn', false, 'Créer mon compte gratuit');
+  const resetBtn = () => {
+    btn.disabled = false;
+    btn.textContent = 'Créer mon compte gratuit';
+  };
+
+  const showSuccess = () => {
     document.getElementById('signupFields').style.display = 'none';
     document.getElementById('signupSuccessState').classList.add('visible');
+  };
+
+  /* ── Mode démo (Supabase non configuré) ── */
+  if (!supabase || SUPABASE_URL.includes('VOTRE_PROJECT_ID')) {
+    setTimeout(() => {
+      window.location.href = 'dashboard.html';
+    }, 1200);
     return;
   }
 
+  /* ── Supabase ── */
   try {
     const { data, error } = await supabase.auth.signUp({
-      email, password,
+      email,
+      password,
       options: {
         data: {
           first_name: first,
@@ -725,16 +754,13 @@ async function handleSignup() {
       }
     });
     if (error) throw error;
-
-    setLoading('signupBtn', false, 'Créer mon compte gratuit');
-    document.getElementById('signupFields').style.display = 'none';
-    document.getElementById('signupSuccessState').classList.add('visible');
-
+    resetBtn();
+    showSuccess();
   } catch (err) {
-    setLoading('signupBtn', false, 'Créer mon compte gratuit');
-    const msg = err.message?.includes('already registered')
+    resetBtn();
+    const msg = (err.message || '').includes('already registered')
       ? '⚠️ Ce courriel est déjà utilisé. Essayez de vous connecter.'
-      : `❌ ${err.message}`;
+      : `❌ ${err.message || 'Une erreur est survenue.'}`;
     showAlert('signupError', msg);
   }
 }
