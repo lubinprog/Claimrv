@@ -705,6 +705,10 @@ const DEMO_MODE = SUPA_URL.includes('VOTRE_PROJECT_ID');
 const TRIAL_DAYS = 14;
 const AI_MODEL   = 'claude-sonnet-4-20250514';
 
+// ── URL de ton webhook Vercel (à remplacer après déploiement) ──
+const WEBHOOK_URL = 'https://VOTRE_PROJET.vercel.app/api/webhook';
+const TALLY_API_KEY = 'tly-P7b9HaYUP9xpBQG2JGf5jKvuStCHKsae';
+
 const sb = !DEMO_MODE && window.supabase
   ? window.supabase.createClient(SUPA_URL, SUPA_KEY)
   : null;
@@ -1208,8 +1212,57 @@ document.addEventListener('keydown', e => {
   }
 });
 
+/* ══════════════════════════════════════
+   TALLY INTEGRATION
+══════════════════════════════════════ */
+
+// Récupère les claims depuis le webhook Vercel
+async function fetchTallyClaims() {
+  if (WEBHOOK_URL.includes('VOTRE_PROJET')) return;
+  try {
+    const res  = await fetch(WEBHOOK_URL);
+    const data = await res.json();
+    if (data.success && Array.isArray(data.claims)) {
+      const existingIds = new Set(CLAIMS.map(c => c.id));
+      const newClaims   = data.claims.filter(c => !existingIds.has(c.id));
+      if (newClaims.length > 0) {
+        CLAIMS = [...newClaims, ...CLAIMS];
+        renderAll();
+        toast('ok', `${newClaims.length} nouveau(x) claim(s) Tally`, 'Formulaire reçu automatiquement.');
+      }
+    }
+  } catch(e) { console.warn('Tally fetch error:', e); }
+}
+
+// Simule la réception d'une soumission Tally (bouton test dans l'interface)
+function simulateTallySubmission() {
+  const demos = [
+    { mfr:'Grand Design', unit:'2025 Grand Design Reflection 303RLS', vin:'4X4GD2025001', year:'2025', cat:'Slide room / extension',   desc:'slide room sort pas complètement, bruit de friction',        tech:'Marc Tremblay',  bt:'BT-2025-0501' },
+    { mfr:'Forest River', unit:'2024 Forest River Rockwood 2608BS',   vin:'4X4FR2024002', year:'2024', cat:'Toiture / étanchéité',     desc:'fuite d\'eau au toit quand il pleut, tache au plafond',       tech:'Sophie Gagné',   bt:'BT-2025-0502' },
+    { mfr:'Winnebago',    unit:'2025 Winnebago Voyage 2831RL',        vin:'1WB2025003',   year:'2025', cat:'Climatisation / A/C',      desc:'A/C souffle pas assez fort côté chambre',                    tech:'Jean Côté',      bt:'BT-2025-0503' },
+    { mfr:'Jayco',        unit:'2024 Jayco Eagle 321RSTS',            vin:'1UJ2024004',   year:'2024', cat:'Électrique / 12V',         desc:'lumières 12V clignotent quand on branche au shore power',     tech:'Marc Tremblay',  bt:'BT-2025-0504' },
+    { mfr:'Keystone RV',  unit:'2025 Keystone Cougar 368MBI',         vin:'4YD2025005',   year:'2025', cat:'Levelers / stabilisateurs',desc:'leveler avant gauche descend pas, erreur sur le panneau',     tech:'Sophie Gagné',   bt:'BT-2025-0505' },
+  ];
+  const d   = demos[Math.floor(Math.random() * demos.length)];
+  const now = new Date();
+  const id  = `CLM-${now.getFullYear()}-${String(Math.floor(Math.random()*9000)+1000)}`;
+  const claim = {
+    id, source:'tally',
+    mfr:d.mfr, unit:d.unit, vin:d.vin, year:d.year,
+    cat:d.cat, desc:d.desc, tech:d.tech, bt:d.bt,
+    status:'new', prob:0, aiDesc:'', parts:[], photos:[], notes:'',
+    date: now.toISOString().slice(0,10),
+    createdAt: now.toISOString(),
+  };
+  CLAIMS.unshift(claim);
+  renderAll();
+  toast('ok', '📨 Nouvelle soumission Tally !', `${claim.mfr} · ${claim.bt}`);
+}
+
 /* ══ BOOT ══ */
 init();
+// Polling toutes les 30 secondes pour les nouveaux claims Tally
+setInterval(fetchTallyClaims, 30000);
 </script>
 </body>
 </html>
