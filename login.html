@@ -7,827 +7,516 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Barlow:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-
-<!-- Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <style>
-:root {
-  --coal:  #0c0d0f;
-  --coal2: #141618;
-  --coal3: #1c1e22;
-  --coal4: #242830;
-  --wire:  #2e333d;
-  --ore:   #e05c1a;
-  --ore2:  #f07030;
-  --bone:  #f0ece3;
-  --fog:   #8a9099;
-  --chalk: #ffffff;
-  --green: #2ecc71;
-  --red:   #e74c3c;
-  --fd: 'Barlow Condensed', sans-serif;
-  --fb: 'Barlow', sans-serif;
-  --fm: 'JetBrains Mono', monospace;
-  --ease: cubic-bezier(.25,.46,.45,.94);
+:root{
+  --coal:#0c0d0f;--coal2:#141618;--coal3:#1c1e22;--wire:#2e333d;
+  --ore:#e05c1a;--ore2:#f07030;--bone:#f0ece3;--fog:#8a9099;
+  --chalk:#ffffff;--green:#2ecc71;--red:#e74c3c;
+  --fd:'Barlow Condensed',sans-serif;
+  --fb:'Barlow',sans-serif;
+  --fm:'JetBrains Mono',monospace;
+  --ease:cubic-bezier(.25,.46,.45,.94);
 }
+*{box-sizing:border-box;margin:0;padding:0;}
+html{height:100%;}
+body{min-height:100%;background:var(--coal);color:var(--bone);font-family:var(--fb);}
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { height: 100%; }
-body {
-  height: 100%;
-  background: var(--coal);
-  color: var(--bone);
-  font-family: var(--fb);
-  overflow: hidden;
-  overflow-y: auto;
-}
+/* grain */
+body::before{content:'';position:fixed;inset:0;z-index:999;pointer-events:none;opacity:.028;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");}
 
-/* ── CURSOR ── */
+/* layout */
+.page{display:grid;grid-template-columns:1fr 1fr;min-height:100vh;}
 
+/* left panel */
+.left{
+  position:sticky;top:0;height:100vh;
+  background:var(--coal2);border-right:1px solid var(--wire);
+  display:flex;flex-direction:column;justify-content:space-between;
+  padding:48px 52px;overflow:hidden;
+}
+.left-grid{position:absolute;inset:0;z-index:0;
+  background-image:linear-gradient(rgba(224,92,26,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(224,92,26,.04) 1px,transparent 1px);
+  background-size:40px 40px;
+  mask-image:radial-gradient(ellipse 90% 90% at 30% 50%,black 30%,transparent 100%);
+  animation:gridDrift 24s linear infinite;}
+@keyframes gridDrift{from{background-position:0 0}to{background-position:40px 40px}}
+.left-glow{position:absolute;width:500px;height:500px;
+  background:radial-gradient(circle,rgba(224,92,26,.15),transparent 65%);
+  top:50%;left:-10%;transform:translateY(-50%);
+  pointer-events:none;z-index:0;
+  animation:glowPulse 7s ease-in-out infinite;}
+@keyframes glowPulse{0%,100%{opacity:.6;transform:translateY(-50%) scale(1)}50%{opacity:1;transform:translateY(-52%) scale(1.1)}}
+.left-top{position:relative;z-index:1;}
+.left-bottom{position:relative;z-index:1;}
+.logo{font-family:var(--fd);font-size:30px;font-weight:900;letter-spacing:1px;color:var(--chalk);text-decoration:none;display:flex;align-items:center;}
+.logo .accent{color:var(--ore);}
+.logo-dot{width:7px;height:7px;border-radius:50%;background:var(--ore);margin-left:3px;display:inline-block;animation:blink 2.4s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+.left-h{font-family:var(--fd);font-size:clamp(48px,4.5vw,72px);font-weight:900;line-height:.88;letter-spacing:-1.5px;color:var(--chalk);margin-top:64px;}
+.left-h .stroke{color:transparent;-webkit-text-stroke:1.5px var(--ore);}
+.left-h span{display:block;}
+.left-sub{font-size:15px;font-weight:300;color:var(--fog);line-height:1.7;margin-top:18px;max-width:300px;}
+.left-stats{display:flex;gap:32px;margin-top:44px;}
+.lsv{font-family:var(--fd);font-size:34px;font-weight:900;color:var(--ore);line-height:1;letter-spacing:-1px;}
+.lsl{font-family:var(--fm);font-size:10px;color:var(--fog);margin-top:4px;letter-spacing:1.5px;text-transform:uppercase;}
+.chips{display:flex;flex-direction:column;gap:10px;}
+.chip{display:flex;align-items:center;gap:12px;font-size:13px;color:var(--fog);}
+.chip-i{width:30px;height:30px;border-radius:4px;background:rgba(224,92,26,.1);border:1px solid rgba(224,92,26,.2);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
 
-
-/* ── GRAIN ── */
-body::after { content:'';position:fixed;inset:0;z-index:999;pointer-events:none;opacity:.028;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E"); }
-
-/* ── LAYOUT ── */
-.page {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  height: 100vh;
-}
-
-/* ── LEFT PANEL — brand ── */
-.left {
-  position: relative;
-  background: var(--coal2);
-  border-right: 1px solid var(--wire);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 48px 56px;
-  overflow: hidden;
-  height: 100vh;
-  position: sticky;
-  top: 0;
-}
-
-/* animated grid */
-.left-grid {
-  position: absolute; inset: 0; z-index: 0;
-  background-image:
-    linear-gradient(rgba(224,92,26,.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(224,92,26,.04) 1px, transparent 1px);
-  background-size: 40px 40px;
-  mask-image: radial-gradient(ellipse 90% 90% at 30% 50%, black 30%, transparent 100%);
-  animation: gridDrift 24s linear infinite;
-}
-@keyframes gridDrift { from{background-position:0 0} to{background-position:40px 40px} }
-
-/* glow orb */
-.left-glow {
-  position: absolute;
-  width: 500px; height: 500px;
-  background: radial-gradient(circle, rgba(224,92,26,.15), transparent 65%);
-  top: 50%; left: -10%; transform: translateY(-50%);
-  pointer-events: none; z-index: 0;
-  animation: glowPulse 7s ease-in-out infinite;
-}
-@keyframes glowPulse { 0%,100%{opacity:.6;transform:translateY(-50%) scale(1)} 50%{opacity:1;transform:translateY(-52%) scale(1.1)} }
-
-.left-top { position: relative; z-index: 1; }
-.left-bottom { position: relative; z-index: 1; }
-
-/* logo */
-.logo {
-  font-family: var(--fd);
-  font-size: 32px; font-weight: 900;
-  letter-spacing: 1px; color: var(--chalk);
-  display: flex; align-items: center; gap: 4px;
-  text-decoration: none;
-}
-.logo .accent { color: var(--ore); }
-.logo-dot {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: var(--ore); margin-left: 2px;
-  animation: blink 2.4s infinite;
-}
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.15} }
-
-/* big headline */
-.left-headline {
-  font-family: var(--fd);
-  font-size: clamp(52px, 5vw, 78px);
-  font-weight: 900;
-  line-height: .88;
-  letter-spacing: -1.5px;
-  color: var(--chalk);
-  margin-top: 80px;
-}
-.left-headline .stroke {
-  color: transparent;
-  -webkit-text-stroke: 1.5px var(--ore);
-}
-.left-headline .block { display: block; }
-
-.left-sub {
-  font-size: 15px; font-weight: 300;
-  color: var(--fog); line-height: 1.7;
-  margin-top: 20px; max-width: 320px;
-}
-
-/* stats row */
-.left-stats {
-  display: flex; gap: 36px;
-  margin-top: 48px;
-}
-.lst-val {
-  font-family: var(--fd); font-size: 36px; font-weight: 900;
-  color: var(--ore); line-height: 1; letter-spacing: -1px;
-}
-.lst-label {
-  font-family: var(--fm); font-size: 10px;
-  color: var(--fog); margin-top: 4px;
-  letter-spacing: 1.5px; text-transform: uppercase;
-}
-
-/* feature chips */
-.left-chips {
-  display: flex; flex-direction: column; gap: 10px;
-}
-.chip {
-  display: flex; align-items: center; gap: 12px;
-  font-size: 13px; color: var(--fog);
-}
-.chip-icon {
-  width: 32px; height: 32px; border-radius: 4px;
-  background: rgba(224,92,26,.1);
-  border: 1px solid rgba(224,92,26,.2);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px; flex-shrink: 0;
-}
-
-/* ── RIGHT PANEL — form ── */
-.right {
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding: 48px 56px;
-  overflow-y: auto;
-  height: 100vh;
-}
-
-.auth-box {
-  width: 100%;
-  max-width: 400px;
-  animation: fadeUp .6s var(--ease) both;
-  padding: 48px 0;
-}
-@keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+/* right panel */
+.right{display:flex;align-items:flex-start;justify-content:center;padding:56px 48px;overflow-y:auto;}
+.box{width:100%;max-width:400px;}
 
 /* tabs */
-.auth-tabs {
-  display: flex;
-  background: var(--coal2);
-  border: 1px solid var(--wire);
-  border-radius: 6px;
-  padding: 4px;
-  margin-bottom: 36px;
-}
-.auth-tab {
-  flex: 1; padding: 10px;
-  font-family: var(--fd); font-size: 15px; font-weight: 800;
-  letter-spacing: 1px; text-transform: uppercase;
-  color: var(--fog); background: transparent;
-  border: none; border-radius: 4px;
-  cursor: pointer; transition: all .2s var(--ease);
-}
-.auth-tab.active {
-  background: var(--ore); color: var(--chalk);
-  box-shadow: 0 4px 16px rgba(224,92,26,.3);
-}
+.tabs{display:flex;background:var(--coal2);border:1px solid var(--wire);border-radius:6px;padding:4px;margin-bottom:32px;}
+.tab-btn{flex:1;padding:10px;font-family:var(--fd);font-size:15px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--fog);background:transparent;border:none;border-radius:4px;cursor:pointer;transition:all .2s;}
+.tab-btn.active{background:var(--ore);color:var(--chalk);box-shadow:0 4px 16px rgba(224,92,26,.3);}
 
-/* form title */
-.auth-title {
-  font-family: var(--fd);
-  font-size: 42px; font-weight: 900;
-  letter-spacing: -1px; line-height: .9;
-  color: var(--chalk); margin-bottom: 8px;
-}
-.auth-sub {
-  font-size: 14px; color: var(--fog);
-  margin-bottom: 32px; line-height: 1.5;
-}
+/* form panel */
+.panel{display:none;}
+.panel.show{display:block;}
+
+.form-title{font-family:var(--fd);font-size:38px;font-weight:900;letter-spacing:-1px;line-height:.9;color:var(--chalk);margin-bottom:8px;}
+.form-sub{font-size:14px;color:var(--fog);margin-bottom:28px;line-height:1.5;}
 
 /* fields */
-.field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 16px; }
-.field label {
-  font-family: var(--fm); font-size: 10px; font-weight: 500;
-  letter-spacing: 2px; text-transform: uppercase; color: var(--fog);
-}
-.field input {
-  background: var(--coal2);
-  border: 1px solid var(--wire);
-  border-radius: 4px;
-  color: var(--bone);
-  font-family: var(--fb); font-size: 14px;
-  padding: 13px 16px;
-  outline: none;
-  transition: border-color .2s, box-shadow .2s;
-}
-.field input::placeholder { color: rgba(138,144,153,.5); }
-.field input:focus {
-  border-color: var(--ore);
-  box-shadow: 0 0 0 3px rgba(224,92,26,.1);
-}
-.field input.error { border-color: var(--red); box-shadow: 0 0 0 3px rgba(231,76,60,.1); }
-.field-error {
-  font-family: var(--fm); font-size: 11px; color: var(--red);
-  display: none; margin-top: 2px;
-}
-.field-error.visible { display: block; }
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
+.field-row .field{margin-bottom:0;}
+label{font-family:var(--fm);font-size:10px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--fog);}
+input{background:var(--coal2);border:1px solid var(--wire);border-radius:4px;color:var(--bone);font-family:var(--fb);font-size:14px;padding:12px 14px;outline:none;width:100%;transition:border-color .2s,box-shadow .2s;}
+input::placeholder{color:rgba(138,144,153,.45);}
+input:focus{border-color:var(--ore);box-shadow:0 0 0 3px rgba(224,92,26,.1);}
+input.err{border-color:var(--red);box-shadow:0 0 0 3px rgba(231,76,60,.1);}
+.pw-wrap{position:relative;}
+.pw-wrap input{padding-right:44px;}
+.pw-eye{position:absolute;right:13px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--fog);font-size:15px;transition:color .2s;}
+.pw-eye:hover{color:var(--bone);}
+.field-err{font-family:var(--fm);font-size:11px;color:var(--red);display:none;margin-top:3px;}
+.field-err.show{display:block;}
 
-/* password wrapper */
-.pw-wrap { position: relative; }
-.pw-wrap input { width: 100%; padding-right: 44px; }
-.pw-toggle {
-  position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
-  background: none; border: none; cursor: pointer;
-  color: var(--fog); font-size: 16px; transition: color .2s;
-}
-.pw-toggle:hover { color: var(--bone); }
+/* password strength */
+.pw-strength{display:none;margin-bottom:14px;}
+.pw-bars{display:flex;gap:4px;margin-bottom:4px;}
+.pw-bar{height:3px;flex:1;border-radius:99px;background:var(--wire);transition:background .3s;}
+.pw-strength-label{font-family:var(--fm);font-size:10px;color:var(--fog);letter-spacing:1px;}
+
+/* alert */
+.alert{border-radius:4px;padding:11px 14px;font-size:13px;line-height:1.5;margin-bottom:16px;display:none;}
+.alert.show{display:block;}
+.alert-err{background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.25);color:#f1948a;font-family:var(--fm);}
+.alert-ok{background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.25);color:#82e0aa;font-family:var(--fm);}
 
 /* submit btn */
-.btn-submit {
-  width: 100%; padding: 15px;
-  font-family: var(--fd); font-size: 18px; font-weight: 800;
-  letter-spacing: 1.5px; text-transform: uppercase;
-  background: var(--ore); color: var(--chalk);
-  border: none; border-radius: 4px;
-  cursor: pointer; margin-top: 8px;
-  transition: all .25s var(--ease);
-  clip-path: polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));
-  position: relative; overflow: hidden;
-}
-.btn-submit::after {
-  content: ''; position: absolute; inset: 0;
-  background: linear-gradient(135deg,rgba(255,255,255,.12),transparent);
-  opacity: 0; transition: opacity .2s;
-}
-.btn-submit:hover:not(:disabled) { background: var(--ore2); transform: translateY(-1px); box-shadow: 0 8px 28px rgba(224,92,26,.35); }
-.btn-submit:hover::after { opacity: 1; }
-.btn-submit:disabled { opacity: .5; cursor: not-allowed; transform: none; }
-.btn-submit.loading { pointer-events: none; }
+.btn-submit{width:100%;padding:14px;font-family:var(--fd);font-size:17px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;background:var(--ore);color:var(--chalk);border:none;border-radius:4px;cursor:pointer;margin-top:6px;transition:all .25s var(--ease);clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));}
+.btn-submit:hover:not(:disabled){background:var(--ore2);transform:translateY(-1px);box-shadow:0 8px 28px rgba(224,92,26,.35);}
+.btn-submit:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.2);border-top-color:var(--chalk);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg)}}
 
 /* divider */
-.divider {
-  display: flex; align-items: center; gap: 12px;
-  margin: 24px 0;
-}
-.divider-line { flex: 1; height: 1px; background: var(--wire); }
-.divider-text { font-family: var(--fm); font-size: 10px; color: var(--fog); letter-spacing: 2px; text-transform: uppercase; }
+.divider{display:flex;align-items:center;gap:12px;margin:20px 0;}
+.div-line{flex:1;height:1px;background:var(--wire);}
+.div-txt{font-family:var(--fm);font-size:10px;color:var(--fog);letter-spacing:2px;text-transform:uppercase;}
 
 /* forgot */
-.forgot {
-  text-align: right; margin-top: -8px; margin-bottom: 8px;
-}
-.forgot a {
-  font-family: var(--fm); font-size: 11px; color: var(--fog);
-  text-decoration: none; transition: color .2s; letter-spacing: .5px;
-}
-.forgot a:hover { color: var(--ore); }
+.forgot{text-align:right;margin-bottom:8px;margin-top:-6px;}
+.forgot a{font-family:var(--fm);font-size:11px;color:var(--fog);text-decoration:none;transition:color .2s;}
+.forgot a:hover{color:var(--ore);}
+
+/* switch link */
+.switch{text-align:center;margin-top:20px;font-size:13px;color:var(--fog);}
+.switch a{color:var(--ore);text-decoration:none;}
+.switch a:hover{text-decoration:underline;}
 
 /* terms */
-.terms {
-  font-size: 12px; color: var(--fog); text-align: center;
-  margin-top: 20px; line-height: 1.6;
-}
-.terms a { color: var(--ore); text-decoration: none; }
-.terms a:hover { text-decoration: underline; }
+.terms{font-size:12px;color:var(--fog);text-align:center;margin-top:14px;line-height:1.6;}
+.terms a{color:var(--ore);text-decoration:none;}
 
-/* alert boxes */
-.alert {
-  border-radius: 4px; padding: 12px 16px;
-  font-family: var(--fm); font-size: 12px; line-height: 1.5;
-  margin-bottom: 20px; display: none;
-}
-.alert.visible { display: block; }
-.alert-error { background: rgba(231,76,60,.1); border: 1px solid rgba(231,76,60,.25); color: #f1948a; }
-.alert-success { background: rgba(46,204,113,.1); border: 1px solid rgba(46,204,113,.25); color: #82e0aa; }
+/* success screen */
+.success-screen{display:none;flex-direction:column;align-items:center;text-align:center;gap:14px;padding:32px 0;}
+.success-screen.show{display:flex;}
+.success-icon{width:68px;height:68px;border-radius:50%;background:rgba(46,204,113,.1);border:2px solid rgba(46,204,113,.3);display:flex;align-items:center;justify-content:center;font-size:30px;animation:popIn .4s var(--ease);}
+@keyframes popIn{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+.success-title{font-family:var(--fd);font-size:30px;font-weight:900;color:var(--chalk);}
+.success-text{font-size:14px;color:var(--fog);line-height:1.7;max-width:280px;}
 
-/* success state */
-.success-state {
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 16px;
-  padding: 40px 20px;
-}
-.success-state.visible { display: flex; }
-.success-icon-wrap {
-  width: 72px; height: 72px; border-radius: 50%;
-  background: rgba(46,204,113,.1);
-  border: 2px solid rgba(46,204,113,.3);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 32px;
-  animation: popIn .4s var(--ease) both;
-}
-@keyframes popIn { from{transform:scale(.5);opacity:0} to{transform:scale(1);opacity:1} }
-.success-title { font-family: var(--fd); font-size: 32px; font-weight: 900; color: var(--chalk); }
-.success-text { font-size: 14px; color: var(--fog); line-height: 1.7; max-width: 280px; }
+.footer-note{font-family:var(--fm);font-size:10px;color:var(--wire);text-align:center;margin-top:28px;letter-spacing:1px;}
 
-/* loading spinner */
-.spinner {
-  display: inline-block; width: 16px; height: 16px;
-  border: 2px solid rgba(255,255,255,.3);
-  border-top-color: var(--chalk);
-  border-radius: 50%;
-  animation: spin .7s linear infinite;
-  vertical-align: middle; margin-right: 8px;
-}
-@keyframes spin { to{transform:rotate(360deg)} }
-
-/* footer note */
-.auth-footer {
-  margin-top: 28px;
-  font-family: var(--fm); font-size: 10px;
-  color: var(--wire); text-align: center;
-  letter-spacing: 1px;
-}
-
-/* ── RESPONSIVE ── */
-@media (max-width: 860px) {
-  body { overflow-y: auto; }
-  .page { grid-template-columns: 1fr; height: auto; }
-  .left { display: none; }
-  .right { padding: 48px 24px; min-height: 100vh; }
+/* responsive */
+@media(max-width:820px){
+  .page{grid-template-columns:1fr;}
+  .left{display:none;}
+  .right{padding:40px 24px;}
 }
 </style>
 </head>
 <body>
 
-
 <div class="page">
-
-  <!-- ══ LEFT PANEL ══ -->
+  <!-- LEFT -->
   <div class="left">
     <div class="left-grid"></div>
     <div class="left-glow"></div>
-
     <div class="left-top">
       <a class="logo" href="index.html">LUKANE <span class="accent">RV</span><span class="logo-dot"></span></a>
-
-      <div class="left-headline" style="margin-top:64px;">
-        <span class="block">GÉREZ</span>
-        <span class="block">VOS</span>
-        <span class="block stroke">GARANTIES</span>
-        <span class="block">EN MINUTES.</span>
+      <div class="left-h" style="margin-top:60px;">
+        <span>GÉREZ</span>
+        <span>VOS</span>
+        <span class="stroke">GARANTIES</span>
+        <span>EN MINUTES.</span>
       </div>
       <p class="left-sub">L'IA qui rédige, structure et optimise vos claims VR automatiquement. Tous les manufacturiers.</p>
-
       <div class="left-stats">
-        <div>
-          <div class="lst-val">3×</div>
-          <div class="lst-label">Plus rapide</div>
-        </div>
-        <div>
-          <div class="lst-val">+40%</div>
-          <div class="lst-label">Approbations</div>
-        </div>
-        <div>
-          <div class="lst-val">8+</div>
-          <div class="lst-label">Manufacturiers</div>
-        </div>
+        <div><div class="lsv">3×</div><div class="lsl">Plus rapide</div></div>
+        <div><div class="lsv">+40%</div><div class="lsl">Approbations</div></div>
+        <div><div class="lsv">8+</div><div class="lsl">Manufacturiers</div></div>
       </div>
     </div>
-
     <div class="left-bottom">
-      <div class="left-chips">
-        <div class="chip"><div class="chip-icon">🤖</div>Analyse IA automatique à chaque claim</div>
-        <div class="chip"><div class="chip-icon">📱</div>Compatible avec vos formulaires mobiles</div>
-        <div class="chip"><div class="chip-icon">📊</div>Tableau de bord centralisé temps réel</div>
-        <div class="chip"><div class="chip-icon">🔒</div>Données chiffrées, hébergées au Canada</div>
+      <div class="chips">
+        <div class="chip"><div class="chip-i">🤖</div>Analyse IA automatique à chaque claim</div>
+        <div class="chip"><div class="chip-i">📱</div>Compatible avec vos formulaires mobiles</div>
+        <div class="chip"><div class="chip-i">📊</div>Tableau de bord centralisé temps réel</div>
+        <div class="chip"><div class="chip-i">🔒</div>Données chiffrées, hébergées au Canada</div>
       </div>
     </div>
   </div>
 
-  <!-- ══ RIGHT PANEL ══ -->
+  <!-- RIGHT -->
   <div class="right">
-    <div class="auth-box">
+    <div class="box">
 
-      <!-- Tabs -->
-      <div class="auth-tabs">
-        <button class="auth-tab active" id="tabLogin" onclick="switchTab('login')">Connexion</button>
-        <button class="auth-tab" id="tabSignup" onclick="switchTab('signup')">Créer un compte</button>
+      <!-- TABS -->
+      <div class="tabs">
+        <button class="tab-btn active" id="tabLogin" onclick="showTab('login')">Connexion</button>
+        <button class="tab-btn" id="tabSignup" onclick="showTab('signup')">Créer un compte</button>
       </div>
 
-      <!-- ══ LOGIN FORM ══ -->
-      <div id="loginForm">
-        <div class="auth-title">BON<br/>RETOUR.</div>
-        <p class="auth-sub">Connectez-vous à votre espace LUKANE RV.</p>
-
-        <div class="alert alert-error" id="loginError"></div>
-
+      <!-- ═══ LOGIN ═══ -->
+      <div class="panel show" id="panelLogin">
+        <div class="form-title">BON<br/>RETOUR.</div>
+        <p class="form-sub">Connectez-vous à votre espace LUKANE RV.</p>
+        <div class="alert alert-err" id="loginErr"></div>
         <div class="field">
           <label>Courriel</label>
-          <input type="email" id="loginEmail" placeholder="votre@courriel.com" autocomplete="email"/>
+          <input type="email" id="lEmail" placeholder="votre@courriel.com" autocomplete="email"/>
         </div>
-
         <div class="field">
           <label>Mot de passe</label>
           <div class="pw-wrap">
-            <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password"/>
-            <button class="pw-toggle" onclick="togglePw('loginPassword', this)" type="button">👁</button>
+            <input type="password" id="lPassword" placeholder="••••••••" autocomplete="current-password"/>
+            <button class="pw-eye" type="button" onclick="togglePw('lPassword',this)">👁</button>
           </div>
         </div>
-
-        <div class="forgot"><a href="#" onclick="showForgot(event)">Mot de passe oublié ?</a></div>
-
-        <button class="btn-submit" id="loginBtn" onclick="handleLogin()">
-          Se connecter
-        </button>
-
-        <div class="divider">
-          <div class="divider-line"></div>
-          <span class="divider-text">ou</span>
-          <div class="divider-line"></div>
-        </div>
-
-        <p style="text-align:center;font-size:13px;color:var(--fog);">
-          Pas encore de compte ? 
-          <a href="#" style="color:var(--ore);text-decoration:none;" onclick="switchTab('signup')">Créer un compte gratuit</a>
-        </p>
+        <div class="forgot"><a href="#" onclick="showTab('forgot');return false;">Mot de passe oublié ?</a></div>
+        <button class="btn-submit" id="loginBtn" onclick="doLogin()">Se connecter</button>
+        <div class="divider"><div class="div-line"></div><span class="div-txt">ou</span><div class="div-line"></div></div>
+        <div class="switch">Pas encore de compte ? <a href="#" onclick="showTab('signup');return false;">Créer un compte gratuit</a></div>
       </div>
 
-      <!-- ══ SIGNUP FORM ══ -->
-      <div id="signupForm" style="display:none;">
-        <div class="auth-title">DÉMARREZ<br/>GRATUITEMENT.</div>
-        <p class="auth-sub">14 jours gratuits. Aucune carte de crédit.</p>
-
-        <div class="alert alert-error" id="signupError"></div>
-        <div class="alert alert-success" id="signupSuccess"></div>
-
-        <div id="signupFields">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <!-- ═══ SIGNUP ═══ -->
+      <div class="panel" id="panelSignup">
+        <!-- Form fields -->
+        <div id="signupForm">
+          <div class="form-title">DÉMARREZ<br/>GRATUITEMENT.</div>
+          <p class="form-sub">14 jours d'essai gratuit. Aucune carte de crédit.</p>
+          <div class="alert alert-err" id="signupErr"></div>
+          <div class="field-row">
             <div class="field">
               <label>Prénom</label>
-              <input type="text" id="signupFirst" placeholder="Marc" autocomplete="given-name"/>
+              <input type="text" id="sFirst" placeholder="Marc" autocomplete="given-name"/>
             </div>
             <div class="field">
               <label>Nom</label>
-              <input type="text" id="signupLast" placeholder="Tremblay" autocomplete="family-name"/>
+              <input type="text" id="sLast" placeholder="Tremblay" autocomplete="family-name"/>
             </div>
           </div>
-
           <div class="field">
-            <label>Concessionnaire</label>
-            <input type="text" id="signupDealer" placeholder="RV Pro Montréal" autocomplete="organization"/>
+            <label>Nom du concessionnaire</label>
+            <input type="text" id="sDealer" placeholder="RV Pro Montréal" autocomplete="organization"/>
           </div>
-
           <div class="field">
             <label>Courriel professionnel</label>
-            <input type="email" id="signupEmail" placeholder="votre@courriel.com" autocomplete="email"/>
+            <input type="email" id="sEmail" placeholder="votre@courriel.com" autocomplete="email"/>
           </div>
-
           <div class="field">
             <label>Mot de passe</label>
             <div class="pw-wrap">
-              <input type="password" id="signupPassword" placeholder="8 caractères minimum" autocomplete="new-password"/>
-              <button class="pw-toggle" onclick="togglePw('signupPassword', this)" type="button">👁</button>
+              <input type="password" id="sPassword" placeholder="8 caractères minimum" autocomplete="new-password" oninput="checkPwStrength(this.value)"/>
+              <button class="pw-eye" type="button" onclick="togglePw('sPassword',this)">👁</button>
             </div>
-            <div class="field-error" id="pwError">Le mot de passe doit contenir au moins 8 caractères</div>
+            <div class="field-err" id="pwErr">Minimum 8 caractères requis.</div>
           </div>
-
-          <!-- Password strength -->
-          <div id="pwStrengthWrap" style="margin-top:-8px;margin-bottom:16px;display:none;">
-            <div style="display:flex;gap:4px;margin-bottom:4px;">
-              <div class="pw-bar" id="bar1" style="height:3px;flex:1;border-radius:99px;background:var(--wire);transition:background .3s;"></div>
-              <div class="pw-bar" id="bar2" style="height:3px;flex:1;border-radius:99px;background:var(--wire);transition:background .3s;"></div>
-              <div class="pw-bar" id="bar3" style="height:3px;flex:1;border-radius:99px;background:var(--wire);transition:background .3s;"></div>
-              <div class="pw-bar" id="bar4" style="height:3px;flex:1;border-radius:99px;background:var(--wire);transition:background .3s;"></div>
+          <div class="pw-strength" id="pwStrength">
+            <div class="pw-bars">
+              <div class="pw-bar" id="b1"></div>
+              <div class="pw-bar" id="b2"></div>
+              <div class="pw-bar" id="b3"></div>
+              <div class="pw-bar" id="b4"></div>
             </div>
-            <div id="pwStrengthLabel" style="font-family:var(--fm);font-size:10px;color:var(--fog);letter-spacing:1px;"></div>
+            <div class="pw-strength-label" id="pwLabel"></div>
           </div>
-
-          <button class="btn-submit" id="signupBtn" onclick="handleSignup()">
-            Créer mon compte gratuit
-          </button>
-
-          <p class="terms">
-            En créant un compte, vous acceptez nos
-            <a href="#">Conditions d'utilisation</a> et notre
-            <a href="#">Politique de confidentialité</a>.
-          </p>
+          <button class="btn-submit" id="signupBtn" onclick="doSignup()">Créer mon compte gratuit</button>
+          <p class="terms">En créant un compte, vous acceptez nos <a href="#">Conditions</a> et notre <a href="#">Politique de confidentialité</a>.</p>
+          <div class="switch" style="margin-top:16px;">Déjà un compte ? <a href="#" onclick="showTab('login');return false;">Se connecter</a></div>
         </div>
-
-        <!-- Success state -->
-        <div class="success-state" id="signupSuccessState">
-          <div class="success-icon-wrap">✉️</div>
-          <div class="success-title">VÉRIFIEZ<br/>VOS COURRIELS</div>
-          <p class="success-text">On vous a envoyé un lien de confirmation. Cliquez dessus pour activer votre compte LUKANE RV.</p>
-          <button class="btn-submit" style="margin-top:8px;max-width:240px;" onclick="switchTab('login')">Retour à la connexion</button>
-        </div>
-
-        <div style="margin-top:20px;text-align:center;font-size:13px;color:var(--fog);">
-          Déjà un compte ?
-          <a href="#" style="color:var(--ore);text-decoration:none;" onclick="switchTab('login')">Se connecter</a>
+        <!-- Success -->
+        <div class="success-screen" id="signupSuccess">
+          <div class="success-icon">✅</div>
+          <div class="success-title">COMPTE CRÉÉ !</div>
+          <p class="success-text">Votre essai gratuit de 14 jours commence maintenant. Bienvenue dans LUKANE RV !</p>
+          <button class="btn-submit" style="max-width:240px;margin-top:8px;" onclick="window.location.href='dashboard.html'">Accéder au dashboard →</button>
         </div>
       </div>
 
-      <!-- ══ FORGOT PASSWORD ══ -->
-      <div id="forgotForm" style="display:none;">
-        <div class="auth-title">MOT DE<br/>PASSE<br/>OUBLIÉ.</div>
-        <p class="auth-sub">Entrez votre courriel pour recevoir un lien de réinitialisation.</p>
-
-        <div class="alert alert-error" id="forgotError"></div>
-        <div class="alert alert-success" id="forgotSuccess"></div>
-
+      <!-- ═══ FORGOT ═══ -->
+      <div class="panel" id="panelForgot">
+        <div class="form-title">MOT DE<br/>PASSE<br/>OUBLIÉ.</div>
+        <p class="form-sub">Entrez votre courriel pour recevoir un lien de réinitialisation.</p>
+        <div class="alert alert-err" id="forgotErr"></div>
+        <div class="alert alert-ok" id="forgotOk"></div>
         <div class="field">
           <label>Courriel</label>
-          <input type="email" id="forgotEmail" placeholder="votre@courriel.com"/>
+          <input type="email" id="fEmail" placeholder="votre@courriel.com"/>
         </div>
-
-        <button class="btn-submit" id="forgotBtn" onclick="handleForgot()">
-          Envoyer le lien
-        </button>
-
-        <div style="margin-top:20px;text-align:center;">
-          <a href="#" style="font-family:var(--fm);font-size:12px;color:var(--fog);text-decoration:none;" onclick="switchTab('login')">← Retour à la connexion</a>
-        </div>
+        <button class="btn-submit" id="forgotBtn" onclick="doForgot()">Envoyer le lien</button>
+        <div class="switch" style="margin-top:20px;"><a href="#" onclick="showTab('login');return false;">← Retour à la connexion</a></div>
       </div>
 
-      <div class="auth-footer">// LUKANE RV · Données chiffrées · Hébergé au Canada 🇨🇦</div>
+      <div class="footer-note">// LUKANE RV · Données chiffrées · Hébergé au Canada 🇨🇦</div>
     </div>
   </div>
 </div>
 
 <script>
-/* ════════════════════════════════════════
-   SUPABASE CONFIG
-   → Remplace ces valeurs par les tiennes
-     sur supabase.com → Project Settings → API
-════════════════════════════════════════ */
-const SUPABASE_URL  = 'https://VOTRE_PROJECT_ID.supabase.co';
-const SUPABASE_ANON = 'VOTRE_ANON_KEY';
+/* ══════════════════════════════════════
+   CONFIG SUPABASE
+   Remplace avec tes vraies valeurs sur
+   supabase.com → Settings → API
+══════════════════════════════════════ */
+const SUPA_URL  = 'https://VOTRE_PROJECT_ID.supabase.co';
+const SUPA_KEY  = 'VOTRE_ANON_KEY';
+const DEMO_MODE = SUPA_URL.includes('VOTRE_PROJECT_ID');
 
-const supabase = window.supabase
-  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
+const sb = !DEMO_MODE && window.supabase
+  ? window.supabase.createClient(SUPA_URL, SUPA_KEY)
   : null;
 
-/* ── Cursor ── */
+/* ══ STORAGE HELPERS ══
+   Stocke les comptes localement en mode démo
+   En prod → Supabase gère tout */
+const DB = {
+  getUsers() { return JSON.parse(localStorage.getItem('lukane_users') || '{}'); },
+  saveUsers(u) { localStorage.setItem('lukane_users', JSON.stringify(u)); },
+  getUser(email) { return this.getUsers()[email.toLowerCase()] || null; },
+  createUser(email, password, first, last, dealer) {
+    const users = this.getUsers();
+    const now = new Date().toISOString();
+    users[email.toLowerCase()] = { email, password, first, last, dealer, createdAt: now, plan: 'trial' };
+    this.saveUsers(users);
+    return users[email.toLowerCase()];
+  },
+  setSession(user) { localStorage.setItem('lukane_session', JSON.stringify(user)); },
+  getSession() { return JSON.parse(localStorage.getItem('lukane_session') || 'null'); },
+  clearSession() { localStorage.removeItem('lukane_session'); }
+};
 
-/* ── Tab switching ── */
-function switchTab(tab) {
-  ['loginForm','signupForm','forgotForm'].forEach(id => {
-    document.getElementById(id).style.display = 'none';
+/* ══ TABS ══ */
+function showTab(tab) {
+  ['Login','Signup','Forgot'].forEach(t => {
+    document.getElementById('panel'+t).classList.toggle('show', t.toLowerCase() === tab);
   });
-  document.getElementById('tabLogin').classList.toggle('active', tab==='login');
-  document.getElementById('tabSignup').classList.toggle('active', tab==='signup');
-
-  if (tab === 'login')  document.getElementById('loginForm').style.display  = 'block';
-  if (tab === 'signup') document.getElementById('signupForm').style.display = 'block';
-  if (tab === 'forgot') {
-    document.getElementById('forgotForm').style.display = 'block';
-    document.getElementById('tabLogin').classList.remove('active');
-    document.getElementById('tabSignup').classList.remove('active');
-  }
+  document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+  document.getElementById('tabSignup').classList.toggle('active', tab === 'signup');
   clearAlerts();
 }
 
-function showForgot(e) { e.preventDefault(); switchTab('forgot'); }
-
-/* ── Alert helpers ── */
-function showAlert(id, msg) {
-  const el = document.getElementById(id);
-  el.textContent = msg; el.classList.add('visible');
-}
 function clearAlerts() {
-  document.querySelectorAll('.alert').forEach(a => a.classList.remove('visible'));
+  document.querySelectorAll('.alert').forEach(a => a.classList.remove('show'));
 }
 
-/* ── Password toggle ── */
-function togglePw(inputId, btn) {
-  const input = document.getElementById(inputId);
-  const show = input.type === 'password';
-  input.type = show ? 'text' : 'password';
-  btn.textContent = show ? '🙈' : '👁';
+function showErr(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.classList.add('show');
 }
 
-/* ── Password strength ── */
-document.getElementById('signupPassword')?.addEventListener('input', function() {
-  const pw = this.value;
-  const wrap = document.getElementById('pwStrengthWrap');
-  if (!pw) { wrap.style.display='none'; return; }
+/* ══ PASSWORD TOGGLE ══ */
+function togglePw(id, btn) {
+  const inp = document.getElementById(id);
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  btn.textContent = inp.type === 'password' ? '👁' : '🙈';
+}
+
+/* ══ PASSWORD STRENGTH ══ */
+function checkPwStrength(pw) {
+  const wrap = document.getElementById('pwStrength');
+  if (!pw) { wrap.style.display = 'none'; return; }
   wrap.style.display = 'block';
-
   let score = 0;
   if (pw.length >= 8)  score++;
   if (pw.length >= 12) score++;
   if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++;
   if (/[0-9!@#$%^&*]/.test(pw)) score++;
-
-  const colors  = ['#e74c3c','#e67e22','#f1c40f','#2ecc71'];
-  const labels  = ['FAIBLE','MOYEN','FORT','EXCELLENT'];
-  const bars    = ['bar1','bar2','bar3','bar4'];
-
-  bars.forEach((id, i) => {
-    document.getElementById(id).style.background = i < score ? colors[score-1] : 'var(--wire)';
+  const colors = ['#e74c3c','#e67e22','#f1c40f','#2ecc71'];
+  const labels = ['FAIBLE','MOYEN','FORT','EXCELLENT'];
+  [1,2,3,4].forEach(i => {
+    document.getElementById('b'+i).style.background = i <= score ? colors[score-1] : 'var(--wire)';
   });
-  document.getElementById('pwStrengthLabel').textContent = labels[score-1] || '';
-  document.getElementById('pwStrengthLabel').style.color = colors[score-1] || 'var(--fog)';
-});
-
-/* ── Set button loading state ── */
-function setLoading(btnId, loading, text='') {
-  const btn = document.getElementById(btnId);
-  btn.disabled = loading;
-  btn.innerHTML = loading
-    ? `<span class="spinner"></span> En cours…`
-    : text || btn.dataset.original || btn.textContent;
-  if (!loading && !btn.dataset.original) btn.dataset.original = text;
+  document.getElementById('pwLabel').textContent = labels[score-1] || '';
+  document.getElementById('pwLabel').style.color = colors[score-1] || 'var(--fog)';
 }
 
-/* ══ LOGIN ══ */
-async function handleLogin() {
+/* ══ SET BUTTON LOADING ══ */
+function setBtn(id, loading, label) {
+  const btn = document.getElementById(id);
+  btn.disabled = loading;
+  btn.innerHTML = loading ? '<span class="spinner"></span> En cours…' : label;
+}
+
+/* ══════════════════════════════════════
+   LOGIN
+══════════════════════════════════════ */
+async function doLogin() {
   clearAlerts();
-  const email    = document.getElementById('loginEmail').value.trim();
-  const password = document.getElementById('loginPassword').value;
-  const btn      = document.getElementById('loginBtn');
+  const email = document.getElementById('lEmail').value.trim();
+  const pass  = document.getElementById('lPassword').value;
 
-  if (!email || !password) {
-    showAlert('loginError', '⚠️ Veuillez remplir tous les champs.');
+  if (!email || !pass) { showErr('loginErr', '⚠️ Remplis tous les champs.'); return; }
+
+  setBtn('loginBtn', true, 'Se connecter');
+
+  /* ── DEMO MODE ── */
+  if (DEMO_MODE) {
+    await delay(900);
+    const user = DB.getUser(email);
+    if (!user || user.password !== pass) {
+      setBtn('loginBtn', false, 'Se connecter');
+      showErr('loginErr', '❌ Courriel ou mot de passe incorrect.');
+      return;
+    }
+    DB.setSession(user);
+    window.location.href = 'dashboard.html';
     return;
   }
 
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> Connexion…';
-
-  const resetBtn = () => {
-    btn.disabled = false;
-    btn.textContent = 'Se connecter';
-  };
-
-  /* ── Mode démo ── */
-  if (!supabase || SUPABASE_URL.includes('VOTRE_PROJECT_ID')) {
-    setTimeout(() => {
-      resetBtn();
-      window.location.href = 'dashboard.html';
-    }, 1200);
-    return;
-  }
-
+  /* ── SUPABASE ── */
   try {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await sb.auth.signInWithPassword({ email, password: pass });
     if (error) throw error;
     window.location.href = 'dashboard.html';
-  } catch (err) {
-    resetBtn();
-    const msg = (err.message || '').includes('Invalid login')
-      ? '❌ Courriel ou mot de passe incorrect.'
-      : `❌ ${err.message || 'Une erreur est survenue.'}`;
-    showAlert('loginError', msg);
+  } catch(e) {
+    setBtn('loginBtn', false, 'Se connecter');
+    showErr('loginErr', e.message?.includes('Invalid') ? '❌ Courriel ou mot de passe incorrect.' : `❌ ${e.message}`);
   }
 }
 
-/* ══ SIGNUP ══ */
-async function handleSignup() {
+/* ══════════════════════════════════════
+   SIGNUP
+══════════════════════════════════════ */
+async function doSignup() {
   clearAlerts();
+  const first  = document.getElementById('sFirst').value.trim();
+  const last   = document.getElementById('sLast').value.trim();
+  const dealer = document.getElementById('sDealer').value.trim();
+  const email  = document.getElementById('sEmail').value.trim();
+  const pass   = document.getElementById('sPassword').value;
 
-  const first    = document.getElementById('signupFirst').value.trim();
-  const last     = document.getElementById('signupLast').value.trim();
-  const dealer   = document.getElementById('signupDealer').value.trim();
-  const email    = document.getElementById('signupEmail').value.trim();
-  const password = document.getElementById('signupPassword').value;
-  const btn      = document.getElementById('signupBtn');
-
-  /* ── Validation ── */
-  if (!first || !last || !dealer || !email || !password) {
-    showAlert('signupError', '⚠️ Veuillez remplir tous les champs.');
-    return;
+  /* validation */
+  let valid = true;
+  if (!first || !last || !dealer || !email || !pass) {
+    showErr('signupErr', '⚠️ Veuillez remplir tous les champs.'); valid = false;
+  } else if (!email.includes('@') || !email.includes('.')) {
+    showErr('signupErr', '⚠️ Courriel invalide.'); valid = false;
+  } else if (pass.length < 8) {
+    document.getElementById('pwErr').classList.add('show');
+    document.getElementById('sPassword').classList.add('err');
+    valid = false;
   }
-  if (!email.includes('@') || !email.includes('.')) {
-    showAlert('signupError', '⚠️ Courriel invalide.');
-    return;
-  }
-  if (password.length < 8) {
-    document.getElementById('pwError').classList.add('visible');
-    document.getElementById('signupPassword').classList.add('error');
-    return;
-  }
-  document.getElementById('pwError').classList.remove('visible');
-  document.getElementById('signupPassword').classList.remove('error');
+  if (!valid) return;
 
-  /* ── Loading state ── */
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> Création en cours…';
+  document.getElementById('pwErr').classList.remove('show');
+  document.getElementById('sPassword').classList.remove('err');
+  setBtn('signupBtn', true, 'Créer mon compte gratuit');
 
-  const resetBtn = () => {
-    btn.disabled = false;
-    btn.textContent = 'Créer mon compte gratuit';
-  };
-
-  const showSuccess = () => {
-    document.getElementById('signupFields').style.display = 'none';
-    document.getElementById('signupSuccessState').classList.add('visible');
-  };
-
-  /* ── Mode démo (Supabase non configuré) ── */
-  if (!supabase || SUPABASE_URL.includes('VOTRE_PROJECT_ID')) {
-    setTimeout(() => {
-      window.location.href = 'dashboard.html';
-    }, 1200);
+  /* ── DEMO MODE ── */
+  if (DEMO_MODE) {
+    await delay(1100);
+    const existing = DB.getUser(email);
+    if (existing) {
+      setBtn('signupBtn', false, 'Créer mon compte gratuit');
+      showErr('signupErr', '⚠️ Ce courriel est déjà utilisé. Connectez-vous.');
+      return;
+    }
+    const user = DB.createUser(email, pass, first, last, dealer);
+    DB.setSession(user);
+    /* show success then redirect */
+    document.getElementById('signupForm').style.display = 'none';
+    document.getElementById('signupSuccess').classList.add('show');
     return;
   }
 
-  /* ── Supabase ── */
+  /* ── SUPABASE ── */
   try {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          first_name: first,
-          last_name:  last,
-          dealer:     dealer,
-          plan:       'trial'
-        }
-      }
+    const { error } = await sb.auth.signUp({
+      email, password: pass,
+      options: { data: { first_name: first, last_name: last, dealer, plan: 'trial', trial_start: new Date().toISOString() } }
     });
     if (error) throw error;
-    resetBtn();
-    showSuccess();
-  } catch (err) {
-    resetBtn();
-    const msg = (err.message || '').includes('already registered')
-      ? '⚠️ Ce courriel est déjà utilisé. Essayez de vous connecter.'
-      : `❌ ${err.message || 'Une erreur est survenue.'}`;
-    showAlert('signupError', msg);
+    document.getElementById('signupForm').style.display = 'none';
+    document.getElementById('signupSuccess').classList.add('show');
+  } catch(e) {
+    setBtn('signupBtn', false, 'Créer mon compte gratuit');
+    showErr('signupErr', e.message?.includes('already') ? '⚠️ Ce courriel est déjà utilisé.' : `❌ ${e.message}`);
   }
 }
 
-/* ══ FORGOT PASSWORD ══ */
-async function handleForgot() {
+/* ══════════════════════════════════════
+   FORGOT PASSWORD
+══════════════════════════════════════ */
+async function doForgot() {
   clearAlerts();
-  const email = document.getElementById('forgotEmail').value.trim();
-
-  if (!email || !email.includes('@')) {
-    showAlert('forgotError', '⚠️ Entrez un courriel valide.'); return;
+  const email = document.getElementById('fEmail').value.trim();
+  if (!email || !email.includes('@')) { showErr('forgotErr', '⚠️ Courriel invalide.'); return; }
+  setBtn('forgotBtn', true, 'Envoyer le lien');
+  await delay(900);
+  if (!DEMO_MODE && sb) {
+    await sb.auth.resetPasswordForEmail(email, { redirectTo: `${location.origin}/reset.html` });
   }
-
-  setLoading('forgotBtn', true);
-
-  /* ── Mode démo ── */
-  if (SUPABASE_URL.includes('VOTRE_PROJECT_ID')) {
-    await delay(1000);
-    setLoading('forgotBtn', false, 'Envoyer le lien');
-    showAlert('forgotSuccess', '✅ Si ce courriel existe, vous recevrez un lien sous peu.');
-    return;
-  }
-
-  try {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password.html`
-    });
-    if (error) throw error;
-    showAlert('forgotSuccess', '✅ Si ce courriel existe, vous recevrez un lien sous peu.');
-    setLoading('forgotBtn', false, 'Envoyer le lien');
-  } catch (err) {
-    setLoading('forgotBtn', false, 'Envoyer le lien');
-    showAlert('forgotError', `❌ ${err.message}`);
-  }
+  setBtn('forgotBtn', false, 'Envoyer le lien');
+  const ok = document.getElementById('forgotOk');
+  ok.textContent = '✅ Si ce courriel existe, vous recevrez un lien sous peu.';
+  ok.classList.add('show');
 }
 
-/* ── Enter key support ── */
-['loginEmail','loginPassword'].forEach(id => {
-  document.getElementById(id)?.addEventListener('keydown', e => {
-    if (e.key === 'Enter') handleLogin();
-  });
-});
-['signupFirst','signupLast','signupDealer','signupEmail','signupPassword'].forEach(id => {
-  document.getElementById(id)?.addEventListener('keydown', e => {
-    if (e.key === 'Enter') handleSignup();
-  });
-});
-document.getElementById('forgotEmail')?.addEventListener('keydown', e => {
-  if (e.key === 'Enter') handleForgot();
-});
-
-/* ── Utility ── */
+/* ══ UTILS ══ */
 const delay = ms => new Promise(r => setTimeout(r, ms));
 
-/* ── Check if already logged in ── */
-async function checkSession() {
-  if (SUPABASE_URL.includes('VOTRE_PROJECT_ID')) return;
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) window.location.href = 'dashboard.html';
-  } catch(e) {}
-}
-checkSession();
+/* ══ ENTER KEY ══ */
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  if (document.getElementById('panelLogin').classList.contains('show'))  doLogin();
+  if (document.getElementById('panelSignup').classList.contains('show')) doSignup();
+  if (document.getElementById('panelForgot').classList.contains('show')) doForgot();
+});
 
-/* ── Auto-switch tab based on URL param ── */
-const urlParams = new URLSearchParams(window.location.search);
-if (urlParams.get('tab') === 'signup') switchTab('signup');
+/* ══ AUTO REDIRECT IF SESSION ══ */
+(function() {
+  if (DEMO_MODE) {
+    const s = DB.getSession();
+    if (s) window.location.href = 'dashboard.html';
+  } else if (sb) {
+    sb.auth.getSession().then(({ data: { session } }) => {
+      if (session) window.location.href = 'dashboard.html';
+    });
+  }
+  /* URL param ?tab=signup */
+  if (new URLSearchParams(location.search).get('tab') === 'signup') showTab('signup');
+})();
 </script>
 </body>
 </html>
