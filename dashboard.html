@@ -874,18 +874,22 @@ function badgeClass(s){ return {new:'b-new',open:'b-open',approved:'b-approved',
 function badgeLabel(s){ return {new:'NOUVEAU',open:'OUVERT',approved:'APPROUVÉ',refused:'REFUSÉ',pending:'EN ATTENTE'}[s]||s; }
 
 function rowHTML(c) {
-  const pc = c.prob>=75?'var(--green)':c.prob>=50?'var(--gold)':'var(--red)';
-  const photos = c.photos?.length||0;
-  return `<tr class="clickable" onclick="openModal('${c.id}')">
-    <td><span class="cid">${c.id}</span></td>
-    <td><span class="mfr-chip">${c.mfr}</span></td>
-    <td style="font-size:12px;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.unit}</td>
-    <td style="font-size:12px;color:var(--fog)">${c.tech||'—'}</td>
-    <td style="font-size:12px;color:var(--fog)">${c.date}</td>
-    <td>${c.prob>0?`<div class="prob-row"><div class="prob-bar"><div class="prob-fill" style="width:${c.prob}%;background:${pc}"></div></div><span style="font-family:var(--fm);font-size:11px;color:${pc}">${c.prob}%</span></div>`:'<span style="color:var(--fog);font-size:12px">—</span>'}</td>
-    <td><span class="badge ${badgeClass(c.status)}">${badgeLabel(c.status)}</span></td>
-    <td style="font-size:12px;color:var(--fog)">\${photos>0?`📷 \${photos}`:''}</td>
-  </tr>`;
+  var pc = c.prob>=75?'var(--green)':c.prob>=50?'var(--gold)':'var(--red)';
+  var photosTxt = (c.photos && c.photos.length>0) ? '📷 '+c.photos.length : '';
+  var probCell = c.prob>0
+    ? '<div class="prob-row"><div class="prob-bar"><div class="prob-fill" style="width:'+c.prob+'%;background:'+pc+'"></div></div><span style="font-family:var(--fm);font-size:11px;color:'+pc+'">'+c.prob+'%</span></div>'
+    : '<span style="color:var(--fog);font-size:12px">—</span>';
+  var badgeHtml = '<span class="badge '+badgeClass(c.status)+'">'+badgeLabel(c.status)+'</span>';
+  return '<tr class="clickable" onclick="openModal(\'' + c.id + '\')">'
+    + '<td><span class="cid">'+c.id+'</span></td>'
+    + '<td><span class="mfr-chip">'+c.mfr+'</span></td>'
+    + '<td style="font-size:12px;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+c.unit+'</td>'
+    + '<td style="font-size:12px;color:var(--fog)">'+( c.tech||'—')+'</td>'
+    + '<td style="font-size:12px;color:var(--fog)">'+c.date+'</td>'
+    + '<td>'+probCell+'</td>'
+    + '<td>'+badgeHtml+'</td>'
+    + '<td style="font-size:12px;color:var(--fog)">'+photosTxt+'</td>'
+    + '</tr>';
 }
 
 function tableHTML(list) {
