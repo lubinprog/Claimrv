@@ -539,6 +539,24 @@ tr.clickable:hover td{background:rgba(255,255,255,.02);cursor:pointer;}
             </div>
           </div>
 
+          <div class="section" style="margin-bottom:16px">
+            <div class="sec-hdr"><span class="sec-title">🤖 Clé API Anthropic (IA)</span></div>
+            <div style="padding:20px;display:flex;flex-direction:column;gap:12px;max-width:520px">
+              <div style="font-size:13px;color:var(--fog);line-height:1.65">
+                Nécessaire pour l'analyse IA des claims. Obtenez votre clé sur <strong style="color:var(--bone)">console.anthropic.com</strong> → API Keys.
+              </div>
+              <div class="fgrp">
+                <label class="flbl">Clé API</label>
+                <div style="display:flex;gap:8px">
+                  <input class="finp" id="settingsApiKey" type="password" placeholder="sk-ant-api03-..." style="font-family:var(--fm);font-size:12px;flex:1"/>
+                  <button class="btn btn-primary btn-sm" onclick="saveSettingsApiKey()" style="flex-shrink:0">Sauvegarder</button>
+                </div>
+              </div>
+              <div id="apiKeyStatus" style="font-family:var(--fm);font-size:11px;padding:8px 12px;border-radius:4px;display:none"></div>
+              <div style="font-size:11px;color:var(--fog);font-family:var(--fm)">🔒 Stockée localement · Jamais envoyée à nos serveurs · Va directement à Anthropic</div>
+            </div>
+          </div>
+
           <div class="section">
             <div class="sec-hdr"><span class="sec-title">Changer le mot de passe</span></div>
             <div style="padding:20px;display:flex;flex-direction:column;gap:14px;max-width:340px">
@@ -1220,6 +1238,42 @@ tr.clickable:hover td{background:rgba(255,255,255,.02);cursor:pointer;}
   <img id="lightboxImg" src="" alt="Photo du claim"/>
 </div>
 
+<!-- ═══ API KEY MODAL ═══ -->
+<div id="apiKeyModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:600;align-items:center;justify-content:center;padding:24px">
+  <div style="background:var(--coal2);border:1px solid var(--wire);border-radius:8px;width:100%;max-width:480px;overflow:hidden">
+    <div style="padding:20px 24px;border-bottom:1px solid var(--wire);display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-family:var(--fm);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--ore);margin-bottom:4px">Configuration requise</div>
+        <div style="font-family:var(--fd);font-size:20px;font-weight:900;color:var(--chalk)">CLÉ API ANTHROPIC</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="closeApiKeyModal()">✕</button>
+    </div>
+    <div style="padding:22px 24px;display:flex;flex-direction:column;gap:14px">
+      <div style="background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2);border-radius:5px;padding:13px 15px;font-size:13px;color:var(--fog);line-height:1.65">
+        Pour utiliser l'analyse IA, vous avez besoin d'une clé API Anthropic.<br/>
+        👉 Créez votre clé sur <strong style="color:var(--bone)">console.anthropic.com</strong> → API Keys → Create Key
+      </div>
+      <div class="fgrp">
+        <label class="flbl">Clé API Anthropic</label>
+        <div style="position:relative">
+          <input class="finp" id="apiKeyInput" type="password" placeholder="sk-ant-api03-..." style="font-family:var(--fm);font-size:12px;padding-right:44px"/>
+          <button style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--fog);cursor:pointer;font-size:14px" onclick="var i=document.getElementById('apiKeyInput');i.type=i.type==='password'?'text':'password'">👁</button>
+        </div>
+        <div style="font-size:11px;color:var(--fog);margin-top:4px;font-family:var(--fm)">Commence par <strong style="color:var(--bone)">sk-ant-</strong> · Stockée localement, jamais envoyée à nos serveurs</div>
+        <div id="apiKeyError" style="display:none;font-family:var(--fm);font-size:11px;color:var(--red);margin-top:4px">⚠️ Clé invalide — elle doit commencer par sk-ant-</div>
+      </div>
+      <div style="background:rgba(46,204,113,.06);border:1px solid rgba(46,204,113,.15);border-radius:5px;padding:11px 14px">
+        <div style="font-family:var(--fm);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--green);margin-bottom:5px">🔒 Sécurité</div>
+        <div style="font-size:12px;color:var(--fog);line-height:1.6">Votre clé est stockée uniquement dans votre navigateur (localStorage). Elle n'est jamais envoyée à nos serveurs LUKANE RV — elle va directement à l'API Anthropic.</div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn btn-ghost btn-sm" onclick="closeApiKeyModal()">Annuler</button>
+        <button class="btn btn-primary btn-sm" onclick="submitApiKey()">💾 Sauvegarder et analyser</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ EXPIRED WALL ═══ -->
 <div id="expiredWall">
   <div class="exp-inner">
@@ -1421,14 +1475,30 @@ function loadDemoData() {
 /* ══ NAVIGATION ══ */
 const VIEWS = { dashboard:'Dashboard', claims:'Claims', analytics:'Analytiques', settings:'Paramètres' };
 function goView(v, btn) {
-  Object.keys(VIEWS).forEach(k => {
+  Object.keys(VIEWS).forEach(function(k) {
     document.getElementById('v-'+k).style.display = k===v ? 'block':'none';
   });
-  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(function(el) { el.classList.remove('active'); });
   if (btn) btn.classList.add('active');
   document.getElementById('pageTitle').textContent = VIEWS[v] || v;
   document.getElementById('btnNewClaim').style.display = (v==='dashboard'||v==='claims') ? 'flex':'none';
   if (v==='claims') renderClaims();
+  if (v==='settings') {
+    // Pre-populate API key field (masked)
+    var existingKey = getApiKey();
+    var keyField = document.getElementById('settingsApiKey');
+    if (keyField && existingKey) {
+      keyField.value = existingKey.slice(0,12) + '••••••••••••••••••••••';
+      var status = document.getElementById('apiKeyStatus');
+      if (status) {
+        status.style.display = 'block';
+        status.style.background = 'rgba(46,204,113,.1)';
+        status.style.border = '1px solid rgba(46,204,113,.25)';
+        status.style.color = 'var(--green)';
+        status.textContent = '✅ Clé active — Analyse IA disponible';
+      }
+    }
+  }
 }
 
 /* ══ RENDER ══ */
@@ -1504,24 +1574,88 @@ function closePanel(){
 }
 
 /* ══ CLAUDE AI ══ */
+/* ══════════════════════════════════════
+   CLAUDE AI — CONFIG CLÉ API
+══════════════════════════════════════ */
+function getApiKey() {
+  return localStorage.getItem('lukane_anthropic_key') || '';
+}
+
+function saveApiKey(key) {
+  localStorage.setItem('lukane_anthropic_key', key.trim());
+}
+
+// Vérifie si la clé est configurée et affiche un banner si non
+function checkApiKey() {
+  if (!getApiKey()) {
+    showApiKeyModal();
+    return false;
+  }
+  return true;
+}
+
+function showApiKeyModal() {
+  document.getElementById('apiKeyModal').style.display = 'flex';
+}
+
+function closeApiKeyModal() {
+  document.getElementById('apiKeyModal').style.display = 'none';
+}
+
+function submitApiKey() {
+  var key = document.getElementById('apiKeyInput').value.trim();
+  if (!key || !key.startsWith('sk-ant-')) {
+    document.getElementById('apiKeyError').style.display = 'block';
+    return;
+  }
+  document.getElementById('apiKeyError').style.display = 'none';
+  saveApiKey(key);
+  closeApiKeyModal();
+  toast('ok', 'Clé API sauvegardée !', 'L\'analyse IA est maintenant disponible.');
+}
+
 async function callClaude(prompt, system) {
-  const res = await fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({ model:AI_MODEL, max_tokens:1000, system, messages:[{role:'user',content:prompt}] })
+  var apiKey = getApiKey();
+  if (!apiKey) { throw new Error('NO_API_KEY'); }
+
+  var res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: AI_MODEL,
+      max_tokens: 1000,
+      system: system,
+      messages: [{ role: 'user', content: prompt }]
+    })
   });
-  const d = await res.json();
-  return d.content?.map(b=>b.text||'').join('')||'';
+
+  if (!res.ok) {
+    var err = await res.json().catch(function(){ return {}; });
+    if (res.status === 401) throw new Error('CLÉ_INVALIDE');
+    throw new Error(err.error?.message || 'Erreur API ' + res.status);
+  }
+
+  var d = await res.json();
+  return d.content?.map(function(b){ return b.text||''; }).join('') || '';
 }
 
 async function runAI(){
-  const unit = document.getElementById('fUnit').value.trim();
-  const cat  = document.getElementById('fCat').value;
-  const desc = document.getElementById('fDesc').value.trim();
+  // Vérifie la clé API d'abord
+  if (!checkApiKey()) return;
+
+  var unit = document.getElementById('fUnit').value.trim();
+  var cat  = document.getElementById('fCat').value;
+  var desc = document.getElementById('fDesc').value.trim();
   if (!unit||!cat||desc.length<8){ toast('err','Champs manquants','Remplis le modèle, la catégorie et la description.'); return; }
 
-  const mfr  = document.getElementById('fMfr').value;
-  const year = document.getElementById('fYear').value;
-  const btn  = document.getElementById('aiBtn');
+  var mfr  = document.getElementById('fMfr').value;
+  var year = document.getElementById('fYear').value;
+  var btn  = document.getElementById('aiBtn');
   btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Analyse IA…';
 
   const ctx = `Manufacturier: ${mfr}\nModèle: ${unit}\nAnnée: ${year}\nCatégorie: ${cat}\nDescription brute: ${desc}`;
@@ -1554,7 +1688,16 @@ async function runAI(){
 
     document.getElementById('aiResults').style.display='block';
     switchAiTab('desc',document.querySelector('.ai-tab'));
-  } catch(e){ toast('err','Erreur IA','Impossible de contacter Claude. Vérifiez votre connexion.'); }
+  } catch(e) {
+    if (e.message === 'NO_API_KEY') {
+      showApiKeyModal();
+    } else if (e.message === 'CLÉ_INVALIDE') {
+      toast('err','Clé API invalide','Votre clé Anthropic est incorrecte ou expirée. Vérifiez dans les paramètres.');
+      showApiKeyModal();
+    } else {
+      toast('err','Erreur IA', e.message || 'Impossible de contacter Claude.');
+    }
+  }
 
   btn.disabled=false; btn.textContent='⚡ Relancer l\'analyse';
 }
@@ -2092,6 +2235,42 @@ function showSetTab(tab, btn) {
   if (btn) btn.classList.add('active');
   if (tab === 'integ')  renderWebhookList();
   if (tab === 'notif')  renderNotifSettings();
+}
+
+function saveSettingsApiKey() {
+  var key = document.getElementById('settingsApiKey')?.value?.trim();
+  var status = document.getElementById('apiKeyStatus');
+  if (!key) {
+    if (status) {
+      status.style.display = 'block';
+      status.style.background = 'rgba(231,76,60,.1)';
+      status.style.border = '1px solid rgba(231,76,60,.25)';
+      status.style.color = 'var(--red)';
+      status.textContent = '⚠️ Entrez une clé valide.';
+    }
+    return;
+  }
+  if (!key.startsWith('sk-ant-')) {
+    if (status) {
+      status.style.display = 'block';
+      status.style.background = 'rgba(231,76,60,.1)';
+      status.style.border = '1px solid rgba(231,76,60,.25)';
+      status.style.color = 'var(--red)';
+      status.textContent = '⚠️ La clé doit commencer par sk-ant-';
+    }
+    return;
+  }
+  saveApiKey(key);
+  if (status) {
+    status.style.display = 'block';
+    status.style.background = 'rgba(46,204,113,.1)';
+    status.style.border = '1px solid rgba(46,204,113,.25)';
+    status.style.color = 'var(--green)';
+    status.textContent = '✅ Clé sauvegardée — L\'analyse IA est maintenant active !';
+  }
+  // Masque la clé pour la sécurité
+  document.getElementById('settingsApiKey').value = key.slice(0,12) + '••••••••••••••••••••••';
+  toast('ok', 'Clé API Anthropic sauvegardée', 'L\'analyse IA est maintenant disponible.');
 }
 
 function saveAccountSettings() {
