@@ -308,6 +308,33 @@ tr.clickable:hover td{background:rgba(255,255,255,.02);cursor:pointer;}
 .np-thumb-del{position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,.75);border:none;color:var(--chalk);font-size:10px;cursor:pointer;display:none;align-items:center;justify-content:center;}
 .np-thumb:hover .np-thumb-del{display:flex;}
 
+/* ═══ SELECTION & BULK ACTIONS ═══ */
+.bulk-status-btn{font-family:var(--fd);font-size:12px;font-weight:700;letter-spacing:.5px;padding:5px 12px;border-radius:3px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.06);color:var(--bone);cursor:pointer;transition:all .15s;}
+.bulk-status-btn:hover{background:var(--c,var(--ore));color:#000;border-color:transparent;}
+
+/* checkbox col */
+.cb-cell{width:36px;padding:0 8px 0 14px!important;vertical-align:middle;}
+.row-cb{width:16px;height:16px;border-radius:3px;border:1.5px solid var(--wire);background:transparent;cursor:pointer;appearance:none;-webkit-appearance:none;flex-shrink:0;transition:all .15s;display:block;position:relative;}
+.row-cb:checked{background:var(--ore);border-color:var(--ore);}
+.row-cb:checked::after{content:'✓';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:10px;color:#fff;font-weight:700;line-height:1;}
+.row-cb:hover{border-color:var(--ore);}
+tr.selected td{background:rgba(224,92,26,.05)!important;}
+tr.selected td:first-child{border-left:2px solid var(--ore);}
+
+/* delete btn inline */
+.btn-del-row{background:none;border:none;color:var(--fog);cursor:pointer;font-size:14px;padding:4px 6px;border-radius:3px;transition:all .15s;opacity:0;}
+tr:hover .btn-del-row{opacity:1;}
+.btn-del-row:hover{color:var(--red);background:rgba(231,76,60,.1);}
+
+/* confirm delete modal */
+.confirm-modal{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:700;display:none;align-items:center;justify-content:center;padding:24px;}
+.confirm-modal.open{display:flex;}
+.confirm-box{background:var(--coal2);border:1px solid var(--wire);border-radius:8px;padding:28px 28px 24px;max-width:400px;width:100%;text-align:center;}
+.confirm-icon{font-size:40px;margin-bottom:12px;}
+.confirm-title{font-family:var(--fd);font-size:24px;font-weight:900;color:var(--chalk);margin-bottom:8px;}
+.confirm-msg{font-size:13.5px;color:var(--fog);line-height:1.6;margin-bottom:22px;}
+.confirm-actions{display:flex;gap:10px;justify-content:center;}
+
 /* ═══ GUIDE STYLES ═══ */
 .guide-tab{padding:10px 18px;font-family:var(--fd);font-size:13px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--fog);background:transparent;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:all .15s;white-space:nowrap;margin-bottom:-1px;}
 .guide-tab:hover{color:var(--bone);}
@@ -476,17 +503,38 @@ tr.clickable:hover td{background:rgba(255,255,255,.02);cursor:pointer;}
 
       <!-- CLAIMS VIEW -->
       <div id="v-claims" style="display:none">
+
+        <!-- BARRE D'ACTIONS BULK (apparaît quand des claims sont sélectionnés) -->
+        <div id="bulkBar" style="display:none;background:rgba(224,92,26,.1);border:1px solid rgba(224,92,26,.3);border-radius:6px;padding:12px 16px;margin-bottom:14px;display:none;align-items:center;gap:12px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:8px;flex:1">
+            <span style="font-family:var(--fm);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ore)" id="bulkCount">0 sélectionné(s)</span>
+            <button class="btn btn-ghost btn-xs" onclick="clearSelection()">✕ Désélectionner tout</button>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <span style="font-family:var(--fm);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--fog)">Changer statut :</span>
+            <button class="bulk-status-btn" onclick="bulkSetStatus('open')"     style="--c:var(--blue)">🔵 Ouvert</button>
+            <button class="bulk-status-btn" onclick="bulkSetStatus('pending')"  style="--c:var(--gold)">🟡 En attente</button>
+            <button class="bulk-status-btn" onclick="bulkSetStatus('approved')" style="--c:var(--green)">🟢 Approuvé</button>
+            <button class="bulk-status-btn" onclick="bulkSetStatus('refused')"  style="--c:var(--red)">🔴 Refusé</button>
+            <div style="width:1px;height:20px;background:var(--wire);margin:0 4px"></div>
+            <button class="btn btn-xs" style="background:rgba(231,76,60,.15);color:var(--red);border:1px solid rgba(231,76,60,.3)" onclick="bulkDelete()">🗑️ Supprimer</button>
+          </div>
+        </div>
+
         <div class="section">
           <div class="sec-hdr">
             <span class="sec-title">Tous les claims</span>
-            <select class="filter-sel" id="filterSel" onchange="renderClaims()">
-              <option value="">Tous les statuts</option>
-              <option value="new">Nouveau</option>
-              <option value="open">Ouvert</option>
-              <option value="approved">Approuvé</option>
-              <option value="refused">Refusé</option>
-              <option value="pending">En attente</option>
-            </select>
+            <div style="display:flex;gap:8px;align-items:center">
+              <select class="filter-sel" id="filterSel" onchange="renderClaims()">
+                <option value="">Tous les statuts</option>
+                <option value="new">Nouveau</option>
+                <option value="open">Ouvert</option>
+                <option value="approved">Approuvé</option>
+                <option value="refused">Refusé</option>
+                <option value="pending">En attente</option>
+              </select>
+              <button class="btn btn-ghost btn-xs" id="btnSelectAll" onclick="toggleSelectAll()" style="display:none">☐ Tout sélectionner</button>
+            </div>
           </div>
           <div id="allTable"></div>
         </div>
@@ -1238,6 +1286,19 @@ tr.clickable:hover td{background:rgba(255,255,255,.02);cursor:pointer;}
   <img id="lightboxImg" src="" alt="Photo du claim"/>
 </div>
 
+<!-- ═══ CONFIRM DELETE MODAL ═══ -->
+<div class="confirm-modal" id="confirmModal">
+  <div class="confirm-box">
+    <div class="confirm-icon">🗑️</div>
+    <div class="confirm-title" id="confirmTitle">Supprimer ?</div>
+    <div class="confirm-msg" id="confirmMsg">Cette action est irréversible.</div>
+    <div class="confirm-actions">
+      <button class="btn btn-ghost btn-sm" onclick="closeConfirm()">Annuler</button>
+      <button class="btn btn-sm" style="background:var(--red);color:var(--chalk);font-family:var(--fd);font-size:14px;font-weight:800;letter-spacing:1px" id="confirmOkBtn" onclick="executeDelete()">Supprimer</button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ API KEY MODAL ═══ -->
 <div id="apiKeyModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:600;align-items:center;justify-content:center;padding:24px">
   <div style="background:var(--coal2);border:1px solid var(--wire);border-radius:8px;width:100%;max-width:480px;overflow:hidden">
@@ -1482,7 +1543,7 @@ function goView(v, btn) {
   if (btn) btn.classList.add('active');
   document.getElementById('pageTitle').textContent = VIEWS[v] || v;
   document.getElementById('btnNewClaim').style.display = (v==='dashboard'||v==='claims') ? 'flex':'none';
-  if (v==='claims') renderClaims();
+  if (v==='claims') { renderClaims(); clearSelection(); }
   if (v==='settings') {
     // Pre-populate API key field (masked)
     var existingKey = getApiKey();
@@ -1529,18 +1590,146 @@ function updateStats() {
 function badgeClass(s){ return {new:'b-new',open:'b-open',approved:'b-approved',refused:'b-refused',pending:'b-pending'}[s]||'b-open'; }
 function badgeLabel(s){ return {new:'NOUVEAU',open:'OUVERT',approved:'APPROUVÉ',refused:'REFUSÉ',pending:'EN ATTENTE'}[s]||s; }
 
+/* ══════════════════════════════════════
+   SELECTION STATE
+══════════════════════════════════════ */
+var SELECTED = new Set(); // IDs sélectionnés
+var PENDING_DELETE_IDS = []; // IDs en attente de suppression
+
+function toggleSelect(id, cb) {
+  cb.stopPropagation();
+  if (SELECTED.has(id)) {
+    SELECTED.delete(id);
+  } else {
+    SELECTED.add(id);
+  }
+  updateBulkBar();
+  // Update row style
+  var row = document.querySelector('tr[data-id="' + id + '"]');
+  if (row) row.classList.toggle('selected', SELECTED.has(id));
+}
+
+function toggleSelectAll() {
+  var f = document.getElementById('filterSel')?.value || '';
+  var visible = f ? CLAIMS.filter(function(c){ return c.status===f; }) : CLAIMS;
+  var allSelected = visible.every(function(c){ return SELECTED.has(c.id); });
+  if (allSelected) {
+    visible.forEach(function(c){ SELECTED.delete(c.id); });
+  } else {
+    visible.forEach(function(c){ SELECTED.add(c.id); });
+  }
+  renderClaims();
+  updateBulkBar();
+}
+
+function clearSelection() {
+  SELECTED.clear();
+  updateBulkBar();
+  renderClaims();
+}
+
+function updateBulkBar() {
+  var bar = document.getElementById('bulkBar');
+  var count = SELECTED.size;
+  if (count > 0) {
+    bar.style.display = 'flex';
+    document.getElementById('bulkCount').textContent = count + ' claim(s) sélectionné(s)';
+  } else {
+    bar.style.display = 'none';
+  }
+  // Update select all button text
+  var f = document.getElementById('filterSel')?.value || '';
+  var visible = f ? CLAIMS.filter(function(c){ return c.status===f; }) : CLAIMS;
+  var allSel = visible.length > 0 && visible.every(function(c){ return SELECTED.has(c.id); });
+  var btnAll = document.getElementById('btnSelectAll');
+  if (btnAll) btnAll.textContent = allSel ? '☑ Tout désélectionner' : '☐ Tout sélectionner';
+}
+
+/* ══ BULK ACTIONS ══ */
+function bulkSetStatus(status) {
+  if (!SELECTED.size) return;
+  var label = {open:'Ouvert',pending:'En attente',approved:'Approuvé',refused:'Refusé'}[status] || status;
+  SELECTED.forEach(function(id) {
+    var c = CLAIMS.find(function(x){ return x.id===id; });
+    if (c) c.status = status;
+  });
+  var n = SELECTED.size;
+  clearSelection();
+  renderAll();
+  toast('ok', n + ' claim(s) mis à jour', 'Statut → ' + label);
+}
+
+function bulkDelete() {
+  if (!SELECTED.size) return;
+  PENDING_DELETE_IDS = [...SELECTED];
+  var n = PENDING_DELETE_IDS.length;
+  document.getElementById('confirmTitle').textContent = 'Supprimer ' + n + ' claim(s) ?';
+  document.getElementById('confirmMsg').textContent = 'Cette action est irréversible. ' + n + ' claim(s) seront définitivement supprimés.';
+  document.getElementById('confirmModal').classList.add('open');
+}
+
+function deleteSingle(id, event) {
+  event.stopPropagation();
+  PENDING_DELETE_IDS = [id];
+  var c = CLAIMS.find(function(x){ return x.id===id; });
+  document.getElementById('confirmTitle').textContent = 'Supprimer ce claim ?';
+  document.getElementById('confirmMsg').textContent = (c ? c.id + ' · ' + c.mfr : id) + '\nCette action est irréversible.';
+  document.getElementById('confirmModal').classList.add('open');
+}
+
+function closeConfirm() {
+  document.getElementById('confirmModal').classList.remove('open');
+  PENDING_DELETE_IDS = [];
+}
+
+function executeDelete() {
+  var n = PENDING_DELETE_IDS.length;
+  CLAIMS = CLAIMS.filter(function(c){ return !PENDING_DELETE_IDS.includes(c.id); });
+  PENDING_DELETE_IDS.forEach(function(id){ SELECTED.delete(id); });
+  PENDING_DELETE_IDS = [];
+  closeConfirm();
+  updateBulkBar();
+  renderAll();
+  toast('ok', n + ' claim(s) supprimé(s)', '');
+}
+
+/* ══ RENDER ══ */
 function rowHTML(c) {
   var pc = c.prob>=75?'var(--green)':c.prob>=50?'var(--gold)':'var(--red)';
-  var photosTxt = (c.photos && c.photos.length>0) ? '📷 '+c.photos.length : '';
+  var photosTxt = ((c.formPhotos&&c.formPhotos.length)||(c.photos&&c.photos.length)) ? '📷 '+((c.formPhotos||[]).length+(c.photos||[]).length) : '';
   var probCell = c.prob>0
     ? '<div class="prob-row"><div class="prob-bar"><div class="prob-fill" style="width:'+c.prob+'%;background:'+pc+'"></div></div><span style="font-family:var(--fm);font-size:11px;color:'+pc+'">'+c.prob+'%</span></div>'
     : '<span style="color:var(--fog);font-size:12px">—</span>';
   var badgeHtml = '<span class="badge '+badgeClass(c.status)+'">'+badgeLabel(c.status)+'</span>';
-  return '<tr class="clickable" onclick="openModal(\'' + c.id + '\')">'
+  var isSelected = SELECTED.has(c.id);
+  var cbHtml = '<td class="cb-cell" onclick="event.stopPropagation()"><input type="checkbox" class="row-cb" '+(isSelected?'checked':'')+'  onclick="toggleSelect(\''+c.id+'\',event)"/></td>';
+  return '<tr class="clickable'+(isSelected?' selected':'')+'" data-id="'+c.id+'" onclick="openModal(\''+c.id+'\')">'
+    + cbHtml
+    + '<td><span class="cid">'+c.id+'</span></td>'
+    + '<td><span class="mfr-chip">'+c.mfr+'</span></td>'
+    + '<td style="font-size:12px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+c.unit+'</td>'
+    + '<td style="font-size:12px;color:var(--fog)">'+(c.tech||'—')+'</td>'
+    + '<td style="font-size:12px;color:var(--fog)">'+c.date+'</td>'
+    + '<td>'+probCell+'</td>'
+    + '<td>'+badgeHtml+'</td>'
+    + '<td style="font-size:12px;color:var(--fog)">'+photosTxt+'</td>'
+    + '<td><button class="btn-del-row" onclick="deleteSingle(\''+c.id+'\',event)" title="Supprimer">🗑️</button></td>'
+    + '</tr>';
+}
+
+function rowHTMLSimple(c) {
+  // Version sans checkbox pour le dashboard récent
+  var pc = c.prob>=75?'var(--green)':c.prob>=50?'var(--gold)':'var(--red)';
+  var photosTxt = ((c.formPhotos&&c.formPhotos.length)||(c.photos&&c.photos.length)) ? '📷 '+((c.formPhotos||[]).length+(c.photos||[]).length) : '';
+  var probCell = c.prob>0
+    ? '<div class="prob-row"><div class="prob-bar"><div class="prob-fill" style="width:'+c.prob+'%;background:'+pc+'"></div></div><span style="font-family:var(--fm);font-size:11px;color:'+pc+'">'+c.prob+'%</span></div>'
+    : '<span style="color:var(--fog);font-size:12px">—</span>';
+  var badgeHtml = '<span class="badge '+badgeClass(c.status)+'">'+badgeLabel(c.status)+'</span>';
+  return '<tr class="clickable" onclick="openModal(\''+c.id+'\')">'
     + '<td><span class="cid">'+c.id+'</span></td>'
     + '<td><span class="mfr-chip">'+c.mfr+'</span></td>'
     + '<td style="font-size:12px;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+c.unit+'</td>'
-    + '<td style="font-size:12px;color:var(--fog)">'+( c.tech||'—')+'</td>'
+    + '<td style="font-size:12px;color:var(--fog)">'+(c.tech||'—')+'</td>'
     + '<td style="font-size:12px;color:var(--fog)">'+c.date+'</td>'
     + '<td>'+probCell+'</td>'
     + '<td>'+badgeHtml+'</td>'
@@ -1548,15 +1737,32 @@ function rowHTML(c) {
     + '</tr>';
 }
 
-function tableHTML(list) {
-  if (!list.length) return `<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">AUCUN CLAIM</div><div class="empty-txt">Créez votre premier claim avec "+ Nouveau claim".</div></div>`;
-  return `<table><thead><tr><th>ID</th><th>Manufacturier</th><th>Unité</th><th>Technicien</th><th>Date</th><th>Probabilité</th><th>Statut</th><th>Photos</th></tr></thead><tbody>${list.map(rowHTML).join('')}</tbody></table>`;
+function tableHTML(list, withCheckbox) {
+  if (!list.length) return '<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">AUCUN CLAIM</div><div class="empty-txt">Créez votre premier claim avec &quot;+ Nouveau claim&quot;.</div></div>';
+  var cbHeader = withCheckbox ? '<th class="cb-cell"></th>' : '';
+  var delHeader = withCheckbox ? '<th></th>' : '';
+  var fn = withCheckbox ? rowHTML : rowHTMLSimple;
+  return '<table><thead><tr>'
+    + cbHeader
+    + '<th>ID</th><th>Manufacturier</th><th>Unité</th><th>Technicien</th><th>Date</th><th>Probabilité</th><th>Statut</th><th>Photos</th>'
+    + delHeader
+    + '</tr></thead><tbody>'
+    + list.map(fn).join('')
+    + '</tbody></table>';
 }
 
-function renderRecent(){ document.getElementById('recentTable').innerHTML = tableHTML(CLAIMS.slice(0,5)); }
-function renderClaims(){
-  const f = document.getElementById('filterSel')?.value||'';
-  document.getElementById('allTable').innerHTML = tableHTML(f?CLAIMS.filter(c=>c.status===f):CLAIMS);
+function renderRecent() {
+  document.getElementById('recentTable').innerHTML = tableHTML(CLAIMS.slice(0,5), false);
+}
+
+function renderClaims() {
+  var f = document.getElementById('filterSel')?.value || '';
+  var list = f ? CLAIMS.filter(function(c){ return c.status===f; }) : CLAIMS;
+  document.getElementById('allTable').innerHTML = tableHTML(list, true);
+  // Show select all button only if there are claims
+  var btnAll = document.getElementById('btnSelectAll');
+  if (btnAll) btnAll.style.display = list.length ? 'inline-flex' : 'none';
+  updateBulkBar();
 }
 
 /* ══ PANEL ══ */
