@@ -292,6 +292,22 @@ tr.clickable:hover td{background:rgba(255,255,255,.02);cursor:pointer;}
 .modal-footer{padding:14px 24px;border-top:1px solid var(--wire);display:flex;gap:10px;justify-content:space-between;align-items:center;flex-shrink:0;}
 .modal-footer-left{font-family:var(--fm);font-size:11px;color:var(--fog);}
 
+/* ═══ PHOTOS — NOUVEAU CLAIM PANEL ═══ */
+.np-drop-zone{border:2px dashed var(--wire);border-radius:6px;padding:24px 16px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:10px;}
+.np-drop-zone:hover,.np-drop-zone.drag-over{border-color:var(--ore);background:rgba(224,92,26,.04);}
+.np-source-bar{display:flex;align-items:center;justify-content:space-between;background:rgba(46,204,113,.07);border:1px solid rgba(46,204,113,.2);border-radius:4px;padding:8px 12px;margin-bottom:10px;}
+.np-source-count{font-family:var(--fm);font-size:11px;color:var(--green);}
+.np-photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px;}
+.np-thumb{position:relative;border-radius:4px;overflow:hidden;border:1px solid var(--wire);aspect-ratio:4/3;cursor:pointer;transition:border-color .2s;}
+.np-thumb:hover{border-color:var(--ore);}
+.np-thumb img{width:100%;height:100%;object-fit:cover;transition:transform .3s;}
+.np-thumb:hover img{transform:scale(1.05);}
+.np-thumb-badge{position:absolute;top:4px;left:4px;font-family:var(--fm);font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:2px 6px;border-radius:2px;}
+.np-badge-form{background:rgba(46,204,113,.85);color:#000;}
+.np-badge-manual{background:rgba(224,92,26,.85);color:var(--chalk);}
+.np-thumb-del{position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,.75);border:none;color:var(--chalk);font-size:10px;cursor:pointer;display:none;align-items:center;justify-content:center;}
+.np-thumb:hover .np-thumb-del{display:flex;}
+
 /* ═══ GUIDE STYLES ═══ */
 .guide-tab{padding:10px 18px;font-family:var(--fd);font-size:13px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--fog);background:transparent;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:all .15s;white-space:nowrap;margin-bottom:-1px;}
 .guide-tab:hover{color:var(--bone);}
@@ -968,6 +984,32 @@ tr.clickable:hover td{background:rgba(255,255,255,.02);cursor:pointer;}
       <div class="fgrp fg-full"><label class="flbl">Description du technicien (en tes mots)</label>
         <textarea class="ftxt" id="fDesc" placeholder="Décris le problème simplement — l'IA va reformuler en langage officiel du manufacturier..."></textarea>
       </div>
+
+      <!-- PHOTOS — Nouveau Claim -->
+      <div class="fg-full">
+        <label class="flbl" style="margin-bottom:8px;display:block">Photos du défaut</label>
+
+        <!-- Zone de dépôt -->
+        <div class="np-drop-zone" id="npDropZone" onclick="document.getElementById('npPhotoInput').click()">
+          <input type="file" id="npPhotoInput" accept="image/*" multiple style="display:none" onchange="npAddPhotos(event)"/>
+          <div style="font-size:28px;margin-bottom:6px;opacity:.45">📷</div>
+          <div style="font-size:13px;color:var(--fog)"><strong style="color:var(--bone)">Cliquez ou glissez vos photos</strong><br/>JPG, PNG, HEIC — Max 10 Mo par photo</div>
+        </div>
+
+        <!-- Source formulaire -->
+        <div class="np-source-bar" id="npSourceBar" style="display:none">
+          <span style="font-family:var(--fm);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ore)">📎 Photos reçues du formulaire</span>
+          <span class="np-source-count" id="npSourceCount">0 photo(s)</span>
+        </div>
+
+        <!-- Grille photos -->
+        <div class="np-photo-grid" id="npPhotoGrid" style="display:none"></div>
+
+        <div style="font-family:var(--fm);font-size:10px;color:var(--wire);margin-top:6px;letter-spacing:.5px">
+          Les photos soumises via FastField / Tally apparaissent automatiquement ici.
+        </div>
+      </div>
+
       <div class="fg-full">
         <button class="btn btn-primary" id="aiBtn" onclick="runAI()" style="width:100%">⚡ Analyser avec l'IA</button>
       </div>
@@ -1082,18 +1124,52 @@ tr.clickable:hover td{background:rgba(255,255,255,.02);cursor:pointer;}
 
       <!-- TAB: PHOTOS -->
       <div class="modal-tab-content" id="mtab-photos">
-        <div class="photos-zone" onclick="document.getElementById('photoInput').click()">
+
+        <!-- Photos reçues du formulaire -->
+        <div id="mPhotosFromForm" style="display:none;margin-bottom:16px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green)"></div>
+              <span style="font-family:var(--fm);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--green)">Photos reçues du formulaire</span>
+            </div>
+            <span style="font-family:var(--fm);font-size:11px;color:var(--fog)" id="mFormPhotoSource">—</span>
+          </div>
+          <div class="photos-grid" id="mFormPhotosGrid"></div>
+        </div>
+
+        <!-- Séparateur si les deux types de photos existent -->
+        <div id="mPhotosDivider" style="display:none;margin-bottom:16px">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="flex:1;height:1px;background:var(--wire)"></div>
+            <span style="font-family:var(--fm);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--fog)">Photos ajoutées manuellement</span>
+            <div style="flex:1;height:1px;background:var(--wire)"></div>
+          </div>
+        </div>
+
+        <!-- Zone d'ajout manuel -->
+        <div class="photos-zone" id="mPhotoDropZone" onclick="document.getElementById('photoInput').click()">
           <div class="photos-zone-icon">📷</div>
           <div class="photos-zone-text">
-            <strong>Cliquez pour ajouter des photos</strong><br/>
-            ou glissez-déposez vos fichiers ici<br/>
+            <strong>Ajouter des photos supplémentaires</strong><br/>
+            Cliquez ou glissez-déposez vos fichiers ici<br/>
             <span style="font-family:var(--fm);font-size:11px;color:var(--wire);margin-top:4px;display:block">JPG, PNG, HEIC · Max 10 Mo par photo</span>
           </div>
           <input type="file" id="photoInput" accept="image/*" multiple onchange="addPhotos(event)"/>
         </div>
+
+        <!-- Photos manuelles -->
         <div class="photos-grid" id="photosGrid"></div>
-        <div id="photosEmpty" style="text-align:center;padding:24px 0;font-size:13px;color:var(--fog)">
-          Aucune photo pour ce claim. Ajoutez des photos du défaut pour appuyer votre réclamation.
+
+        <!-- Empty state -->
+        <div id="photosEmpty" style="text-align:center;padding:32px 0;font-size:13px;color:var(--fog)">
+          <div style="font-size:36px;margin-bottom:10px;opacity:.3">📷</div>
+          Aucune photo pour ce claim.<br/>
+          <span style="font-size:12px">Ajoutez des photos du défaut pour appuyer votre réclamation auprès du manufacturier.</span>
+        </div>
+
+        <!-- Info formulaire -->
+        <div style="margin-top:14px;padding:10px 14px;background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.15);border-radius:4px;font-size:12px;color:var(--fog);line-height:1.6" id="mPhotosHint">
+          💡 Les photos prises dans <strong style="color:var(--bone)">FastField, Tally ou Jotform</strong> apparaissent automatiquement ici lors de la réception du formulaire. Tu peux aussi en ajouter manuellement.
         </div>
       </div>
 
@@ -1419,6 +1495,8 @@ function openPanel(){
   document.getElementById('slidePanel').classList.add('open');
   document.getElementById('aiResults').style.display='none';
   AI={desc:'',parts:[],prob:null};
+  NP_PHOTOS = [];
+  renderNpPhotos();
 }
 function closePanel(){
   document.getElementById('overlay').classList.remove('open');
@@ -1488,26 +1566,34 @@ function switchAiTab(tab,el){
 }
 
 function saveClaim(){
-  const unit=document.getElementById('fUnit').value.trim();
-  const cat =document.getElementById('fCat').value;
+  var unit=document.getElementById('fUnit').value.trim();
+  var cat =document.getElementById('fCat').value;
   if(!unit||!cat){ toast('err','Champs manquants','Remplis au minimum le modèle et la catégorie.'); return; }
-  const c={
-    id:`CLM-${new Date().getFullYear()}-${String(Math.floor(Math.random()*9000)+1000)}`,
-    mfr:document.getElementById('fMfr').value, unit,
+  var formPhotos   = NP_PHOTOS.filter(function(p){ return p.source==='form'; });
+  var manualPhotos = NP_PHOTOS.filter(function(p){ return p.source!=='form'; });
+  var now = new Date();
+  var cid = 'CLM-'+now.getFullYear()+'-'+String(Math.floor(Math.random()*9000)+1000);
+  var c={
+    id: cid,
+    mfr:document.getElementById('fMfr').value, unit:unit,
     vin:document.getElementById('fVin').value.trim(),
-    year:document.getElementById('fYear').value, cat,
+    year:document.getElementById('fYear').value, cat:cat,
     desc:document.getElementById('fDesc').value.trim(),
     tech:document.getElementById('fTech').value.trim(),
     bt:document.getElementById('fBt').value.trim(),
-    status:'new', date:new Date().toISOString().slice(0,10),
-    prob:AI.prob?.probability||0
+    status:'new', date:now.toISOString().slice(0,10),
+    prob:AI.prob?AI.prob.probability:0,
+    aiDesc:AI.desc, parts:AI.parts,
+    formPhotos:formPhotos, photos:manualPhotos,
+    notes:'', source:'manual'
   };
   CLAIMS.unshift(c);
   renderAll(); closePanel();
-  ['fUnit','fVin','fTech','fBt','fDesc'].forEach(id=>document.getElementById(id).value='');
+  ['fUnit','fVin','fTech','fBt','fDesc'].forEach(function(id){ document.getElementById(id).value=''; });
   document.getElementById('fCat').value='';
   AI={desc:'',parts:[],prob:null};
-  toast('ok','Claim enregistré !',`${c.id} · ${c.mfr}`);
+  NP_PHOTOS=[];
+  toast('ok','Claim enregistré !',c.id+' · '+c.mfr);
 }
 
 /* ══ EXPIRED ══ */
@@ -1590,7 +1676,7 @@ function openModal(id) {
     }
   }
 
-  // Tab: Photos
+  // Tab: Photos — passe les 2 types (formulaire + manuelles)
   renderPhotos(c);
 
   // Tab: Status
@@ -1644,70 +1730,174 @@ function updateClaimStatus() {
   renderAll();
 }
 
-/* ══ PHOTOS ══ */
+/* ══════════════════════════════════════
+   PHOTOS — MODAL DE DÉTAIL
+   Gère 2 types : formPhotos (venant du webhook) + photos (ajoutées manuellement)
+══════════════════════════════════════ */
 function renderPhotos(c) {
-  const grid  = document.getElementById('photosGrid');
-  const empty = document.getElementById('photosEmpty');
-  const count = document.getElementById('mPhotoCount');
-  const photos = c.photos || [];
+  var formPhotos   = c.formPhotos   || [];  // photos reçues du formulaire
+  var manualPhotos = c.photos       || [];  // photos ajoutées manuellement
+  var totalPhotos  = formPhotos.length + manualPhotos.length;
 
-  count.textContent = photos.length;
-  empty.style.display = photos.length ? 'none' : 'block';
-  grid.innerHTML = photos.map((p,i) => `
-    <div class="photo-thumb" onclick="openLightbox('${p.url}')">
-      <img src="${p.url}" alt="Photo ${i+1}"/>
-      <button class="photo-del" onclick="deletePhoto(event,${i})">✕</button>
-    </div>`).join('');
+  // Compteur dans l'onglet
+  var count = document.getElementById('mPhotoCount');
+  if (count) count.textContent = totalPhotos;
+
+  // Section photos du formulaire
+  var fromFormSection = document.getElementById('mPhotosFromForm');
+  var formGrid        = document.getElementById('mFormPhotosGrid');
+  var sourceLabel     = document.getElementById('mFormPhotoSource');
+  var divider         = document.getElementById('mPhotosDivider');
+
+  if (formPhotos.length > 0 && fromFormSection) {
+    fromFormSection.style.display = 'block';
+    if (sourceLabel) sourceLabel.textContent = (c.source || 'formulaire').toUpperCase() + ' · ' + formPhotos.length + ' photo(s)';
+    if (formGrid) {
+      formGrid.innerHTML = formPhotos.map(function(p, i) {
+        return '<div class="photo-thumb" onclick="openLightbox(\'' + p.url + '\')">'
+          + '<img src="' + p.url + '" alt="Photo formulaire ' + (i+1) + '" loading="lazy"/>'
+          + '<span style="position:absolute;top:5px;left:5px;background:rgba(46,204,113,.85);color:#000;font-family:var(--fm);font-size:9px;letter-spacing:1px;padding:2px 6px;border-radius:2px">FORMULAIRE</span>'
+          + '</div>';
+      }).join('');
+    }
+    // Montre le séparateur seulement si des photos manuelles existent aussi
+    if (divider) divider.style.display = manualPhotos.length > 0 ? 'block' : 'none';
+  } else if (fromFormSection) {
+    fromFormSection.style.display = 'none';
+    if (divider) divider.style.display = 'none';
+  }
+
+  // Section photos manuelles
+  var grid  = document.getElementById('photosGrid');
+  var empty = document.getElementById('photosEmpty');
+  var hint  = document.getElementById('mPhotosHint');
+
+  if (grid) {
+    grid.innerHTML = manualPhotos.map(function(p, i) {
+      return '<div class="photo-thumb" onclick="openLightbox(\'' + p.url + '\')">'
+        + '<img src="' + p.url + '" alt="Photo ' + (i+1) + '" loading="lazy"/>'
+        + '<span style="position:absolute;top:5px;left:5px;background:rgba(224,92,26,.85);color:#fff;font-family:var(--fm);font-size:9px;letter-spacing:1px;padding:2px 6px;border-radius:2px">MANUEL</span>'
+        + '<button class="photo-del" onclick="deletePhoto(event,' + i + ')">✕</button>'
+        + '</div>';
+    }).join('');
+  }
+
+  // État vide
+  if (empty) empty.style.display = totalPhotos > 0 ? 'none' : 'block';
+
+  // Masque le hint si des photos formulaire existent déjà
+  if (hint) hint.style.display = formPhotos.length > 0 ? 'none' : 'block';
 }
 
 function addPhotos(event) {
-  const c = CLAIMS.find(x => x.id === ACTIVE_CLAIM_ID);
+  var c = CLAIMS.find(function(x) { return x.id === ACTIVE_CLAIM_ID; });
   if (!c) return;
   if (!c.photos) c.photos = [];
-
-  const files = Array.from(event.target.files);
-  let loaded = 0;
-
-  files.forEach(file => {
+  var files  = Array.from(event.target.files);
+  var loaded = 0;
+  files.forEach(function(file) {
     if (!file.type.startsWith('image/')) return;
-    const reader = new FileReader();
-    reader.onload = e => {
-      c.photos.push({ url: e.target.result, name: file.name, size: file.size });
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      c.photos.push({ url: e.target.result, name: file.name, size: file.size, source: 'manual' });
       loaded++;
       if (loaded === files.length) {
         renderPhotos(c);
-        document.getElementById('mPhotoCount').textContent = c.photos.length;
-        toast('ok',`${files.length} photo(s) ajoutée(s)`,'');
+        toast('ok', files.length + ' photo(s) ajoutée(s)', '');
       }
     };
     reader.readAsDataURL(file);
   });
-
-  // reset input so same file can be re-added
   event.target.value = '';
 }
 
 function deletePhoto(event, index) {
   event.stopPropagation();
-  const c = CLAIMS.find(x => x.id === ACTIVE_CLAIM_ID);
+  var c = CLAIMS.find(function(x) { return x.id === ACTIVE_CLAIM_ID; });
   if (!c) return;
   c.photos.splice(index, 1);
   renderPhotos(c);
-  document.getElementById('mPhotoCount').textContent = c.photos.length;
-  toast('info','Photo supprimée','');
+  toast('info', 'Photo supprimée', '');
 }
 
-// Drag & drop on photo zone
-document.addEventListener('DOMContentLoaded', () => {
-  const zone = document.querySelector('.photos-zone');
+// Drag & drop — modal photo zone
+document.addEventListener('DOMContentLoaded', function() {
+  var zone = document.getElementById('mPhotoDropZone');
   if (!zone) return;
-  zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor='var(--ore)'; });
-  zone.addEventListener('dragleave', () => { zone.style.borderColor='var(--wire)'; });
-  zone.addEventListener('drop', e => {
+  zone.addEventListener('dragover',  function(e) { e.preventDefault(); zone.style.borderColor='var(--ore)'; zone.style.background='rgba(224,92,26,.04)'; });
+  zone.addEventListener('dragleave', function()  { zone.style.borderColor=''; zone.style.background=''; });
+  zone.addEventListener('drop', function(e) {
     e.preventDefault();
-    zone.style.borderColor = 'var(--wire)';
-    const dt = e.dataTransfer;
-    if (dt.files.length) addPhotos({ target: { files: dt.files }, preventDefault:()=>{} });
+    zone.style.borderColor = '';
+    zone.style.background  = '';
+    if (e.dataTransfer.files.length) addPhotos({ target: { files: e.dataTransfer.files }, preventDefault: function(){} });
+  });
+});
+
+/* ══════════════════════════════════════
+   PHOTOS — NOUVEAU CLAIM PANEL
+   Photos ajoutées avant enregistrement
+══════════════════════════════════════ */
+var NP_PHOTOS = []; // photos temporaires du nouveau claim
+
+function npAddPhotos(event) {
+  var files = Array.from(event.target.files);
+  files.forEach(function(file) {
+    if (!file.type.startsWith('image/')) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      NP_PHOTOS.push({ url: e.target.result, name: file.name, source: 'manual' });
+      renderNpPhotos();
+    };
+    reader.readAsDataURL(file);
+  });
+  event.target.value = '';
+}
+
+function renderNpPhotos() {
+  var grid = document.getElementById('npPhotoGrid');
+  if (!grid) return;
+  var sourceBar  = document.getElementById('npSourceBar');
+  var sourceCount= document.getElementById('npSourceCount');
+
+  // Sépare les photos du formulaire et les manuelles
+  var formPhotos   = NP_PHOTOS.filter(function(p) { return p.source === 'form'; });
+  var manualPhotos = NP_PHOTOS.filter(function(p) { return p.source !== 'form'; });
+
+  if (sourceBar) {
+    sourceBar.style.display  = formPhotos.length ? 'flex' : 'none';
+    if (sourceCount) sourceCount.textContent = formPhotos.length + ' photo(s)';
+  }
+
+  grid.style.display = NP_PHOTOS.length ? 'grid' : 'none';
+  grid.innerHTML = NP_PHOTOS.map(function(p, i) {
+    var isForm = p.source === 'form';
+    return '<div class="np-thumb" onclick="openLightbox(\'' + p.url + '\')">'
+      + '<img src="' + p.url + '" alt="Photo ' + (i+1) + '" loading="lazy"/>'
+      + '<span class="np-thumb-badge ' + (isForm ? 'np-badge-form' : 'np-badge-manual') + '">'
+      + (isForm ? 'FORMULAIRE' : 'AJOUT')
+      + '</span>'
+      + (isForm ? '' : '<button class="np-thumb-del" onclick="npDeletePhoto(event,' + i + ')">✕</button>')
+      + '</div>';
+  }).join('');
+}
+
+function npDeletePhoto(event, index) {
+  event.stopPropagation();
+  NP_PHOTOS.splice(index, 1);
+  renderNpPhotos();
+}
+
+// Drag & drop — nouveau claim panel
+document.addEventListener('DOMContentLoaded', function() {
+  var zone = document.getElementById('npDropZone');
+  if (!zone) return;
+  zone.addEventListener('dragover',  function(e) { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', function()  { zone.classList.remove('drag-over'); });
+  zone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    if (e.dataTransfer.files.length) npAddPhotos({ target: { files: e.dataTransfer.files }, preventDefault: function(){} });
   });
 });
 
@@ -1719,11 +1909,8 @@ function openLightbox(url) {
 function closeLightbox() {
   document.getElementById('lightbox').classList.remove('open');
 }
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') {
-    closeLightbox();
-    closeModal();
-  }
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') { closeLightbox(); closeModal(); }
 });
 
 /* ══════════════════════════════════════
@@ -1818,13 +2005,19 @@ function simulateTallySubmission() {
     id, source:'tally',
     mfr:d.mfr, unit:d.unit, vin:d.vin, year:d.year,
     cat:d.cat, desc:d.desc, tech:d.tech, bt:d.bt,
-    status:'new', prob:0, aiDesc:'', parts:[], photos:[], notes:'',
+    status:'new', prob:0, aiDesc:'', parts:[], notes:'',
     date: now.toISOString().slice(0,10),
     createdAt: now.toISOString(),
+    photos: [],
+    formPhotos: [
+      { url:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=70', name:'defaut_1.jpg', source:'form' },
+      { url:'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&q=70', name:'defaut_2.jpg', source:'form' },
+    ],
   };
   CLAIMS.unshift(claim);
   renderAll();
-  toast('ok', '📨 Nouvelle soumission Tally !', `${claim.mfr} · ${claim.bt}`);
+  var msg = claim.mfr + ' · ' + claim.bt + ' · 2 photos reçues';
+  toast('ok', '📨 Nouvelle soumission Tally !', msg);
 }
 
 /* ══════════════════════════════════════
