@@ -292,6 +292,93 @@ tr.clickable:hover td{background:rgba(255,255,255,.02);cursor:pointer;}
 .modal-footer{padding:14px 24px;border-top:1px solid var(--wire);display:flex;gap:10px;justify-content:space-between;align-items:center;flex-shrink:0;}
 .modal-footer-left{font-family:var(--fm);font-size:11px;color:var(--fog);}
 
+/* ═══ GUIDE STYLES ═══ */
+.guide-tab{padding:10px 18px;font-family:var(--fd);font-size:13px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--fog);background:transparent;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:all .15s;white-space:nowrap;margin-bottom:-1px;}
+.guide-tab:hover{color:var(--bone);}
+.guide-tab.active{color:var(--ore);border-bottom-color:var(--ore);}
+.guide-content{display:none;}
+.guide-step{display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid rgba(46,51,61,.4);position:relative;}
+.guide-step:last-child{border-bottom:none;}
+.gs-num{width:26px;height:26px;border-radius:50%;background:var(--ore);color:var(--chalk);font-family:var(--fd);font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.gs-body{flex:1;}
+.gs-title{font-size:13.5px;font-weight:600;color:var(--chalk);margin-bottom:4px;}
+.gs-desc{font-size:12.5px;color:var(--fog);line-height:1.6;}
+.gs-tag{background:var(--coal3);border:1px solid var(--wire);border-radius:3px;padding:1px 7px;font-family:var(--fm);font-size:11px;color:var(--bone);}
+.gs-code{background:var(--coal);border:1px solid var(--wire);border-radius:4px;padding:9px 12px;font-family:var(--fm);font-size:11px;color:var(--ore);margin-top:8px;cursor:pointer;word-break:break-all;line-height:1.6;transition:border-color .2s;white-space:pre;}
+.gs-code:hover{border-color:var(--ore);}
+.field-map-row{display:grid;grid-template-columns:1fr 1fr;gap:0;padding:9px 12px;border-bottom:1px solid rgba(46,51,61,.4);font-size:12px;}
+.field-map-row:last-child{border-bottom:none;}
+.field-map-row.hdr{background:var(--coal3);font-family:var(--fm);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--fog);}
+.fmr-key{color:var(--fog);}
+.fmr-val{font-family:var(--fm);font-size:11px;color:var(--ore);}
+
+/* ═══ SETTINGS ═══ */
+.set-tab{padding:10px 20px;font-family:var(--fd);font-size:14px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--fog);background:transparent;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:all .15s;margin-bottom:-1px;}
+.set-tab:hover{color:var(--bone);}
+.set-tab.active{color:var(--ore);border-bottom-color:var(--ore);}
+
+/* app cards */
+.app-card{background:var(--coal2);border:1px solid var(--wire);border-radius:6px;padding:16px 14px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;transition:all .2s;text-align:center;}
+.app-card:hover{border-color:rgba(224,92,26,.4);transform:translateY(-2px);}
+.app-card.selected{border-color:var(--ore);background:rgba(224,92,26,.08);}
+.app-card-icon{font-size:26px;}
+.app-card-name{font-family:var(--fd);font-size:13px;font-weight:800;letter-spacing:.5px;color:var(--chalk);}
+.app-card-desc{font-size:11px;color:var(--fog);line-height:1.4;}
+.app-card-status{font-family:var(--fm);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;padding:2px 7px;border-radius:99px;}
+.app-status-ok{background:rgba(46,204,113,.12);color:var(--green);}
+.app-status-beta{background:rgba(212,168,32,.12);color:var(--gold);}
+.app-status-soon{background:var(--coal3);color:var(--wire);}
+
+/* webhook list items */
+.wh-item{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--wire);gap:12px;}
+.wh-item:last-child{border-bottom:none;}
+.wh-item-left{display:flex;align-items:center;gap:12px;}
+.wh-app-icon{width:36px;height:36px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;background:var(--coal3);border:1px solid var(--wire);flex-shrink:0;}
+.wh-name{font-size:13.5px;font-weight:600;color:var(--chalk);}
+.wh-meta{font-family:var(--fm);font-size:11px;color:var(--fog);margin-top:2px;}
+.wh-actions{display:flex;gap:6px;align-items:center;}
+.wh-toggle{position:relative;width:36px;height:20px;background:var(--wire);border-radius:99px;border:none;cursor:pointer;transition:background .2s;flex-shrink:0;}
+.wh-toggle.on{background:var(--green);}
+.wh-toggle::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--chalk);transition:transform .2s;}
+.wh-toggle.on::after{transform:translateX(16px);}
+.wh-status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.wh-dot-on{background:var(--green);box-shadow:0 0 6px var(--green);}
+.wh-dot-off{background:var(--fog);}
+
+/* form type rows */
+.ft-row{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--wire);cursor:pointer;transition:background .15s;}
+.ft-row:last-child{border-bottom:none;}
+.ft-row:hover{background:rgba(255,255,255,.02);}
+.ft-row-left{display:flex;align-items:center;gap:10px;}
+.ft-icon{font-size:16px;width:24px;text-align:center;}
+.ft-label{font-size:13px;font-weight:500;color:var(--bone);}
+.ft-desc{font-size:11px;color:var(--fog);margin-top:1px;}
+.ft-check{width:18px;height:18px;border-radius:3px;border:1.5px solid var(--wire);background:transparent;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;font-size:11px;color:transparent;}
+.ft-row.checked .ft-check{background:var(--ore);border-color:var(--ore);color:var(--chalk);}
+
+/* field map rows */
+.fm-row{display:grid;grid-template-columns:140px 1fr;gap:8px;align-items:center;}
+.fm-key{font-family:var(--fm);font-size:11px;color:var(--fog);letter-spacing:.5px;}
+.fm-val{background:var(--coal);border:1px solid var(--wire);border-radius:4px;color:var(--bone);font-family:var(--fm);font-size:12px;padding:8px 10px;outline:none;transition:border-color .2s;width:100%;}
+.fm-val:focus{border-color:var(--ore);}
+.fm-val::placeholder{color:var(--wire);}
+
+/* mfr filter chips */
+.mfr-chip-sel{padding:4px 10px;border-radius:3px;font-size:11px;font-weight:600;font-family:var(--fm);background:var(--coal3);border:1px solid var(--wire);cursor:pointer;transition:all .15s;color:var(--fog);}
+.mfr-chip-sel.on{background:rgba(224,92,26,.15);border-color:var(--ore);color:var(--ore);}
+
+/* action toggle rows */
+.act-row{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:1px solid var(--wire);}
+.act-row:last-child{border-bottom:none;}
+.act-label{font-size:13px;font-weight:500;color:var(--bone);}
+.act-desc{font-size:11px;color:var(--fog);margin-top:1px;}
+
+/* notif rows */
+.notif-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--wire);}
+.notif-row:last-child{border-bottom:none;}
+.notif-label{font-size:13.5px;font-weight:500;color:var(--bone);}
+.notif-desc{font-size:12px;color:var(--fog);margin-top:2px;}
+
 @media(max-width:880px){
   .stats{grid-template-columns:repeat(2,1fr);}
   .sidebar{display:none;}
@@ -402,22 +489,445 @@ tr.clickable:hover td{background:rgba(255,255,255,.02);cursor:pointer;}
 
       <!-- SETTINGS VIEW -->
       <div id="v-settings" style="display:none">
-        <div class="section">
-          <div class="sec-hdr"><span class="sec-title">Paramètres du compte</span></div>
-          <div style="padding:22px;display:flex;flex-direction:column;gap:14px;max-width:420px;">
-            <div class="fgrp"><label class="flbl">Nom du concessionnaire</label><input class="finp" id="setDealer"/></div>
-            <div class="fgrp"><label class="flbl">Courriel</label><input class="finp" id="setEmail" type="email"/></div>
-            <div class="fgrp">
-              <label class="flbl">Période d'essai</label>
-              <div style="font-family:var(--fm);font-size:12px;color:var(--fog);padding:10px 12px;background:var(--coal);border:1px solid var(--wire);border-radius:4px;" id="setTrial">—</div>
+
+        <!-- TABS settings -->
+        <div style="display:flex;gap:0;border-bottom:1px solid var(--wire);margin-bottom:20px;">
+          <button class="set-tab active" onclick="showSetTab('compte',this)">👤 Compte</button>
+          <button class="set-tab" onclick="showSetTab('integ',this)">🔗 Intégrations</button>
+          <button class="set-tab" onclick="showSetTab('notif',this)">🔔 Notifications</button>
+        </div>
+
+        <!-- ── TAB: COMPTE ── -->
+        <div id="st-compte">
+          <div class="section" style="margin-bottom:16px">
+            <div class="sec-hdr"><span class="sec-title">Informations du concessionnaire</span></div>
+            <div style="padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:680px">
+              <div class="fgrp"><label class="flbl">Prénom</label><input class="finp" id="setFirst" placeholder="Marc"/></div>
+              <div class="fgrp"><label class="flbl">Nom</label><input class="finp" id="setLast" placeholder="Tremblay"/></div>
+              <div class="fgrp" style="grid-column:1/-1"><label class="flbl">Nom du concessionnaire</label><input class="finp" id="setDealer" placeholder="RV Pro Montréal"/></div>
+              <div class="fgrp" style="grid-column:1/-1"><label class="flbl">Courriel</label><input class="finp" id="setEmail" type="email"/></div>
+              <div class="fgrp"><label class="flbl">Téléphone</label><input class="finp" id="setPhone" placeholder="514-000-0000"/></div>
+              <div class="fgrp"><label class="flbl">Province</label>
+                <select class="fsel" id="setProvince">
+                  <option>Québec</option><option>Ontario</option><option>Alberta</option>
+                  <option>Colombie-Britannique</option><option>Autre</option>
+                </select>
+              </div>
+              <div class="fgrp" style="grid-column:1/-1">
+                <label class="flbl">Période d'essai</label>
+                <div style="font-family:var(--fm);font-size:12px;color:var(--fog);padding:10px 12px;background:var(--coal);border:1px solid var(--wire);border-radius:4px" id="setTrial">—</div>
+              </div>
+              <div style="grid-column:1/-1">
+                <button class="btn btn-primary btn-sm" onclick="saveAccountSettings()">💾 Sauvegarder</button>
+              </div>
             </div>
-            <button class="btn btn-primary btn-sm" style="width:fit-content" onclick="toast('ok','Sauvegardé','Vos paramètres ont été mis à jour.')">Sauvegarder</button>
+          </div>
+
+          <div class="section">
+            <div class="sec-hdr"><span class="sec-title">Changer le mot de passe</span></div>
+            <div style="padding:20px;display:flex;flex-direction:column;gap:14px;max-width:340px">
+              <div class="fgrp"><label class="flbl">Mot de passe actuel</label><input class="finp" type="password" id="setPwCurrent" placeholder="••••••••"/></div>
+              <div class="fgrp"><label class="flbl">Nouveau mot de passe</label><input class="finp" type="password" id="setPwNew" placeholder="8 caractères minimum"/></div>
+              <div class="fgrp"><label class="flbl">Confirmer</label><input class="finp" type="password" id="setPwConfirm" placeholder="••••••••"/></div>
+              <button class="btn btn-ghost btn-sm" style="width:fit-content" onclick="toast('ok','Mot de passe changé','Votre mot de passe a été mis à jour.')">Changer</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── TAB: INTÉGRATIONS ── -->
+        <div id="st-integ" style="display:none">
+
+          <!-- INTRO BANNER -->
+          <div style="background:rgba(224,92,26,.06);border:1px solid rgba(224,92,26,.2);border-radius:6px;padding:16px 18px;margin-bottom:18px;display:flex;align-items:flex-start;gap:12px;">
+            <span style="font-size:22px;flex-shrink:0">⚡</span>
+            <div>
+              <div style="font-family:var(--fd);font-size:16px;font-weight:800;color:var(--chalk);margin-bottom:4px">Comment ça fonctionne</div>
+              <div style="font-size:13px;color:var(--fog);line-height:1.7">
+                Chaque application de formulaire envoie ses soumissions à une <strong style="color:var(--bone)">URL webhook unique</strong>.
+                Tu colles cette URL dans ton app, et chaque formulaire soumis par un technicien crée automatiquement un claim dans LUKANE RV — sans aucune manipulation manuelle.
+              </div>
+            </div>
+          </div>
+
+          <!-- VOTRE URL WEBHOOK -->
+          <div class="section" style="margin-bottom:16px">
+            <div class="sec-hdr"><span class="sec-title">🔗 Votre URL webhook LUKANE RV</span></div>
+            <div style="padding:18px;display:flex;flex-direction:column;gap:10px">
+              <div style="font-size:13px;color:var(--fog);line-height:1.6">C'est <strong style="color:var(--bone)">l'URL à copier</strong> dans n'importe quelle application de formulaire pour envoyer les soumissions vers LUKANE RV.</div>
+              <div style="display:flex;gap:8px;align-items:stretch">
+                <div style="flex:1;font-family:var(--fm);font-size:12px;background:var(--coal);border:1px solid var(--ore);border-radius:4px;padding:11px 14px;color:var(--ore);word-break:break-all;line-height:1.5" id="myWebhookUrl">https://lukanerv.vercel.app/api/webhook</div>
+                <button class="btn btn-primary btn-sm" onclick="copyWebhookUrl()" style="flex-shrink:0">📋 Copier</button>
+              </div>
+              <div style="font-family:var(--fm);font-size:11px;color:var(--wire);letter-spacing:.5px">// Cette URL est unique à votre compte — ne la partagez pas</div>
+            </div>
+          </div>
+
+          <!-- MES INTÉGRATIONS ACTIVES -->
+          <div class="section" style="margin-bottom:16px">
+            <div class="sec-hdr">
+              <span class="sec-title">Mes intégrations</span>
+              <button class="btn btn-primary btn-sm" onclick="openAddWebhook()">+ Ajouter une intégration</button>
+            </div>
+            <div id="webhookList"></div>
+          </div>
+
+          <!-- GUIDES PAR APPLICATION -->
+          <div class="section">
+            <div class="sec-hdr"><span class="sec-title">📖 Guides de configuration par application</span></div>
+
+            <!-- App selector tabs -->
+            <div style="display:flex;gap:0;border-bottom:1px solid var(--wire);padding:0 18px;overflow-x:auto">
+              <button class="guide-tab active" onclick="showGuide('fastfield',this)">📱 FastField</button>
+              <button class="guide-tab" onclick="showGuide('tally',this)">📋 Tally</button>
+              <button class="guide-tab" onclick="showGuide('jotform',this)">📝 Jotform</button>
+              <button class="guide-tab" onclick="showGuide('typeform',this)">🎯 Typeform</button>
+              <button class="guide-tab" onclick="showGuide('custom',this)">⚙️ Custom JSON</button>
+            </div>
+
+            <!-- FASTFIELD GUIDE -->
+            <div class="guide-content" id="guide-fastfield" style="padding:20px;display:block">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+                <div>
+                  <div style="font-family:var(--fd);font-size:18px;font-weight:800;color:var(--chalk);margin-bottom:4px">FastField Forms</div>
+                  <div style="font-size:12px;color:var(--fog);margin-bottom:16px">Plan Business ou Enterprise requis (webhooks HTTP/HTTPS)</div>
+                  <div style="display:flex;flex-direction:column;gap:0">
+                    <div class="guide-step">
+                      <div class="gs-num">1</div>
+                      <div class="gs-body">
+                        <div class="gs-title">Connecte-toi au portail FastField</div>
+                        <div class="gs-desc">Va sur <strong style="color:var(--ore)">app.fastfieldforms.com</strong> et ouvre ton formulaire "BT tâche en garantie" (ou ton formulaire de claim).</div>
+                      </div>
+                    </div>
+                    <div class="guide-step">
+                      <div class="gs-num">2</div>
+                      <div class="gs-body">
+                        <div class="gs-title">Ouvre le Form Builder</div>
+                        <div class="gs-desc">Clique sur <span class="gs-tag">Edit Form</span> puis sur le bouton bleu <span class="gs-tag">Delivery</span> en haut à droite.</div>
+                      </div>
+                    </div>
+                    <div class="guide-step">
+                      <div class="gs-num">3</div>
+                      <div class="gs-body">
+                        <div class="gs-title">Ajouter une action HTTP/HTTPS</div>
+                        <div class="gs-desc">Dans la colonne <em>Form Submit Actions</em>, glisse le bloc <span class="gs-tag">HTTP/HTTPS</span> dans la zone d'actions.</div>
+                      </div>
+                    </div>
+                    <div class="guide-step">
+                      <div class="gs-num">4</div>
+                      <div class="gs-body">
+                        <div class="gs-title">Colle l'URL webhook</div>
+                        <div class="gs-desc">Dans le champ <strong style="color:var(--bone)">URL</strong>, colle ton URL LUKANE RV. Sélectionne le format <span class="gs-tag">JSON</span>. Méthode : <span class="gs-tag">POST</span>.</div>
+                        <div class="gs-code" onclick="copyText(this)">https://lukanerv.vercel.app/api/webhook <span style="color:var(--wire)">// cliquer pour copier</span></div>
+                      </div>
+                    </div>
+                    <div class="guide-step">
+                      <div class="gs-num">5</div>
+                      <div class="gs-body">
+                        <div class="gs-title">Nomme tes champs correctement</div>
+                        <div class="gs-desc">Assure-toi que tes questions dans FastField contiennent ces mots-clés dans leur titre (insensible à la casse) :</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div style="font-family:var(--fm);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--fog);margin-bottom:10px">Correspondance des champs FastField</div>
+                  <div style="display:flex;flex-direction:column;gap:0;border:1px solid var(--wire);border-radius:5px;overflow:hidden">
+                    <div class="field-map-row hdr"><span>Champ LUKANE RV</span><span>Titre question FastField</span></div>
+                    <div class="field-map-row"><span class="fmr-key">Manufacturier</span><span class="fmr-val">"Manufacturier"</span></div>
+                    <div class="field-map-row"><span class="fmr-key">Modèle</span><span class="fmr-val">"Modèle" ou "Unité"</span></div>
+                    <div class="field-map-row"><span class="fmr-key">VIN</span><span class="fmr-val">"VIN"</span></div>
+                    <div class="field-map-row"><span class="fmr-key">Année</span><span class="fmr-val">"Année"</span></div>
+                    <div class="field-map-row"><span class="fmr-key">Catégorie</span><span class="fmr-val">"Catégorie de défaut"</span></div>
+                    <div class="field-map-row"><span class="fmr-key">Description</span><span class="fmr-val">"Description du défaut"</span></div>
+                    <div class="field-map-row"><span class="fmr-key">Technicien</span><span class="fmr-val">"Nom du technicien"</span></div>
+                    <div class="field-map-row"><span class="fmr-key">Bon de travail</span><span class="fmr-val">"Bon de travail"</span></div>
+                  </div>
+                  <div style="margin-top:14px">
+                    <div style="font-family:var(--fm);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--fog);margin-bottom:8px">Test de connexion</div>
+                    <button class="btn btn-ghost btn-sm" onclick="testWebhookConnection('fastfield')">🧪 Simuler une soumission FastField</button>
+                    <div style="font-size:11px;color:var(--fog);margin-top:6px">Envoie un claim de test pour valider que l'intégration fonctionne.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- TALLY GUIDE -->
+            <div class="guide-content" id="guide-tally" style="padding:20px;display:none">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+                <div>
+                  <div style="font-family:var(--fd);font-size:18px;font-weight:800;color:var(--chalk);margin-bottom:4px">Tally</div>
+                  <div style="font-size:12px;color:var(--fog);margin-bottom:16px">Gratuit — webhooks disponibles sur tous les plans</div>
+                  <div style="display:flex;flex-direction:column;gap:0">
+                    <div class="guide-step">
+                      <div class="gs-num">1</div>
+                      <div class="gs-body">
+                        <div class="gs-title">Ouvre ton formulaire dans Tally</div>
+                        <div class="gs-desc">Va sur <strong style="color:var(--ore)">tally.so</strong>, sélectionne ton formulaire de claim et clique sur <span class="gs-tag">Integrate</span>.</div>
+                      </div>
+                    </div>
+                    <div class="guide-step">
+                      <div class="gs-num">2</div>
+                      <div class="gs-body">
+                        <div class="gs-title">Ajoute un Webhook</div>
+                        <div class="gs-desc">Dans la liste des intégrations, clique sur <span class="gs-tag">Webhooks</span> puis <span class="gs-tag">+ New webhook</span>.</div>
+                      </div>
+                    </div>
+                    <div class="guide-step">
+                      <div class="gs-num">3</div>
+                      <div class="gs-body">
+                        <div class="gs-title">Configure l'URL</div>
+                        <div class="gs-desc">Colle l'URL LUKANE RV dans le champ <strong style="color:var(--bone)">Endpoint URL</strong>. Event : <span class="gs-tag">FORM_RESPONSE</span>.</div>
+                        <div class="gs-code" onclick="copyText(this)">https://lukanerv.vercel.app/api/webhook</div>
+                      </div>
+                    </div>
+                    <div class="guide-step">
+                      <div class="gs-num">4</div>
+                      <div class="gs-body">
+                        <div class="gs-title">Clé API Tally (optionnel)</div>
+                        <div class="gs-desc">Si tu veux sécuriser la connexion, entre ta clé API Tally dans le champ ci-dessous et ajoute-la dans Tally sous <span class="gs-tag">Secret</span>.</div>
+                        <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+                          <input class="finp" placeholder="tly-XXXXXXXXXXXXXXXXXX" id="tallyKeyInput" style="font-family:var(--fm);font-size:12px;flex:1" value="tly-P7b9HaYUP9xpBQG2JGf5jKvuStCHKsae"/>
+                          <button class="btn btn-ghost btn-sm" onclick="saveTallyKey()">Sauvegarder</button>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="guide-step">
+                      <div class="gs-num">5</div>
+                      <div class="gs-body">
+                        <div class="gs-title">Teste la connexion</div>
+                        <div class="gs-desc">Clique sur <span class="gs-tag">Send test</span> dans Tally, ou utilise le bouton ci-dessous.</div>
+                        <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="testWebhookConnection('tally')">🧪 Simuler une soumission Tally</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div style="font-family:var(--fm);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--fog);margin-bottom:10px">Correspondance des champs Tally</div>
+                  <div style="display:flex;flex-direction:column;gap:0;border:1px solid var(--wire);border-radius:5px;overflow:hidden">
+                    <div class="field-map-row hdr"><span>Champ LUKANE RV</span><span>Label question Tally</span></div>
+                    <div class="field-map-row"><span class="fmr-key">Manufacturier</span><span class="fmr-val">"Manufacturier"</span></div>
+                    <div class="field-map-row"><span class="fmr-key">Modèle</span><span class="fmr-val">"Modèle" ou "Unité"</span></div>
+                    <div class="field-map-row"><span class="fmr-key">VIN</span><span class="fmr-val">"VIN"</span></div>
+                    <div class="field-map-row"><span class="fmr-key">Année</span><span class="fmr-val">"Année"</span></div>
+                    <div class="field-map-row"><span class="fmr-key">Catégorie</span><span class="fmr-val">"Catégorie de défaut"</span></div>
+                    <div class="field-map-row"><span class="fmr-key">Description</span><span class="fmr-val">"Description" ou "Problème"</span></div>
+                    <div class="field-map-row"><span class="fmr-key">Technicien</span><span class="fmr-val">"Technicien" ou "Nom"</span></div>
+                    <div class="field-map-row"><span class="fmr-key">Bon de travail</span><span class="fmr-val">"Bon de travail"</span></div>
+                  </div>
+                  <div style="margin-top:14px;background:rgba(46,204,113,.06);border:1px solid rgba(46,204,113,.2);border-radius:5px;padding:12px 14px">
+                    <div style="font-family:var(--fm);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--green);margin-bottom:6px">✓ Clé API détectée</div>
+                    <div style="font-size:12px;color:var(--fog)">Ta clé <strong style="color:var(--bone);font-family:var(--fm)">tly-P7b9...</strong> est configurée. Les soumissions Tally seront authentifiées automatiquement.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- JOTFORM GUIDE -->
+            <div class="guide-content" id="guide-jotform" style="padding:20px;display:none">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+                <div>
+                  <div style="font-family:var(--fd);font-size:18px;font-weight:800;color:var(--chalk);margin-bottom:4px">Jotform</div>
+                  <div style="font-size:12px;color:var(--fog);margin-bottom:16px">Plan Bronze ou supérieur recommandé</div>
+                  <div style="display:flex;flex-direction:column;gap:0">
+                    <div class="guide-step"><div class="gs-num">1</div><div class="gs-body"><div class="gs-title">Ouvre ton formulaire Jotform</div><div class="gs-desc">Dans <strong style="color:var(--ore)">jotform.com</strong>, clique sur <span class="gs-tag">Settings</span> de ton formulaire de claim.</div></div></div>
+                    <div class="guide-step"><div class="gs-num">2</div><div class="gs-body"><div class="gs-title">Intégrations → Webhooks</div><div class="gs-desc">Va dans l'onglet <span class="gs-tag">Integrations</span>, cherche <span class="gs-tag">Webhooks</span> et clique dessus.</div></div></div>
+                    <div class="guide-step"><div class="gs-num">3</div><div class="gs-body"><div class="gs-title">Colle l'URL</div><div class="gs-desc">Entre l'URL LUKANE RV dans le champ <strong style="color:var(--bone)">Webhook URL</strong> et clique <span class="gs-tag">Complete Integration</span>.</div><div class="gs-code" onclick="copyText(this)">https://lukanerv.vercel.app/api/webhook</div></div></div>
+                    <div class="guide-step"><div class="gs-num">4</div><div class="gs-body"><div class="gs-title">Teste</div><div class="gs-desc">Soumets ton formulaire une fois en mode test pour valider la réception.</div><button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="testWebhookConnection('jotform')">🧪 Simuler une soumission Jotform</button></div></div>
+                  </div>
+                </div>
+                <div>
+                  <div style="font-family:var(--fm);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--fog);margin-bottom:10px">Correspondance des champs</div>
+                  <div style="display:flex;flex-direction:column;gap:0;border:1px solid var(--wire);border-radius:5px;overflow:hidden">
+                    <div class="field-map-row hdr"><span>Champ LUKANE RV</span><span>Nom du champ Jotform</span></div>
+                    <div class="field-map-row"><span class="fmr-key">Manufacturier</span><span class="fmr-val">q1_manufacturier</span></div>
+                    <div class="field-map-row"><span class="fmr-key">Modèle</span><span class="fmr-val">q2_modele</span></div>
+                    <div class="field-map-row"><span class="fmr-key">VIN</span><span class="fmr-val">q3_vin</span></div>
+                    <div class="field-map-row"><span class="fmr-key">Année</span><span class="fmr-val">q4_annee</span></div>
+                    <div class="field-map-row"><span class="fmr-key">Catégorie</span><span class="fmr-val">q5_categorie</span></div>
+                    <div class="field-map-row"><span class="fmr-key">Description</span><span class="fmr-val">q6_description</span></div>
+                    <div class="field-map-row"><span class="fmr-key">Technicien</span><span class="fmr-val">q7_technicien</span></div>
+                    <div class="field-map-row"><span class="fmr-key">Bon de travail</span><span class="fmr-val">q8_bonTravail</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- TYPEFORM GUIDE -->
+            <div class="guide-content" id="guide-typeform" style="padding:20px;display:none">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+                <div>
+                  <div style="font-family:var(--fd);font-size:18px;font-weight:800;color:var(--chalk);margin-bottom:4px">Typeform</div>
+                  <div style="font-size:12px;color:var(--fog);margin-bottom:16px">Plan Business requis pour les webhooks</div>
+                  <div style="display:flex;flex-direction:column;gap:0">
+                    <div class="guide-step"><div class="gs-num">1</div><div class="gs-body"><div class="gs-title">Ouvre Connect dans Typeform</div><div class="gs-desc">Dans ton formulaire <strong style="color:var(--ore)">typeform.com</strong>, clique sur <span class="gs-tag">Connect</span> dans le menu du haut.</div></div></div>
+                    <div class="guide-step"><div class="gs-num">2</div><div class="gs-body"><div class="gs-title">Webhooks → Add a webhook</div><div class="gs-desc">Clique sur <span class="gs-tag">Webhooks</span> dans la liste, puis <span class="gs-tag">+ Add a webhook</span>.</div></div></div>
+                    <div class="guide-step"><div class="gs-num">3</div><div class="gs-body"><div class="gs-title">Colle l'URL et sauvegarde</div><div class="gs-desc">Entre l'URL, active <span class="gs-tag">Enabled</span> et clique <span class="gs-tag">Save webhook</span>.</div><div class="gs-code" onclick="copyText(this)">https://lukanerv.vercel.app/api/webhook</div></div></div>
+                    <div class="guide-step"><div class="gs-num">4</div><div class="gs-body"><div class="gs-title">Teste avec "View deliveries"</div><div class="gs-desc">Soumets une réponse test et vérifie dans "View deliveries" que le statut est 200 OK.</div><button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="testWebhookConnection('typeform')">🧪 Simuler une soumission Typeform</button></div></div>
+                  </div>
+                </div>
+                <div>
+                  <div style="font-family:var(--fm);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--fog);margin-bottom:10px">Correspondance des champs</div>
+                  <div style="display:flex;flex-direction:column;gap:0;border:1px solid var(--wire);border-radius:5px;overflow:hidden">
+                    <div class="field-map-row hdr"><span>Champ LUKANE RV</span><span>Ref du champ Typeform</span></div>
+                    <div class="field-map-row"><span class="fmr-key">Manufacturier</span><span class="fmr-val">manufacturier</span></div>
+                    <div class="field-map-row"><span class="fmr-key">Modèle</span><span class="fmr-val">modele_unite</span></div>
+                    <div class="field-map-row"><span class="fmr-key">VIN</span><span class="fmr-val">vin</span></div>
+                    <div class="field-map-row"><span class="fmr-key">Année</span><span class="fmr-val">annee</span></div>
+                    <div class="field-map-row"><span class="fmr-key">Catégorie</span><span class="fmr-val">categorie_defaut</span></div>
+                    <div class="field-map-row"><span class="fmr-key">Description</span><span class="fmr-val">description</span></div>
+                    <div class="field-map-row"><span class="fmr-key">Technicien</span><span class="fmr-val">technicien</span></div>
+                    <div class="field-map-row"><span class="fmr-key">Bon de travail</span><span class="fmr-val">bon_travail</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- CUSTOM JSON GUIDE -->
+            <div class="guide-content" id="guide-custom" style="padding:20px;display:none">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+                <div>
+                  <div style="font-family:var(--fd);font-size:18px;font-weight:800;color:var(--chalk);margin-bottom:4px">Webhook JSON personnalisé</div>
+                  <div style="font-size:12px;color:var(--fog);margin-bottom:16px">Pour tout système qui envoie du JSON via HTTP POST</div>
+                  <div style="display:flex;flex-direction:column;gap:0">
+                    <div class="guide-step"><div class="gs-num">1</div><div class="gs-body"><div class="gs-title">Configure ton système</div><div class="gs-desc">Ton système doit faire un <strong style="color:var(--bone)">HTTP POST</strong> vers l'URL LUKANE RV avec un <strong style="color:var(--bone)">Content-Type: application/json</strong>.</div></div></div>
+                    <div class="guide-step"><div class="gs-num">2</div><div class="gs-body"><div class="gs-title">Format JSON attendu</div><div class="gs-desc">Envoie un objet JSON avec les champs ci-contre. Tous les champs sont optionnels sauf <span class="gs-tag">mfr</span> et <span class="gs-tag">desc</span>.</div></div></div>
+                    <div class="guide-step"><div class="gs-num">3</div><div class="gs-body"><div class="gs-title">Authentification (optionnel)</div><div class="gs-desc">Ajoute le header <span class="gs-tag">X-API-Key: VOTRE_CLE</span> pour sécuriser les requêtes.</div></div></div>
+                    <div class="guide-step"><div class="gs-num">4</div><div class="gs-body"><div class="gs-title">Test avec cURL</div><div class="gs-desc">Copie cette commande pour tester immédiatement :</div><div class="gs-code" onclick="copyText(this)" style="font-size:10px;line-height:1.6">curl -X POST https://lukanerv.vercel.app/api/webhook \
+-H "Content-Type: application/json" \
+-d '{"mfr":"Grand Design","unit":"Reflection 303RLS","vin":"4X4GD2025001","year":"2025","category":"Slide room","desc":"slide sort pas","tech":"Marc","bt":"BT-001"}'</div></div></div>
+                  </div>
+                </div>
+                <div>
+                  <div style="font-family:var(--fm);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--fog);margin-bottom:10px">Format JSON attendu</div>
+                  <div style="background:var(--coal);border:1px solid var(--wire);border-radius:5px;padding:14px;font-family:var(--fm);font-size:12px;color:rgba(240,236,227,.7);line-height:1.8">
+                    {<br>
+                    &nbsp;&nbsp;<span style="color:var(--ore)">"mfr"</span>: <span style="color:var(--green)">"Grand Design"</span>,<br>
+                    &nbsp;&nbsp;<span style="color:var(--ore)">"unit"</span>: <span style="color:var(--green)">"Reflection 303RLS"</span>,<br>
+                    &nbsp;&nbsp;<span style="color:var(--ore)">"vin"</span>: <span style="color:var(--green)">"4X4GD2025001"</span>,<br>
+                    &nbsp;&nbsp;<span style="color:var(--ore)">"year"</span>: <span style="color:var(--green)">"2025"</span>,<br>
+                    &nbsp;&nbsp;<span style="color:var(--ore)">"category"</span>: <span style="color:var(--green)">"Slide room"</span>,<br>
+                    &nbsp;&nbsp;<span style="color:var(--ore)">"desc"</span>: <span style="color:var(--green)">"slide sort pas..."</span>,<br>
+                    &nbsp;&nbsp;<span style="color:var(--ore)">"tech"</span>: <span style="color:var(--green)">"Marc Tremblay"</span>,<br>
+                    &nbsp;&nbsp;<span style="color:var(--ore)">"bt"</span>: <span style="color:var(--green)">"BT-2025-001"</span><br>
+                    }
+                  </div>
+                  <div style="margin-top:12px">
+                    <button class="btn btn-ghost btn-sm" onclick="testWebhookConnection('custom')">🧪 Envoyer un test JSON</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /section guides -->
+        </div><!-- /st-integ -->
+
+        <!-- ── TAB: NOTIFICATIONS ── -->
+        <div id="st-notif" style="display:none">
+          <div class="section">
+            <div class="sec-hdr"><span class="sec-title">Préférences de notifications</span></div>
+            <div style="padding:20px;display:flex;flex-direction:column;gap:0">
+              <!-- notification rows -->
+              <div id="notifRows"></div>
+              <div style="margin-top:18px">
+                <button class="btn btn-primary btn-sm" onclick="toast('ok','Sauvegardé','Préférences de notifications mises à jour.')">💾 Sauvegarder</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /v-settings -->
+
+    </div>
+  </main>
+</div>
+
+<!-- ═══ WEBHOOK ADD MODAL ═══ -->
+<div class="modal-bg" id="webhookModalBg" onclick="closeWebhookModal(event)" style="display:none">
+  <div class="modal" id="webhookModal" style="max-width:620px">
+    <div class="modal-hdr">
+      <div class="modal-hdr-left">
+        <span class="modal-id">INTÉGRATION</span>
+        <span class="modal-unit" id="wm-title">Nouvelle intégration</span>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="closeWebhookModal()">✕ Fermer</button>
+    </div>
+    <div class="modal-body" style="padding:22px;display:flex;flex-direction:column;gap:16px;overflow-y:auto;max-height:75vh">
+
+      <!-- App selector -->
+      <div>
+        <div class="flbl" style="margin-bottom:10px">Application de formulaire</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px" id="wmAppPicker">
+          <!-- populated by JS -->
+        </div>
+      </div>
+
+      <div style="height:1px;background:var(--wire)"></div>
+
+      <!-- Fields -->
+      <div class="fgrp">
+        <label class="flbl">Nom de l'intégration</label>
+        <input class="finp" id="wmName" placeholder="ex: Formulaire BT Garantie — Atelier Nord"/>
+      </div>
+
+      <div class="fgrp">
+        <label class="flbl">Clé API / Token (optionnel)</label>
+        <input class="finp" id="wmApiKey" placeholder="Collez votre clé API ici" style="font-family:var(--fm);font-size:12px"/>
+        <div style="font-size:11px;color:var(--fog);margin-top:4px;font-family:var(--fm)">Utilisée pour authentifier les requêtes entrantes. Laissez vide si non requis.</div>
+      </div>
+
+      <div style="height:1px;background:var(--wire)"></div>
+
+      <!-- Form type -->
+      <div>
+        <div class="flbl" style="margin-bottom:10px">Type de formulaire synchronisé</div>
+        <div style="display:flex;flex-direction:column;gap:0;border:1px solid var(--wire);border-radius:6px;overflow:hidden" id="wmFormTypes">
+          <!-- populated by JS -->
+        </div>
+      </div>
+
+      <!-- Field mapping -->
+      <div>
+        <div class="flbl" style="margin-bottom:10px">Correspondance des champs</div>
+        <div style="font-size:12px;color:var(--fog);margin-bottom:10px;line-height:1.6">Indique comment tes champs Tally/FastField correspondent aux champs LUKANE RV. Utilise le label exact de la question dans ton formulaire.</div>
+        <div style="display:flex;flex-direction:column;gap:8px" id="wmFieldMap">
+          <!-- populated by JS -->
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div>
+        <div class="flbl" style="margin-bottom:10px">Filtres (optionnel)</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div class="fgrp">
+            <label class="flbl" style="font-size:9px">Manufacturiers acceptés (laisse vide pour tous)</label>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;padding:10px;background:var(--coal);border:1px solid var(--wire);border-radius:4px" id="wmMfrFilter">
+              <!-- populated by JS -->
+            </div>
+          </div>
+          <div class="fgrp">
+            <label class="flbl" style="font-size:9px">Techniciens autorisés (laisse vide pour tous)</label>
+            <input class="finp" id="wmTechFilter" placeholder="Marc Tremblay, Sophie Gagné, ..."/>
           </div>
         </div>
       </div>
 
+      <!-- Actions on receive -->
+      <div>
+        <div class="flbl" style="margin-bottom:10px">Actions automatiques à la réception</div>
+        <div style="display:flex;flex-direction:column;gap:0;border:1px solid var(--wire);border-radius:6px;overflow:hidden" id="wmActions">
+          <!-- populated by JS -->
+        </div>
+      </div>
+
     </div>
-  </main>
+    <div class="modal-footer">
+      <span class="modal-footer-left" id="wmStatus">Configurez votre intégration</span>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost btn-sm" onclick="closeWebhookModal()">Annuler</button>
+        <button class="btn btn-primary btn-sm" onclick="saveWebhook()">💾 Sauvegarder</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ═══ SLIDE PANEL — NOUVEAU CLAIM ═══ -->
@@ -1217,6 +1727,60 @@ document.addEventListener('keydown', e => {
 });
 
 /* ══════════════════════════════════════
+   GUIDE FUNCTIONS
+══════════════════════════════════════ */
+function showGuide(app, btn) {
+  document.querySelectorAll('.guide-content').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('.guide-tab').forEach(b => b.classList.remove('active'));
+  const el = document.getElementById('guide-' + app);
+  if (el) el.style.display = 'block';
+  if (btn) btn.classList.add('active');
+}
+
+function copyText(el) {
+  const text = el.innerText.replace(' // cliquer pour copier','').trim();
+  navigator.clipboard?.writeText(text);
+  const orig = el.style.borderColor;
+  el.style.borderColor = 'var(--green)';
+  setTimeout(() => el.style.borderColor = orig, 1200);
+  toast('ok', 'Copié !', '');
+}
+
+function copyWebhookUrl() {
+  const url = document.getElementById('myWebhookUrl')?.textContent?.trim();
+  navigator.clipboard?.writeText(url);
+  toast('ok', 'URL copiée !', 'Collez-la dans votre application de formulaire.');
+}
+
+function saveTallyKey() {
+  const key = document.getElementById('tallyKeyInput')?.value?.trim();
+  if (key) {
+    localStorage.setItem('lukane_tally_key', key);
+    toast('ok', 'Clé Tally sauvegardée', key.slice(0,12) + '...');
+  }
+}
+
+function testWebhookConnection(app) {
+  const apps = { fastfield:'FastField', tally:'Tally', jotform:'Jotform', typeform:'Typeform', custom:'JSON' };
+  // Simulate receiving a test submission
+  const now = new Date();
+  const claim = {
+    id: 'TEST-' + String(Math.floor(Math.random()*9000)+1000),
+    source: app,
+    mfr: 'Grand Design', unit: '2025 Grand Design Reflection 303RLS',
+    vin: 'TEST123456789', year: '2025',
+    cat: 'Slide room / extension',
+    desc: '[TEST] Ceci est une soumission de test depuis ' + (apps[app]||app),
+    tech: 'Test Technicien', bt: 'BT-TEST-001',
+    status: 'new', prob: 0, aiDesc: '', parts: [], photos: [], notes: '',
+    date: now.toISOString().slice(0,10), createdAt: now.toISOString(),
+  };
+  CLAIMS.unshift(claim);
+  renderAll();
+  toast('ok', '✅ Test réussi — ' + (apps[app]||app), 'Le claim de test est apparu dans votre dashboard.');
+}
+
+/* ══════════════════════════════════════
    TALLY INTEGRATION
 ══════════════════════════════════════ */
 
@@ -1261,6 +1825,346 @@ function simulateTallySubmission() {
   CLAIMS.unshift(claim);
   renderAll();
   toast('ok', '📨 Nouvelle soumission Tally !', `${claim.mfr} · ${claim.bt}`);
+}
+
+/* ══════════════════════════════════════
+   SETTINGS — DATA
+══════════════════════════════════════ */
+
+const APPS = [
+  { id:'tally',      name:'Tally',       icon:'📋', desc:'Formulaires no-code',          status:'ok',   color:'#6366f1' },
+  { id:'fastfield',  name:'FastField',   icon:'📱', desc:'Formulaires mobiles terrain',  status:'ok',   color:'#0ea5e9' },
+  { id:'jotform',    name:'Jotform',     icon:'📝', desc:'Formulaires en ligne',          status:'ok',   color:'#f97316' },
+  { id:'typeform',   name:'Typeform',    icon:'🎯', desc:'Formulaires interactifs',       status:'beta', color:'#8b5cf6' },
+  { id:'googleform', name:'Google Forms',icon:'🔵', desc:'Formulaires Google',            status:'beta', color:'#4285f4' },
+  { id:'surveysparrow',name:'SurveySparrow',icon:'🐦',desc:'Sondages & formulaires',     status:'soon', color:'#10b981' },
+  { id:'paperform',  name:'Paperform',   icon:'📄', desc:'Formulaires avancés',           status:'soon', color:'#ec4899' },
+  { id:'custom',     name:'Autre / Custom',icon:'⚙️',desc:'Webhook JSON personnalisé',   status:'ok',   color:'#64748b' },
+];
+
+const FORM_TYPES = [
+  { id:'warranty',   icon:'🔧', label:'Réclamation garantie',     desc:'Claims au manufacturier — type principal LUKANE RV', default:true },
+  { id:'inspection', icon:'🔍', label:'Inspection pré-livraison', desc:'PDI — Pre-Delivery Inspection avant remise au client', default:false },
+  { id:'repair',     icon:'🛠️', label:'Bon de réparation',        desc:'Réparations hors garantie / service payant', default:false },
+  { id:'recall',     icon:'⚠️', label:'Rappel manufacturier',     desc:'Suivi des recall notices officiels', default:false },
+  { id:'complaint',  icon:'📣', label:'Plainte client',           desc:'Formulaire de satisfaction / plainte', default:false },
+  { id:'parts',      icon:'📦', label:'Commande de pièces',       desc:'Requête de pièces liées à un claim', default:false },
+  { id:'photo',      icon:'📷', label:'Rapport photo seulement',  desc:'Soumission de photos sans claim complet', default:false },
+];
+
+const FIELD_MAP_KEYS = [
+  { key:'mfr',      label:'Manufacturier',     placeholder:'Manufacturier' },
+  { key:'unit',     label:'Modèle / Unité',    placeholder:'Modèle' },
+  { key:'vin',      label:'VIN',               placeholder:'VIN' },
+  { key:'year',     label:'Année',             placeholder:'Année' },
+  { key:'category', label:'Catégorie défaut',  placeholder:'Catégorie de défaut' },
+  { key:'desc',     label:'Description',       placeholder:'Description du défaut' },
+  { key:'tech',     label:'Technicien',        placeholder:'Nom du technicien' },
+  { key:'bt',       label:'Bon de travail',    placeholder:'Bon de travail' },
+];
+
+const AUTO_ACTIONS = [
+  { id:'ai_analyze',  label:'Analyser avec l\'IA automatiquement', desc:'Génère la description officielle et suggère les pièces dès réception', default:true },
+  { id:'notify_email',label:'Envoyer une notification par email',  desc:'Alerte par courriel à chaque nouveau formulaire reçu', default:true },
+  { id:'auto_status', label:'Statut "Nouveau" automatique',        desc:'Marque le claim comme Nouveau et l\'ajoute au tableau de bord', default:true },
+  { id:'pdf_attach',  label:'Joindre le PDF de soumission',        desc:'Tally génère un PDF — l\'attacher automatiquement au claim', default:false },
+  { id:'tech_notify', label:'Notifier le technicien',              desc:'Envoyer une confirmation au technicien qui a soumis le formulaire', default:false },
+];
+
+const MFR_LIST = ['Grand Design','Jayco','Forest River','Winnebago','Keystone RV','Coachmen','Heartland','Thor Industries'];
+
+const NOTIF_CONFIG = [
+  { id:'new_claim',   label:'Nouveau claim reçu',         desc:'Chaque fois qu\'un formulaire arrive via webhook' },
+  { id:'ai_done',     label:'Analyse IA terminée',        desc:'Quand l\'IA a fini d\'analyser un claim' },
+  { id:'approved',    label:'Claim approuvé',             desc:'Quand vous changez le statut à Approuvé' },
+  { id:'refused',     label:'Claim refusé',               desc:'Quand vous changez le statut à Refusé' },
+  { id:'trial_warn',  label:'Avertissement essai',        desc:'Rappel quand il reste 3 jours d\'essai' },
+  { id:'weekly_sum',  label:'Résumé hebdomadaire',        desc:'Rapport chaque lundi matin par email' },
+];
+
+// Stored webhooks
+let WEBHOOKS = JSON.parse(localStorage.getItem('lukane_webhooks') || '[]');
+let WM_SELECTED_APP = null;
+let WM_FORM_TYPES   = new Set(['warranty']);
+let WM_ACTIONS      = new Set(['ai_analyze','notify_email','auto_status']);
+let WM_MFR_FILTER   = new Set();
+let WM_EDIT_ID      = null;
+
+/* ══ SETTINGS TABS ══ */
+function showSetTab(tab, btn) {
+  ['compte','integ','notif'].forEach(t => {
+    document.getElementById('st-'+t).style.display = t===tab ? 'block' : 'none';
+  });
+  document.querySelectorAll('.set-tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  if (tab === 'integ')  renderWebhookList();
+  if (tab === 'notif')  renderNotifSettings();
+}
+
+function saveAccountSettings() {
+  toast('ok','Sauvegardé','Vos informations ont été mises à jour.');
+}
+
+/* ══ SUPPORTED APPS GRID ══ */
+function renderAppGrid() {
+  const grid = document.getElementById('appGrid');
+  if (!grid) return;
+  grid.innerHTML = APPS.map(app => `
+    <div class="app-card" onclick="void(0)">
+      <div class="app-card-icon">${app.icon}</div>
+      <div class="app-card-name">${app.name}</div>
+      <div class="app-card-desc">${app.desc}</div>
+      <span class="app-card-status ${app.status==='ok'?'app-status-ok':app.status==='beta'?'app-status-beta':'app-status-soon'}">
+        ${app.status==='ok'?'Disponible':app.status==='beta'?'Bêta':'Bientôt'}
+      </span>
+    </div>`).join('');
+}
+
+/* ══ WEBHOOK LIST ══ */
+function renderWebhookList() {
+  renderAppGrid();
+  const list = document.getElementById('webhookList');
+  if (!list) return;
+  if (!WEBHOOKS.length) {
+    list.innerHTML = `<div class="empty" style="padding:36px 20px">
+      <div class="empty-icon">🔗</div>
+      <div class="empty-title">AUCUNE INTÉGRATION</div>
+      <div class="empty-txt">Ajoutez votre première intégration pour recevoir les formulaires automatiquement.</div>
+    </div>`;
+    return;
+  }
+  list.innerHTML = WEBHOOKS.map(wh => {
+    const app = APPS.find(a => a.id === wh.appId) || APPS[APPS.length-1];
+    const types = (wh.formTypes||[]).map(t => FORM_TYPES.find(f=>f.id===t)?.label||t).join(', ');
+    return `<div class="wh-item">
+      <div class="wh-item-left">
+        <div class="wh-app-icon">${app.icon}</div>
+        <div>
+          <div class="wh-name">${wh.name}</div>
+          <div class="wh-meta">${app.name} · ${types||'Tous types'}</div>
+          ${wh.apiKey ? `<div class="wh-meta" style="color:var(--green);margin-top:2px">🔑 Clé API configurée</div>` : ''}
+        </div>
+      </div>
+      <div class="wh-actions">
+        <div class="wh-status-dot ${wh.active?'wh-dot-on':'wh-dot-off'}"></div>
+        <button class="wh-toggle ${wh.active?'on':''}" onclick="toggleWebhook('${wh.id}')"></button>
+        <button class="btn btn-ghost btn-xs" onclick="editWebhook('${wh.id}')">✏️ Modifier</button>
+        <button class="btn btn-xs" style="background:rgba(231,76,60,.12);color:var(--red);border:1px solid rgba(231,76,60,.2)" onclick="deleteWebhook('${wh.id}')">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleWebhook(id) {
+  const wh = WEBHOOKS.find(w => w.id === id);
+  if (!wh) return;
+  wh.active = !wh.active;
+  saveWebhooks();
+  renderWebhookList();
+  toast(wh.active?'ok':'info', wh.active?'Intégration activée':'Intégration désactivée', wh.name);
+}
+
+function deleteWebhook(id) {
+  WEBHOOKS = WEBHOOKS.filter(w => w.id !== id);
+  saveWebhooks();
+  renderWebhookList();
+  toast('info','Intégration supprimée','');
+}
+
+function editWebhook(id) {
+  const wh = WEBHOOKS.find(w => w.id === id);
+  if (!wh) return;
+  WM_EDIT_ID = id;
+  openAddWebhook(wh);
+}
+
+function saveWebhooks() {
+  localStorage.setItem('lukane_webhooks', JSON.stringify(WEBHOOKS));
+}
+
+function copyWebhookUrl() {
+  const url = document.getElementById('myWebhookUrl')?.textContent;
+  navigator.clipboard?.writeText(url);
+  toast('ok','URL copiée !','Collez-la dans votre application de formulaire.');
+}
+
+/* ══ WEBHOOK ADD/EDIT MODAL ══ */
+function openAddWebhook(existing) {
+  WM_EDIT_ID      = existing?.id || null;
+  WM_SELECTED_APP = existing?.appId || null;
+  WM_FORM_TYPES   = new Set(existing?.formTypes || ['warranty']);
+  WM_ACTIONS      = new Set(existing?.actions || ['ai_analyze','notify_email','auto_status']);
+  WM_MFR_FILTER   = new Set(existing?.mfrFilter || []);
+
+  document.getElementById('wm-title').textContent = existing ? 'Modifier l\'intégration' : 'Nouvelle intégration';
+  document.getElementById('wmName').value   = existing?.name   || '';
+  document.getElementById('wmApiKey').value = existing?.apiKey || '';
+  document.getElementById('wmTechFilter').value = (existing?.techFilter||[]).join(', ');
+
+  renderWmAppPicker();
+  renderWmFormTypes();
+  renderWmFieldMap(existing?.fieldMap || {});
+  renderWmMfrFilter();
+  renderWmActions();
+
+  document.getElementById('webhookModalBg').style.display = 'flex';
+}
+
+function closeWebhookModal(e) {
+  if (e && e.target !== document.getElementById('webhookModalBg')) return;
+  document.getElementById('webhookModalBg').style.display = 'none';
+  WM_EDIT_ID = null;
+}
+
+function renderWmAppPicker() {
+  const el = document.getElementById('wmAppPicker');
+  if (!el) return;
+  el.innerHTML = APPS.map(app => `
+    <div class="app-card ${WM_SELECTED_APP===app.id?'selected':''} ${app.status==='soon'?'':''}
+      " onclick="selectWmApp('${app.id}')" style="${app.status==='soon'?'opacity:.45;pointer-events:none;':''}">
+      <div class="app-card-icon">${app.icon}</div>
+      <div class="app-card-name" style="font-size:12px">${app.name}</div>
+      <span class="app-card-status ${app.status==='ok'?'app-status-ok':app.status==='beta'?'app-status-beta':'app-status-soon'}" style="font-size:9px">
+        ${app.status==='ok'?'✓':app.status==='beta'?'β':'bientôt'}
+      </span>
+    </div>`).join('');
+}
+
+function selectWmApp(id) {
+  WM_SELECTED_APP = id;
+  renderWmAppPicker();
+  const app = APPS.find(a => a.id === id);
+  document.getElementById('wmStatus').textContent = app ? `Application : ${app.name}` : 'Configurez votre intégration';
+  // Pre-fill name if empty
+  const nameEl = document.getElementById('wmName');
+  if (!nameEl.value && app) nameEl.value = `Formulaire ${app.name} — Garanties`;
+}
+
+function renderWmFormTypes() {
+  const el = document.getElementById('wmFormTypes');
+  if (!el) return;
+  el.innerHTML = FORM_TYPES.map(ft => `
+    <div class="ft-row ${WM_FORM_TYPES.has(ft.id)?'checked':''}" onclick="toggleWmFormType('${ft.id}')">
+      <div class="ft-row-left">
+        <span class="ft-icon">${ft.icon}</span>
+        <div>
+          <div class="ft-label">${ft.label}</div>
+          <div class="ft-desc">${ft.desc}</div>
+        </div>
+      </div>
+      <div class="ft-check">${WM_FORM_TYPES.has(ft.id)?'✓':''}</div>
+    </div>`).join('');
+}
+
+function toggleWmFormType(id) {
+  WM_FORM_TYPES.has(id) ? WM_FORM_TYPES.delete(id) : WM_FORM_TYPES.add(id);
+  renderWmFormTypes();
+}
+
+function renderWmFieldMap(existing) {
+  const el = document.getElementById('wmFieldMap');
+  if (!el) return;
+  el.innerHTML = FIELD_MAP_KEYS.map(f => `
+    <div class="fm-row">
+      <div class="fm-key">${f.label}</div>
+      <input class="fm-val" id="fmap-${f.key}" placeholder="${f.placeholder}" value="${existing[f.key]||''}"/>
+    </div>`).join('');
+}
+
+function getFieldMap() {
+  const map = {};
+  FIELD_MAP_KEYS.forEach(f => {
+    const val = document.getElementById('fmap-'+f.key)?.value?.trim();
+    if (val) map[f.key] = val;
+  });
+  return map;
+}
+
+function renderWmMfrFilter() {
+  const el = document.getElementById('wmMfrFilter');
+  if (!el) return;
+  el.innerHTML = MFR_LIST.map(m => `
+    <span class="mfr-chip-sel ${WM_MFR_FILTER.has(m)?'on':''}" onclick="toggleWmMfr('${m}')">${m}</span>`).join('');
+}
+
+function toggleWmMfr(m) {
+  WM_MFR_FILTER.has(m) ? WM_MFR_FILTER.delete(m) : WM_MFR_FILTER.add(m);
+  renderWmMfrFilter();
+}
+
+function renderWmActions() {
+  const el = document.getElementById('wmActions');
+  if (!el) return;
+  el.innerHTML = AUTO_ACTIONS.map(a => `
+    <div class="act-row">
+      <div>
+        <div class="act-label">${a.label}</div>
+        <div class="act-desc">${a.desc}</div>
+      </div>
+      <button class="wh-toggle ${WM_ACTIONS.has(a.id)?'on':''}" onclick="toggleWmAction('${a.id}')"></button>
+    </div>`).join('');
+}
+
+function toggleWmAction(id) {
+  WM_ACTIONS.has(id) ? WM_ACTIONS.delete(id) : WM_ACTIONS.add(id);
+  renderWmActions();
+}
+
+function saveWebhook() {
+  const name = document.getElementById('wmName').value.trim();
+  if (!name)          { toast('err','Nom requis','Donne un nom à cette intégration.'); return; }
+  if (!WM_SELECTED_APP){ toast('err','Application requise','Sélectionne une application.'); return; }
+  if (!WM_FORM_TYPES.size){ toast('err','Type requis','Sélectionne au moins un type de formulaire.'); return; }
+
+  const techRaw = document.getElementById('wmTechFilter').value;
+  const wh = {
+    id:         WM_EDIT_ID || ('wh-'+Date.now()),
+    name,
+    appId:      WM_SELECTED_APP,
+    apiKey:     document.getElementById('wmApiKey').value.trim(),
+    formTypes:  [...WM_FORM_TYPES],
+    fieldMap:   getFieldMap(),
+    mfrFilter:  [...WM_MFR_FILTER],
+    techFilter: techRaw ? techRaw.split(',').map(s=>s.trim()).filter(Boolean) : [],
+    actions:    [...WM_ACTIONS],
+    active:     true,
+    createdAt:  WM_EDIT_ID ? (WEBHOOKS.find(w=>w.id===WM_EDIT_ID)?.createdAt||new Date().toISOString()) : new Date().toISOString(),
+  };
+
+  if (WM_EDIT_ID) {
+    WEBHOOKS = WEBHOOKS.map(w => w.id === WM_EDIT_ID ? wh : w);
+    toast('ok','Intégration mise à jour', name);
+  } else {
+    WEBHOOKS.unshift(wh);
+    toast('ok','Intégration ajoutée !', name + ' est maintenant active.');
+  }
+
+  saveWebhooks();
+  document.getElementById('webhookModalBg').style.display = 'none';
+  renderWebhookList();
+  WM_EDIT_ID = null;
+}
+
+/* ══ NOTIFICATIONS ══ */
+function renderNotifSettings() {
+  const el = document.getElementById('notifRows');
+  if (!el) return;
+  const saved = JSON.parse(localStorage.getItem('lukane_notifs') || '{}');
+  el.innerHTML = NOTIF_CONFIG.map(n => `
+    <div class="notif-row">
+      <div>
+        <div class="notif-label">${n.label}</div>
+        <div class="notif-desc">${n.desc}</div>
+      </div>
+      <button class="wh-toggle ${saved[n.id]!==false?'on':''}" onclick="toggleNotif('${n.id}',this)"></button>
+    </div>`).join('');
+}
+
+function toggleNotif(id, btn) {
+  btn.classList.toggle('on');
+  const saved = JSON.parse(localStorage.getItem('lukane_notifs') || '{}');
+  saved[id] = btn.classList.contains('on');
+  localStorage.setItem('lukane_notifs', JSON.stringify(saved));
 }
 
 /* ══ BOOT ══ */
