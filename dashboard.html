@@ -1400,8 +1400,8 @@ tr:hover .btn-del-row{opacity:1;}
 /* ══════════════════════════════════════
    CONFIG
 ══════════════════════════════════════ */
-const SUPA_URL  = 'https://VOTRE_PROJECT_ID.supabase.co';
-const SUPA_KEY  = 'VOTRE_ANON_KEY';
+const SUPA_URL  = 'https://zxprifyiqhsxysdfeyti.supabase.co';
+const SUPA_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4cHJpZnlpcWhzeHlzZGZleXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3MzU0MTgsImV4cCI6MjA5NjMxMTQxOH0.F9yZWgDt7xxRKpb3nJByBIHmsozsHjZDR5Egk_QgWTA';
 const DEMO_MODE = SUPA_URL.includes('VOTRE_PROJECT_ID');
 const TRIAL_DAYS = 14;
 const AI_MODEL   = 'claude-sonnet-4-5';
@@ -1513,7 +1513,7 @@ async function init() {
   document.getElementById('setEmail').value       = USER.email || '';
 
   initTrial(USER);
-  loadDemoData();
+  loadClaims();
 }
 
 function doLogout() {
@@ -1522,8 +1522,96 @@ function doLogout() {
   window.location.href = 'login.html';
 }
 
-/* ══ DEMO CLAIMS ══ */
-function loadDemoData() {
+/* ══════════════════════════════════════
+   SUPABASE — LOAD & SAVE CLAIMS
+══════════════════════════════════════ */
+async function loadClaims() {
+  if (DEMO_MODE || !sb) { loadDemoData(); return; }
+  try {
+    var res = await sb.from('claims')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (res.error) throw res.error;
+    CLAIMS = (res.data || []).map(function(r) {
+      return {
+        id:         r.id,
+        source:     r.source || 'manual',
+        mfr:        r.mfr || '—',
+        unit:       r.unit || '—',
+        vin:        r.vin || '—',
+        year:       r.year || '—',
+        cat:        r.category || '—',
+        desc:       r.description || '',
+        tech:       r.tech || '—',
+        bt:         r.work_order || '—',
+        status:     r.status || 'new',
+        prob:       r.prob || 0,
+        aiDesc:     r.ai_desc || '',
+        parts:      r.parts || [],
+        formPhotos: r.form_photos || [],
+        photos:     r.photos || [],
+        notes:      r.notes || '',
+        date:       r.created_at?.slice(0,10) || new Date().toISOString().slice(0,10),
+      };
+    });
+    renderAll();
+  } catch(e) {
+    console.error('loadClaims error:', e);
+    toast('err', 'Erreur chargement', e.message);
+    loadDemoData();
+  }
+}
+
+async function saveClaimToDB(c) {
+  if (DEMO_MODE || !sb) return;
+  try {
+    var row = {
+      id:           c.id,
+      user_id:      USER.id,
+      source:       c.source || 'manual',
+      mfr:          c.mfr,
+      unit:         c.unit,
+      vin:          c.vin,
+      year:         c.year,
+      category:     c.cat,
+      description:  c.desc,
+      tech:         c.tech,
+      work_order:   c.bt,
+      status:       c.status,
+      prob:         c.prob || 0,
+      ai_desc:      c.aiDesc || '',
+      parts:        c.parts || [],
+      form_photos:  c.formPhotos || [],
+      photos:       c.photos || [],
+      notes:        c.notes || '',
+    };
+    var res = await sb.from('claims').upsert(row);
+    if (res.error) throw res.error;
+  } catch(e) {
+    console.error('saveClaimToDB error:', e);
+    toast('err', 'Erreur sauvegarde', e.message);
+  }
+}
+
+async function deleteClaimFromDB(id) {
+  if (DEMO_MODE || !sb) return;
+  try {
+    var res = await sb.from('claims').delete().eq('id', id);
+    if (res.error) throw res.error;
+  } catch(e) {
+    console.error('deleteClaimFromDB error:', e);
+  }
+}
+
+async function updateClaimStatusInDB(id, status) {
+  if (DEMO_MODE || !sb) return;
+  try {
+    var res = await sb.from('claims').update({ status: status, updated_at: new Date().toISOString() }).eq('id', id);
+    if (res.error) throw res.error;
+  } catch(e) {
+    console.error('updateClaimStatus error:', e);
+  }
+}
   CLAIMS = [
     { id:'CLM-2025-0441', mfr:'Grand Design', unit:'2025 Grand Design Reflection 303RLS', vin:'4X4FGRB2XR1234567', year:'2025', cat:'Slide room / extension', desc:'slide sort pas, fait un bruit de broyage', tech:'Marc Tremblay', bt:'BT-2025-0441', status:'new', date:'2025-06-05', prob:84 },
     { id:'CLM-2025-0440', mfr:'Jayco',        unit:'2024 Jayco Eagle 321RSTS',             vin:'1UJBJ0BP6M1A12345', year:'2024', cat:'Toiture / étanchéité',    desc:'fuite eau fenêtre avant quand il pleut',  tech:'Sophie Gagné',   bt:'BT-2025-0440', status:'approved', date:'2025-06-03', prob:91 },
@@ -1651,7 +1739,7 @@ function bulkSetStatus(status) {
   var label = {open:'Ouvert',pending:'En attente',approved:'Approuvé',refused:'Refusé'}[status] || status;
   SELECTED.forEach(function(id) {
     var c = CLAIMS.find(function(x){ return x.id===id; });
-    if (c) c.status = status;
+    if (c) { c.status = status; updateClaimStatusInDB(id, status); }
   });
   var n = SELECTED.size;
   clearSelection();
@@ -1684,8 +1772,11 @@ function closeConfirm() {
 
 function executeDelete() {
   var n = PENDING_DELETE_IDS.length;
-  CLAIMS = CLAIMS.filter(function(c){ return !PENDING_DELETE_IDS.includes(c.id); });
-  PENDING_DELETE_IDS.forEach(function(id){ SELECTED.delete(id); });
+  PENDING_DELETE_IDS.forEach(function(id){
+    CLAIMS = CLAIMS.filter(function(c){ return c.id !== id; });
+    SELECTED.delete(id);
+    deleteClaimFromDB(id);
+  });
   PENDING_DELETE_IDS = [];
   closeConfirm();
   updateBulkBar();
@@ -1942,6 +2033,7 @@ function saveClaim(){
   document.getElementById('fCat').value='';
   AI={desc:'',parts:[],prob:null};
   NP_PHOTOS=[];
+  saveClaimToDB(c);
   toast('ok','Claim enregistré !',c.id+' · '+c.mfr);
 }
 
