@@ -1612,6 +1612,8 @@ async function updateClaimStatusInDB(id, status) {
     console.error('updateClaimStatus error:', e);
   }
 }
+
+function loadDemoData() {
   CLAIMS = [
     { id:'CLM-2025-0441', mfr:'Grand Design', unit:'2025 Grand Design Reflection 303RLS', vin:'4X4FGRB2XR1234567', year:'2025', cat:'Slide room / extension', desc:'slide sort pas, fait un bruit de broyage', tech:'Marc Tremblay', bt:'BT-2025-0441', status:'new', date:'2025-06-05', prob:84 },
     { id:'CLM-2025-0440', mfr:'Jayco',        unit:'2024 Jayco Eagle 321RSTS',             vin:'1UJBJ0BP6M1A12345', year:'2024', cat:'Toiture / étanchéité',    desc:'fuite eau fenêtre avant quand il pleut',  tech:'Sophie Gagné',   bt:'BT-2025-0440', status:'approved', date:'2025-06-03', prob:91 },
@@ -1620,6 +1622,8 @@ async function updateClaimStatusInDB(id, status) {
   ];
   renderAll();
 }
+
+/* DEMO ALIAS */
 
 /* ══ NAVIGATION ══ */
 const VIEWS = { dashboard:'Dashboard', claims:'Claims', analytics:'Analytiques', settings:'Paramètres' };
