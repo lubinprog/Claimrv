@@ -1,922 +1,508 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-theme="light">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>LUKANE RV — Garanties VR, automatisées par l'IA</title>
+<title>LUKANE RV — Connexion</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,600;0,700;0,800;0,900;1,700&family=Barlow:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Barlow:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{
-  --coal:  #0c0d0f;
-  --coal2: #141618;
-  --coal3: #1c1e22;
-  --coal4: #242830;
-  --wire:  #2e333d;
-  --ore:   #e05c1a;
-  --ore2:  #f07030;
-  --gold:  #d4a820;
-  --bone:  #f0ece3;
-  --fog:   #8a9099;
-  --chalk: #ffffff;
-  --green: #2ecc71;
-  --fd: 'Barlow Condensed', sans-serif;
-  --fb: 'Barlow', sans-serif;
-  --fm: 'JetBrains Mono', monospace;
-  --ease: cubic-bezier(.25,.46,.45,.94);
+/* ══ TOKENS ══ */
+:root {
+  --fd:'Barlow Condensed',sans-serif;
+  --fb:'Barlow',sans-serif;
+  --fm:'JetBrains Mono',monospace;
+  --ore:#e05c1a;--ore2:#f07030;--green:#2ecc71;--red:#e74c3c;
+  --ease:cubic-bezier(.25,.46,.45,.94);
+  --radius:8px;
 }
+
+/* ── LIGHT THEME (default) ── */
+[data-theme="light"] {
+  --bg:       #f5f6fa;
+  --bg2:      #ffffff;
+  --bg3:      #f0f1f5;
+  --border:   #e2e4ea;
+  --text:     #1a1d23;
+  --text2:    #4a5060;
+  --muted:    #8a9099;
+  --shadow:   rgba(0,0,0,.08);
+  --shadow2:  rgba(0,0,0,.14);
+  --left-bg:  #1a1d23;
+  --left-text:#f5f6fa;
+  --left-sub: rgba(245,246,250,.55);
+  --left-stat:#e05c1a;
+  --input-bg: #f8f9fc;
+}
+
+/* ── DARK THEME ── */
+[data-theme="dark"] {
+  --bg:       #0c0d0f;
+  --bg2:      #141618;
+  --bg3:      #1c1e22;
+  --border:   #2e333d;
+  --text:     #f0ece3;
+  --text2:    #b0b8c4;
+  --muted:    #8a9099;
+  --shadow:   rgba(0,0,0,.3);
+  --shadow2:  rgba(0,0,0,.5);
+  --left-bg:  #141618;
+  --left-text:#f0ece3;
+  --left-sub: rgba(240,236,227,.5);
+  --left-stat:#e05c1a;
+  --input-bg: #0c0d0f;
+}
+
 *{box-sizing:border-box;margin:0;padding:0;}
-html{scroll-behavior:smooth;}
-body{background:var(--coal);color:var(--bone);font-family:var(--fb);overflow-x:hidden;}
+html,body{min-height:100%;}
+body{background:var(--bg);color:var(--text);font-family:var(--fb);transition:background .3s,color .3s;}
 
+/* ── UTILITY BAR (top right) ── */
+.util-bar{
+  position:fixed;top:16px;right:20px;z-index:999;
+  display:flex;align-items:center;gap:8px;
+}
+.util-btn{
+  display:flex;align-items:center;gap:6px;
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:20px;padding:6px 12px;
+  font-family:var(--fm);font-size:11px;font-weight:500;
+  letter-spacing:.5px;color:var(--text2);
+  cursor:pointer;transition:all .2s;box-shadow:0 2px 8px var(--shadow);
+}
+.util-btn:hover{border-color:var(--ore);color:var(--ore);}
+.util-btn .icon{font-size:13px;}
 
+/* ── LAYOUT ── */
+.page{display:grid;grid-template-columns:1fr 1fr;min-height:100vh;}
 
+/* ── LEFT PANEL ── */
+.left{
+  background:var(--left-bg);
+  display:flex;flex-direction:column;justify-content:space-between;
+  padding:52px 56px;overflow:hidden;position:relative;
+  position:sticky;top:0;height:100vh;
+}
+.left-grid{
+  position:absolute;inset:0;z-index:0;
+  background-image:linear-gradient(rgba(224,92,26,.05) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(224,92,26,.05) 1px,transparent 1px);
+  background-size:40px 40px;
+  mask-image:radial-gradient(ellipse 90% 90% at 30% 50%,black 30%,transparent 100%);
+  animation:gridDrift 24s linear infinite;
+}
+@keyframes gridDrift{from{background-position:0 0}to{background-position:40px 40px}}
+.left-glow{
+  position:absolute;width:500px;height:500px;
+  background:radial-gradient(circle,rgba(224,92,26,.18),transparent 65%);
+  top:50%;left:-10%;transform:translateY(-50%);pointer-events:none;z-index:0;
+  animation:glowPulse 7s ease-in-out infinite;
+}
+@keyframes glowPulse{0%,100%{opacity:.7;transform:translateY(-50%) scale(1)}50%{opacity:1;transform:translateY(-52%) scale(1.1)}}
 
+.left-top,.left-bottom{position:relative;z-index:1;}
+.logo{font-family:var(--fd);font-size:32px;font-weight:900;letter-spacing:1px;color:var(--left-text);text-decoration:none;display:flex;align-items:center;}
+.logo .acc{color:var(--ore);}
+.logo-dot{width:8px;height:8px;border-radius:50%;background:var(--ore);margin-left:3px;display:inline-block;animation:blink 2.4s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+.left-h{
+  font-family:var(--fd);font-size:clamp(48px,4.5vw,70px);
+  font-weight:900;line-height:.88;letter-spacing:-1.5px;
+  color:var(--left-text);margin-top:64px;
+}
+.left-h span{display:block;}
+.left-h .stroke{color:transparent;-webkit-text-stroke:1.5px var(--ore);}
+.left-sub{font-size:15px;font-weight:300;color:var(--left-sub);line-height:1.7;margin-top:18px;max-width:300px;}
+.left-stats{display:flex;gap:32px;margin-top:44px;}
+.lsv{font-family:var(--fd);font-size:34px;font-weight:900;color:var(--left-stat);line-height:1;letter-spacing:-1px;}
+.lsl{font-family:var(--fm);font-size:10px;color:var(--left-sub);margin-top:4px;letter-spacing:1.5px;text-transform:uppercase;}
+.chips{display:flex;flex-direction:column;gap:10px;}
+.chip{display:flex;align-items:center;gap:12px;font-size:13px;color:var(--left-sub);}
+.chip-i{width:30px;height:30px;border-radius:4px;background:rgba(224,92,26,.12);border:1px solid rgba(224,92,26,.25);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
 
-/* grain */
-body::after{content:'';position:fixed;inset:0;z-index:1000;pointer-events:none;opacity:.032;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");}
+/* ── RIGHT PANEL ── */
+.right{
+  display:flex;align-items:center;justify-content:center;
+  padding:56px 48px;background:var(--bg);
+  overflow-y:auto;
+}
+.box{width:100%;max-width:400px;}
 
-/* ── NAV ── */
-nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:center;justify-content:space-between;padding:20px 56px;background:rgba(12,13,15,.85);backdrop-filter:blur(16px);border-bottom:1px solid rgba(224,92,26,.08);transition:padding .4s var(--ease),background .4s;}
-nav.scrolled{padding:14px 56px;background:rgba(12,13,15,.97);}
-.nav-logo{font-family:var(--fd);font-size:28px;font-weight:900;letter-spacing:1px;color:var(--chalk);display:flex;align-items:center;gap:2px;text-decoration:none;}
-.nav-logo .accent{color:var(--ore);}
-.nav-logo .dot{width:7px;height:7px;border-radius:50%;background:var(--ore);margin-left:3px;margin-bottom:2px;display:inline-block;animation:blink 2.4s infinite;}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
-.nav-links{display:flex;gap:36px;align-items:center;}
-.nav-links a{font-size:13px;font-weight:500;letter-spacing:.5px;color:var(--fog);text-decoration:none;transition:color .2s;text-transform:uppercase;}
-.nav-links a:hover{color:var(--bone);}
-.nav-cta{font-family:var(--fd);font-size:16px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;background:var(--ore);color:var(--chalk);padding:10px 24px;border-radius:3px;text-decoration:none;transition:all .2s var(--ease);border:none;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));}
-.nav-cta:hover{background:var(--ore2);transform:translateY(-1px);}
-.nav-login{font-family:var(--fd);font-size:15px;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:transparent;color:var(--fog);padding:10px 18px;border-radius:3px;text-decoration:none;transition:all .2s var(--ease);border:1px solid var(--wire);}
-.nav-login:hover{border-color:var(--ore);color:var(--ore);}
+/* ── CARD ── */
+.login-card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:16px;padding:40px 36px;
+  box-shadow:0 4px 24px var(--shadow);
+}
+.card-logo{
+  font-family:var(--fd);font-size:22px;font-weight:900;
+  letter-spacing:1px;color:var(--text);
+  display:flex;align-items:center;margin-bottom:28px;
+}
+.card-logo .acc{color:var(--ore);}
 
-/* ── HERO ── */
-.hero{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;position:relative;overflow:hidden;}
-.hero-grid{position:absolute;inset:0;z-index:0;background-image:linear-gradient(rgba(224,92,26,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(224,92,26,.05) 1px,transparent 1px);background-size:48px 48px;mask-image:radial-gradient(ellipse 80% 80% at 50% 40%,black 40%,transparent 100%);animation:gridDrift 20s linear infinite;}
-@keyframes gridDrift{from{background-position:0 0}to{background-position:48px 48px}}
-.hero-glow{position:absolute;top:-10%;left:-10%;width:60%;height:80%;background:radial-gradient(ellipse,rgba(224,92,26,.12) 0%,transparent 65%);pointer-events:none;z-index:0;animation:glowPulse 6s ease-in-out infinite;}
-@keyframes glowPulse{0%,100%{opacity:.7;transform:scale(1)}50%{opacity:1;transform:scale(1.08)}}
-.hero-left{position:relative;z-index:1;display:flex;flex-direction:column;justify-content:center;padding:140px 56px 80px;}
-.hero-tag{display:inline-flex;align-items:center;gap:8px;font-family:var(--fm);font-size:11px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--ore);margin-bottom:32px;border:1px solid rgba(224,92,26,.3);border-radius:2px;padding:6px 14px;width:fit-content;}
-.hero-tag::before{content:'▶';font-size:7px;}
-.hero-h1{font-family:var(--fd);font-size:clamp(70px,8.5vw,118px);font-weight:900;line-height:.88;letter-spacing:-1px;color:var(--chalk);margin-bottom:32px;animation:slideUp .9s var(--ease) .1s both;}
-@keyframes slideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
-.hero-h1 .italic{font-style:italic;color:transparent;-webkit-text-stroke:2px var(--ore);}
-.hero-h1 .block{display:block;}
-.hero-sub{font-size:17px;font-weight:300;line-height:1.7;color:var(--fog);max-width:420px;margin-bottom:44px;animation:slideUp .9s var(--ease) .25s both;}
-.hero-sub strong{color:var(--bone);font-weight:600;}
-.hero-actions{display:flex;gap:16px;align-items:center;flex-wrap:wrap;animation:slideUp .9s var(--ease) .35s both;}
-.btn-fire{font-family:var(--fd);font-size:18px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;background:var(--ore);color:var(--chalk);padding:16px 36px;border-radius:3px;text-decoration:none;transition:all .25s var(--ease);border:none;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));position:relative;overflow:hidden;}
-.btn-fire::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.15),transparent);opacity:0;transition:opacity .25s;}
-.btn-fire:hover{background:var(--ore2);transform:translateY(-2px);box-shadow:0 12px 40px rgba(224,92,26,.35);}
-.btn-fire:hover::after{opacity:1;}
-.btn-ghost{font-size:14px;font-weight:500;letter-spacing:.5px;color:var(--fog);text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:color .2s,gap .2s;}
-.btn-ghost:hover{color:var(--bone);gap:12px;}
-.btn-ghost span{font-size:18px;transition:transform .2s;}
-.btn-ghost:hover span{transform:translateX(3px);}
-.hero-stats{display:flex;gap:40px;margin-top:56px;padding-top:40px;border-top:1px solid var(--wire);animation:slideUp .9s var(--ease) .45s both;}
-.hero-stat-val{font-family:var(--fd);font-size:42px;font-weight:900;color:var(--ore);line-height:1;letter-spacing:-1px;}
-.hero-stat-label{font-size:12px;color:var(--fog);margin-top:4px;letter-spacing:.5px;text-transform:uppercase;}
+.form-title{font-family:var(--fd);font-size:32px;font-weight:900;letter-spacing:-1px;line-height:.9;color:var(--text);margin-bottom:6px;}
+.form-sub{font-size:14px;color:var(--muted);margin-bottom:28px;line-height:1.5;}
 
-/* hero right */
-.hero-right{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;padding:140px 56px 80px 24px;}
-.hero-right::before{content:'';position:absolute;left:0;top:15%;bottom:15%;width:1px;background:linear-gradient(transparent,var(--ore),var(--ore),transparent);opacity:.3;}
-.terminal{width:100%;max-width:520px;background:var(--coal2);border:1px solid var(--wire);border-radius:6px;overflow:hidden;box-shadow:0 0 0 1px rgba(224,92,26,.08),0 40px 80px rgba(0,0,0,.6),0 0 120px rgba(224,92,26,.04);animation:slideUp .9s var(--ease) .3s both;}
-.terminal-bar{background:var(--coal3);padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--wire);}
-.tdot{width:11px;height:11px;border-radius:50%;}
-.tdot-r{background:#ff5f57;}.tdot-y{background:#febc2e;}.tdot-g{background:#28c840;}
-.t-title{font-family:var(--fm);font-size:11px;color:var(--fog);margin-left:auto;margin-right:auto;}
-.terminal-body{padding:20px;display:flex;flex-direction:column;gap:12px;}
-.t-claim{border:1px solid var(--wire);border-radius:4px;padding:14px 16px;background:var(--coal3);position:relative;overflow:hidden;}
-.t-claim::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--ore);}
-.t-claim.approved::before{background:var(--green);}
-.t-claim-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:4px;}
-.t-id{font-family:var(--fm);font-size:10.5px;color:var(--ore);}
-.t-claim.approved .t-id{color:var(--green);}
-.t-badge{font-family:var(--fm);font-size:9.5px;font-weight:500;letter-spacing:1px;text-transform:uppercase;padding:2px 8px;border-radius:2px;}
-.t-badge-new{background:rgba(224,92,26,.15);color:var(--ore2);}
-.t-badge-ok{background:rgba(46,204,113,.12);color:var(--green);}
-.t-badge-src{background:rgba(96,165,250,.12);color:#60a5fa;margin-left:4px;}
-.t-model{font-size:12px;color:rgba(240,236,227,.75);margin-bottom:3px;font-weight:500;}
-.t-desc{font-size:11px;color:var(--fog);font-style:italic;}
-.t-ai{background:linear-gradient(135deg,rgba(224,92,26,.08),rgba(212,168,32,.06));border:1px solid rgba(224,92,26,.22);border-radius:4px;padding:14px 16px;}
-.t-ai-label{font-family:var(--fm);font-size:9.5px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--ore);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
-.pulse-dot{width:6px;height:6px;border-radius:50%;background:var(--ore);animation:blink 2s infinite;}
-.t-ai-text{font-family:var(--fm);font-size:11px;color:rgba(240,236,227,.6);line-height:1.7;}
-.t-prob-row{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:10px;border-top:1px solid rgba(224,92,26,.12);}
-.t-prob-label{font-family:var(--fm);font-size:9.5px;color:var(--fog);}
-.t-prob-val{font-family:var(--fm);font-size:16px;font-weight:500;color:var(--green);}
-.t-prob-bar{height:3px;background:var(--coal4);border-radius:99px;margin-top:6px;overflow:hidden;}
-.t-prob-fill{height:100%;width:84%;background:linear-gradient(90deg,var(--green),#27ae60);border-radius:99px;animation:fillBar 1.4s var(--ease) 1s both;}
-@keyframes fillBar{from{width:0}to{width:84%}}
-.t-parts{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;}
-.t-part{font-family:var(--fm);font-size:10px;background:var(--coal4);border:1px solid var(--wire);border-radius:2px;padding:3px 9px;color:var(--fog);}
+/* ── INVITE ONLY BADGE ── */
+.invite-badge{
+  display:inline-flex;align-items:center;gap:7px;
+  background:rgba(224,92,26,.08);border:1px solid rgba(224,92,26,.2);
+  border-radius:6px;padding:10px 14px;margin-bottom:24px;width:100%;
+}
+.invite-icon{font-size:18px;flex-shrink:0;}
+.invite-text{font-size:12.5px;color:var(--text2);line-height:1.5;}
+.invite-text strong{color:var(--ore);}
 
-/* ── MARQUEE ── */
-.marquee-wrap{border-top:1px solid var(--wire);border-bottom:1px solid var(--wire);background:var(--coal2);overflow:hidden;padding:14px 0;}
-.marquee-track{display:flex;animation:marquee 34s linear infinite;white-space:nowrap;}
-@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-.marquee-item{display:inline-flex;align-items:center;gap:28px;padding:0 40px;font-family:var(--fd);font-size:14px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--wire);}
-.marquee-item .dot{color:var(--ore);font-size:8px;}
+/* ── FIELDS ── */
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+label{font-family:var(--fm);font-size:10px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+input{
+  background:var(--input-bg);border:1.5px solid var(--border);
+  border-radius:var(--radius);color:var(--text);
+  font-family:var(--fb);font-size:14px;
+  padding:12px 14px;outline:none;width:100%;
+  transition:border-color .2s,box-shadow .2s;
+}
+input::placeholder{color:var(--muted);opacity:.6;}
+input:focus{border-color:var(--ore);box-shadow:0 0 0 3px rgba(224,92,26,.1);}
+input.err{border-color:var(--red);box-shadow:0 0 0 3px rgba(231,76,60,.1);}
+.pw-wrap{position:relative;}
+.pw-wrap input{padding-right:44px;}
+.pw-eye{position:absolute;right:13px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:15px;transition:color .2s;}
+.pw-eye:hover{color:var(--text);}
 
-/* ── COMMON ── */
-.section-tag{font-family:var(--fm);font-size:11px;font-weight:500;letter-spacing:3px;text-transform:uppercase;color:var(--ore);margin-bottom:20px;display:flex;align-items:center;gap:10px;}
-.section-tag::before{content:'';display:block;width:24px;height:1px;background:var(--ore);}
-.section-h2{font-family:var(--fd);font-size:clamp(48px,6vw,86px);font-weight:900;line-height:.9;letter-spacing:-1.5px;color:var(--chalk);margin-bottom:20px;}
-.section-h2 .stroke{color:transparent;-webkit-text-stroke:1.5px var(--fog);}
+/* ── FORGOT ── */
+.forgot{text-align:right;margin-bottom:6px;margin-top:-6px;}
+.forgot a{font-family:var(--fm);font-size:11px;color:var(--muted);text-decoration:none;transition:color .2s;}
+.forgot a:hover{color:var(--ore);}
 
-/* ── PROBLEM ── */
-.problem{padding:120px 56px;background:var(--coal);}
-.pain-layout{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;margin-top:72px;background:var(--wire);border:1px solid var(--wire);}
-.pain-card{background:var(--coal);padding:44px 36px;transition:background .3s;position:relative;overflow:hidden;}
-.pain-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--ore);transform:scaleX(0);transform-origin:left;transition:transform .4s var(--ease);}
-.pain-card:hover{background:var(--coal2);}
-.pain-card:hover::after{transform:scaleX(1);}
-.pain-num{font-family:var(--fd);font-size:72px;font-weight:900;color:rgba(224,92,26,.1);line-height:1;letter-spacing:-3px;margin-bottom:-16px;}
-.pain-icon{font-size:28px;margin-bottom:18px;display:block;}
-.pain-title{font-family:var(--fd);font-size:24px;font-weight:800;letter-spacing:-.5px;color:var(--chalk);margin-bottom:12px;}
-.pain-text{font-size:14.5px;color:var(--fog);line-height:1.7;}
+/* ── SUBMIT BTN ── */
+.btn-submit{
+  width:100%;padding:14px;margin-top:8px;
+  font-family:var(--fd);font-size:18px;font-weight:800;
+  letter-spacing:1.5px;text-transform:uppercase;
+  background:var(--ore);color:#fff;
+  border:none;border-radius:var(--radius);cursor:pointer;
+  transition:all .25s var(--ease);
+  clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));
+}
+.btn-submit:hover:not(:disabled){background:var(--ore2);transform:translateY(-2px);box-shadow:0 8px 28px rgba(224,92,26,.3);}
+.btn-submit:disabled{opacity:.5;cursor:not-allowed;}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-/* ── HOW ── */
-.how{padding:120px 56px;background:var(--coal2);position:relative;overflow:hidden;}
-.how-bg-num{position:absolute;right:-20px;top:50%;transform:translateY(-50%);font-family:var(--fd);font-size:340px;font-weight:900;color:rgba(224,92,26,.03);line-height:1;pointer-events:none;letter-spacing:-20px;user-select:none;}
-.how-header{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:end;margin-bottom:80px;}
-.how-intro{font-size:16px;color:var(--fog);line-height:1.7;max-width:380px;}
-.steps-timeline{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:0;}
-.steps-timeline::before{content:'';position:absolute;top:32px;left:calc(16.67%);right:calc(16.67%);height:1px;background:linear-gradient(90deg,transparent,var(--ore),var(--ore),transparent);opacity:.3;}
-.step{padding:0 32px 0 0;}
-.step-num-wrap{display:flex;align-items:center;gap:14px;margin-bottom:24px;}
-.step-circle{width:64px;height:64px;border-radius:50%;border:1px solid var(--ore);display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:22px;font-weight:900;color:var(--ore);background:var(--coal2);flex-shrink:0;position:relative;z-index:1;transition:all .3s var(--ease);}
-.step:hover .step-circle{background:var(--ore);color:var(--chalk);box-shadow:0 0 30px rgba(224,92,26,.35);}
-.step-title{font-family:var(--fd);font-size:26px;font-weight:800;letter-spacing:-.5px;color:var(--chalk);margin-bottom:10px;}
-.step-text{font-size:14px;color:var(--fog);line-height:1.7;}
-.step-chip{display:inline-block;margin-top:16px;font-family:var(--fm);font-size:10px;border:1px solid rgba(224,92,26,.3);color:var(--ore);border-radius:2px;padding:4px 10px;letter-spacing:1px;}
+/* ── ALERT ── */
+.alert{border-radius:var(--radius);padding:11px 14px;font-size:13px;line-height:1.5;margin-bottom:16px;display:none;}
+.alert.show{display:block;}
+.alert-err{background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.2);color:var(--red);font-family:var(--fm);}
+.alert-ok{background:rgba(46,204,113,.08);border:1px solid rgba(46,204,113,.2);color:var(--green);font-family:var(--fm);}
 
-/* ── MANUFACTURERS ── */
-.manufacturers{padding:100px 56px;background:var(--coal);}
-.mfr-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:56px;}
-.mfr-card{background:var(--coal2);border:1px solid var(--wire);border-radius:4px;padding:28px 24px;transition:all .3s var(--ease);text-align:center;position:relative;overflow:hidden;}
-.mfr-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--ore);transform:scaleX(0);transform-origin:left;transition:transform .4s var(--ease);}
-.mfr-card:hover{border-color:rgba(224,92,26,.4);transform:translateY(-4px);}
-.mfr-card:hover::after{transform:scaleX(1);}
-.mfr-logo-text{font-family:var(--fd);font-size:22px;font-weight:900;letter-spacing:1px;color:var(--fog);transition:color .3s;margin-bottom:8px;}
-.mfr-card:hover .mfr-logo-text{color:var(--bone);}
-.mfr-country{font-family:var(--fm);font-size:10px;color:var(--wire);letter-spacing:1.5px;text-transform:uppercase;}
-.mfr-more{grid-column:span 4;background:rgba(224,92,26,.05);border:1px dashed rgba(224,92,26,.2);border-radius:4px;padding:24px;text-align:center;}
-.mfr-more-text{font-family:var(--fm);font-size:12px;color:var(--ore);letter-spacing:2px;text-transform:uppercase;}
+/* ── FORGOT PANEL ── */
+.panel{display:none;}
+.panel.show{display:block;}
 
-/* ── BENTO ── */
-.features{padding:120px 56px;background:var(--coal2);}
-.bento{display:grid;grid-template-columns:repeat(12,1fr);gap:12px;margin-top:72px;}
-.bento-card{background:var(--coal);border:1px solid var(--wire);border-radius:4px;padding:36px;position:relative;overflow:hidden;transition:border-color .3s,transform .3s var(--ease);}
-.bento-card:hover{border-color:rgba(224,92,26,.4);transform:translateY(-3px);}
-.bento-card::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at top left,rgba(224,92,26,.06),transparent 60%);opacity:0;transition:opacity .3s;}
-.bento-card:hover::before{opacity:1;}
-.bc-a{grid-column:span 5;}.bc-b{grid-column:span 7;}.bc-c{grid-column:span 4;}.bc-d{grid-column:span 4;}.bc-e{grid-column:span 4;}
-.bento-icon{width:48px;height:48px;border-radius:4px;background:rgba(224,92,26,.12);border:1px solid rgba(224,92,26,.2);display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:24px;}
-.bento-title{font-family:var(--fd);font-size:28px;font-weight:800;letter-spacing:-.5px;color:var(--chalk);margin-bottom:10px;}
-.bento-text{font-size:14px;color:var(--fog);line-height:1.7;}
-.bento-list{list-style:none;margin-top:18px;display:flex;flex-direction:column;gap:8px;}
-.bento-list li{font-size:13.5px;color:var(--fog);display:flex;align-items:flex-start;gap:10px;line-height:1.5;}
-.bento-list li::before{content:'→';color:var(--ore);font-weight:700;flex-shrink:0;font-size:12px;margin-top:2px;}
-.live-feed{margin-top:20px;display:flex;flex-direction:column;gap:8px;}
-.feed-row{display:flex;align-items:center;justify-content:space-between;background:var(--coal3);border-radius:3px;padding:10px 14px;font-family:var(--fm);font-size:11px;border-left:2px solid transparent;animation:feedIn .5s var(--ease) both;}
-.feed-row:nth-child(1){animation-delay:.1s;border-color:var(--ore);}
-.feed-row:nth-child(2){animation-delay:.3s;border-color:var(--green);}
-.feed-row:nth-child(3){animation-delay:.5s;border-color:var(--gold);}
-@keyframes feedIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
-.feed-id{color:var(--ore);}
-.feed-row:nth-child(2) .feed-id{color:var(--green);}
-.feed-row:nth-child(3) .feed-id{color:var(--gold);}
-.feed-status{font-size:9.5px;letter-spacing:1px;text-transform:uppercase;padding:2px 8px;border-radius:2px;}
-.fs-new{background:rgba(224,92,26,.15);color:var(--ore2);}
-.fs-ok{background:rgba(46,204,113,.12);color:var(--green);}
-.fs-wait{background:rgba(212,168,32,.12);color:var(--gold);}
+/* ── CONTACT ── */
+.contact-note{
+  text-align:center;margin-top:22px;
+  font-size:12.5px;color:var(--muted);line-height:1.6;
+}
+.contact-note a{color:var(--ore);text-decoration:none;}
+.contact-note a:hover{text-decoration:underline;}
 
-/* ── INTEGRATION ── */
-.integrations{padding:100px 56px;background:var(--coal);}
-.integ-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;margin-top:64px;}
-.integ-flow{display:flex;flex-direction:column;gap:0;}
-.integ-step{display:flex;align-items:flex-start;gap:20px;position:relative;}
-.integ-step:not(:last-child)::after{content:'';position:absolute;left:19px;top:48px;bottom:-20px;width:1px;background:linear-gradient(var(--wire),transparent);opacity:.6;}
-.integ-circle{width:40px;height:40px;border-radius:50%;border:1px solid var(--wire);display:flex;align-items:center;justify-content:center;font-size:16px;background:var(--coal2);flex-shrink:0;transition:all .3s;}
-.integ-step:hover .integ-circle{border-color:var(--ore);background:rgba(224,92,26,.1);}
-.integ-step-body{padding:0 0 32px;}
-.integ-step-title{font-family:var(--fd);font-size:18px;font-weight:800;color:var(--chalk);margin-bottom:6px;}
-.integ-step-text{font-size:13.5px;color:var(--fog);line-height:1.6;}
-.integ-chip{display:inline-block;margin-top:8px;font-family:var(--fm);font-size:10px;border:1px solid rgba(224,92,26,.25);color:var(--ore);border-radius:2px;padding:3px 8px;letter-spacing:1px;}
-.integ-right{display:flex;flex-direction:column;gap:16px;}
-.integ-right h3{font-family:var(--fd);font-size:38px;font-weight:900;line-height:.95;color:var(--chalk);letter-spacing:-1px;margin-bottom:8px;}
-.integ-right p{font-size:15px;color:var(--fog);line-height:1.7;margin-bottom:20px;}
-.compat-list{display:flex;flex-direction:column;gap:10px;}
-.compat-item{display:flex;align-items:center;gap:12px;font-size:14px;color:var(--fog);}
-.compat-item::before{content:'✓';color:var(--green);font-weight:700;flex-shrink:0;}
+/* ── DIVIDER ── */
+.divider{display:flex;align-items:center;gap:12px;margin:18px 0;}
+.div-line{flex:1;height:1px;background:var(--border);}
+.div-txt{font-family:var(--fm);font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;}
 
-/* ── PRICING ── */
-.pricing{padding:120px 56px;background:var(--coal2);}
-.pricing-inner{max-width:1100px;margin:0 auto;}
-.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:72px;}
-.price-card{border:1px solid var(--wire);border-radius:4px;padding:44px 36px;background:var(--coal);position:relative;overflow:hidden;transition:all .3s var(--ease);}
-.price-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--wire);transition:background .3s;}
-.price-card:hover{border-color:rgba(224,92,26,.3);transform:translateY(-4px);}
-.price-card:hover::after{background:var(--ore);}
-.price-card.featured{background:var(--ore);border-color:var(--ore);}
-.price-card.featured::after{background:rgba(255,255,255,.3);}
-.price-card.featured:hover{border-color:var(--ore2);background:var(--ore2);}
-.price-plan{font-family:var(--fm);font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--ore);margin-bottom:28px;}
-.price-card.featured .price-plan{color:rgba(255,255,255,.7);}
-.price-amount{font-family:var(--fd);font-size:68px;font-weight:900;letter-spacing:-3px;line-height:1;color:var(--chalk);}
-.price-amount sup{font-size:28px;letter-spacing:0;margin-right:2px;vertical-align:top;margin-top:14px;display:inline-block;}
-.price-period{font-size:13px;color:var(--fog);margin-top:6px;margin-bottom:32px;}
-.price-card.featured .price-period{color:rgba(255,255,255,.65);}
-.price-divider{height:1px;background:var(--wire);margin-bottom:28px;}
-.price-card.featured .price-divider{background:rgba(255,255,255,.2);}
-.price-features{list-style:none;display:flex;flex-direction:column;gap:12px;margin-bottom:36px;}
-.price-features li{font-size:14px;color:var(--fog);display:flex;gap:12px;align-items:flex-start;line-height:1.5;}
-.price-card.featured .price-features li{color:rgba(255,255,255,.8);}
-.price-features li .check{color:var(--green);flex-shrink:0;font-weight:700;}
-.price-card.featured .price-features li .check{color:rgba(255,255,255,.9);}
-.btn-plan{width:100%;padding:15px;font-family:var(--fd);font-size:17px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;border-radius:3px;transition:all .25s var(--ease);clip-path:polygon(0 0,calc(100% - 7px) 0,100% 7px,100% 100%,7px 100%,0 calc(100% - 7px));}
-.btn-plan-outline{background:transparent;border:1.5px solid var(--wire);color:var(--fog);}
-.btn-plan-outline:hover{border-color:var(--ore);color:var(--ore);}
-.btn-plan-solid{background:var(--chalk);border:none;color:var(--coal);}
-.btn-plan-solid:hover{background:var(--bone);}
-.popular-tag{position:absolute;top:20px;right:20px;font-family:var(--fd);font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;background:rgba(255,255,255,.2);color:var(--chalk);padding:4px 12px;border-radius:2px;}
-.price-note{text-align:center;font-size:13px;color:var(--fog);margin-top:24px;font-family:var(--fm);}
-
-/* ── TESTIMONIAL ── */
-.testimonial{padding:100px 56px;background:var(--coal);position:relative;overflow:hidden;}
-.testimonial::before{content:'❝';position:absolute;left:40px;top:40px;font-size:280px;line-height:1;color:rgba(224,92,26,.05);font-family:Georgia,serif;pointer-events:none;}
-.test-inner{max-width:820px;margin:0 auto;position:relative;z-index:1;}
-.test-quote{font-family:var(--fd);font-size:clamp(28px,3.5vw,46px);font-weight:700;font-style:italic;line-height:1.2;letter-spacing:-.5px;color:var(--chalk);margin-bottom:36px;}
-.test-author-row{display:flex;align-items:center;gap:20px;}
-.test-avatar{width:52px;height:52px;border-radius:50%;background:var(--coal3);border:2px solid var(--ore);display:flex;align-items:center;justify-content:center;font-size:20px;}
-.test-name{font-size:15px;font-weight:600;color:var(--chalk);}
-.test-role{font-size:12px;color:var(--fog);margin-top:2px;}
-
-/* ── FAQ ── */
-.faq{padding:100px 56px;background:var(--coal2);}
-.faq-inner{max-width:760px;margin:0 auto;}
-.faq-item{border-bottom:1px solid var(--wire);}
-.faq-q{display:flex;justify-content:space-between;align-items:center;gap:24px;padding:24px 0;font-size:16px;font-weight:600;color:var(--bone);transition:color .2s;}
-.faq-item:hover .faq-q{color:var(--chalk);}
-.faq-toggle{width:28px;height:28px;border-radius:2px;border:1px solid var(--wire);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--ore);flex-shrink:0;transition:all .2s;font-weight:300;line-height:1;}
-.faq-item.open .faq-toggle{background:var(--ore);color:var(--chalk);border-color:var(--ore);transform:rotate(45deg);}
-.faq-a{font-size:14.5px;color:var(--fog);line-height:1.75;max-height:0;overflow:hidden;transition:max-height .4s var(--ease),padding .3s;}
-.faq-item.open .faq-a{max-height:220px;padding-bottom:24px;}
-
-/* ── CTA FINAL ── */
-.cta-final{padding:120px 56px;background:var(--coal);position:relative;overflow:hidden;}
-.cta-grid-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(224,92,26,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(224,92,26,.04) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse 70% 90% at 50% 50%,black,transparent);}
-.cta-glow{position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(224,92,26,.14),transparent 65%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;}
-.cta-final-inner{position:relative;z-index:1;text-align:center;max-width:680px;margin:0 auto;}
-.cta-h2{font-family:var(--fd);font-size:clamp(52px,7vw,96px);font-weight:900;line-height:.88;letter-spacing:-2px;color:var(--chalk);margin-bottom:24px;}
-.cta-h2 .stroke{color:transparent;-webkit-text-stroke:2px var(--ore);}
-.cta-sub{font-size:17px;color:var(--fog);line-height:1.7;margin-bottom:48px;max-width:500px;margin-left:auto;margin-right:auto;}
-
-/* ── FORM STYLES ── */
-.cta-form{display:flex;gap:10px;max-width:480px;margin:0 auto;}
-.cta-input{flex:1;background:var(--coal2);border:1px solid var(--wire);border-radius:3px;color:var(--bone);font-family:var(--fb);font-size:15px;padding:16px 20px;outline:none;transition:border-color .2s;}
-.cta-input::placeholder{color:var(--fog);}
-.cta-input:focus{border-color:var(--ore);}
-.cta-input.error{border-color:#e74c3c;animation:shake .4s var(--ease);}
-@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
-.cta-submit{font-family:var(--fd);font-size:17px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;background:var(--ore);color:var(--chalk);border:none;border-radius:3px;padding:16px 28px;transition:all .25s var(--ease);white-space:nowrap;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));}
-.cta-submit:hover:not(:disabled){background:var(--ore2);box-shadow:0 8px 30px rgba(224,92,26,.35);}
-.cta-submit:disabled{opacity:.6;cursor:not-allowed;}
-.cta-submit.success{background:var(--green);clip-path:none;border-radius:3px;}
-.cta-note{font-family:var(--fm);font-size:11px;color:var(--fog);margin-top:16px;}
-
-/* success message */
-.success-msg{display:none;flex-direction:column;align-items:center;gap:12px;padding:32px;background:rgba(46,204,113,.08);border:1px solid rgba(46,204,113,.25);border-radius:6px;max-width:480px;margin:0 auto;}
-.success-msg.visible{display:flex;}
-.success-icon{font-size:40px;}
-.success-title{font-family:var(--fd);font-size:28px;font-weight:900;color:var(--green);letter-spacing:-.5px;}
-.success-text{font-size:14px;color:var(--fog);text-align:center;line-height:1.6;}
-
-/* ── FOOTER ── */
-footer{background:var(--coal2);border-top:1px solid var(--wire);padding:32px 56px;display:flex;align-items:center;justify-content:space-between;}
-.footer-logo{font-family:var(--fd);font-size:22px;font-weight:900;color:var(--chalk);letter-spacing:1px;}
-.footer-logo span{color:var(--ore);}
-.footer-links{display:flex;gap:28px;}
-.footer-links a{font-size:12.5px;color:var(--fog);text-decoration:none;transition:color .2s;letter-spacing:.5px;}
-.footer-links a:hover{color:var(--bone);}
-.footer-copy{font-family:var(--fm);font-size:11px;color:var(--wire);}
-
-/* ── REVEAL ── */
-.reveal{opacity:0;transform:translateY(32px);transition:opacity .8s var(--ease),transform .8s var(--ease);}
-.reveal.visible{opacity:1;transform:translateY(0);}
-.reveal-left{opacity:0;transform:translateX(-32px);transition:opacity .8s var(--ease),transform .8s var(--ease);}
-.reveal-left.visible{opacity:1;transform:translateX(0);}
-.reveal-right{opacity:0;transform:translateX(32px);transition:opacity .8s var(--ease),transform .8s var(--ease);}
-.reveal-right.visible{opacity:1;transform:translateX(0);}
+.footer-note{font-family:var(--fm);font-size:10px;color:var(--muted);text-align:center;margin-top:22px;letter-spacing:.5px;}
 
 /* ── RESPONSIVE ── */
-@media(max-width:1024px){
-  nav{padding:16px 24px;}
-  .nav-links{display:none;}
-  .hero{grid-template-columns:1fr;min-height:auto;}
-  .hero-left{padding:120px 24px 40px;}
-  .hero-right{display:none;}
-  .pain-layout,.mfr-grid,.pricing-grid{grid-template-columns:1fr;}
-  .mfr-more{grid-column:span 1;}
-  .how-header{grid-template-columns:1fr;}
-  .steps-timeline{grid-template-columns:1fr;gap:40px;}
-  .steps-timeline::before{display:none;}
-  .bento{grid-template-columns:1fr;}
-  .bc-a,.bc-b,.bc-c,.bc-d,.bc-e{grid-column:span 1;}
-  .integ-grid{grid-template-columns:1fr;}
-  section,.problem,.how,.features,.pricing,.testimonial,.manufacturers,.integrations,.cta-final{padding:72px 24px;}
-  .cta-form{flex-direction:column;}
-  footer{flex-direction:column;gap:16px;text-align:center;padding:24px;}
+@media(max-width:820px){
+  .page{grid-template-columns:1fr;}
+  .left{display:none;}
+  .right{padding:40px 20px;align-items:flex-start;padding-top:80px;}
+  .util-bar{top:12px;right:12px;}
 }
 </style>
 </head>
 <body>
 
+<!-- ── UTILITY BAR ── -->
+<div class="util-bar">
+  <button class="util-btn" onclick="toggleLang()" id="langBtn">
+    <span class="icon">🌐</span>
+    <span id="langLabel">EN</span>
+  </button>
+  <button class="util-btn" onclick="toggleTheme()" id="themeBtn">
+    <span class="icon" id="themeIcon">🌙</span>
+    <span id="themeLabel">Sombre</span>
+  </button>
+</div>
 
-<!-- NAV -->
-<nav id="nav">
-  <a class="nav-logo" href="#">LUKANE <span class="accent">RV</span><span class="dot"></span></a>
-  <div class="nav-links">
-    <a href="#comment">Comment</a>
-    <a href="#manufacturiers">Manufacturiers</a>
-    <a href="#fonctionnalites">Fonctionnalités</a>
-    <a href="#tarifs">Tarifs</a>
-    <a href="#faq">FAQ</a>
-  </div>
-  <div style="display:flex;align-items:center;gap:10px;">
-    <a href="login.html" class="nav-login">Se connecter</a>
-    <a href="#essai" class="nav-cta">Demander l'accès</a>
-  </div>
-</nav>
-
-<!-- HERO -->
-<section class="hero" id="accueil">
-  <div class="hero-grid"></div>
-  <div class="hero-glow"></div>
-  <div class="hero-left">
-    <div class="hero-tag">Nouveau · IA · Concessionnaires VR</div>
-    <h1 class="hero-h1">
-      <span class="block">VOS</span>
-      <span class="block">GARANTIES</span>
-      <span class="block italic">ENFIN</span>
-      <span class="block">GÉRÉES.</span>
-    </h1>
-    <p class="hero-sub">Le premier logiciel IA conçu pour les concessionnaires VR canadiens.<br/><strong>Tous les manufacturiers.</strong> Vos formulaires mobiles existants. Un seul tableau de bord intelligent.</p>
-    <div class="hero-actions">
-      <a href="#essai" class="btn-fire">Demander l'accès</a>
-      <a href="#comment" class="btn-ghost">Voir comment ça marche <span>→</span></a>
-    </div>
-    <div class="hero-stats">
-      <div><div class="hero-stat-val">3×</div><div class="hero-stat-label">Plus rapide</div></div>
-      <div><div class="hero-stat-val">+40%</div><div class="hero-stat-label">Taux d'approbation</div></div>
-      <div><div class="hero-stat-val">0$</div><div class="hero-stat-label">Pour commencer</div></div>
-    </div>
-  </div>
-  <div class="hero-right">
-    <div class="terminal">
-      <div class="terminal-bar">
-        <div class="tdot tdot-r"></div><div class="tdot tdot-y"></div><div class="tdot tdot-g"></div>
-        <div class="t-title">lukane rv — dashboard</div>
+<div class="page">
+  <!-- LEFT -->
+  <div class="left">
+    <div class="left-grid"></div>
+    <div class="left-glow"></div>
+    <div class="left-top">
+      <div class="logo">LUKANE <span class="acc">RV</span><span class="logo-dot"></span></div>
+      <div class="left-h" style="margin-top:60px;">
+        <span data-fr="GÉREZ" data-en="MANAGE">GÉREZ</span>
+        <span data-fr="VOS" data-en="YOUR">VOS</span>
+        <span class="stroke" data-fr="GARANTIES" data-en="WARRANTIES">GARANTIES</span>
+        <span data-fr="EN MINUTES." data-en="IN MINUTES.">EN MINUTES.</span>
       </div>
-      <div class="terminal-body">
-        <div class="t-claim">
-          <div class="t-claim-top">
-            <span class="t-id">CLM-2025-0441</span>
-            <div><span class="t-badge t-badge-new">NOUVEAU</span><span class="t-badge t-badge-src">FORMULAIRE</span></div>
-          </div>
-          <div class="t-model">2025 Forest River Rockwood 2608BS</div>
-          <div class="t-desc">"le slide sort pas, fait un bruit de broyage"</div>
-        </div>
-        <div class="t-ai">
-          <div class="t-ai-label"><div class="pulse-dot"></div>Analyse IA en cours</div>
-          <div class="t-ai-text">Dysfonctionnement du mécanisme d'extension du slide côté passager. Bruit de friction mécanique lors du déploiement, indiquant une défaillance du rack ou du motoréducteur 12V...</div>
-          <div class="t-parts">
-            <span class="t-part">FR-SLIDE-RACK-14</span>
-            <span class="t-part">FR-MOTOR-12V</span>
-            <span class="t-part">FR-SEAL-WIPE</span>
-          </div>
-          <div class="t-prob-row">
-            <span class="t-prob-label">Probabilité d'approbation</span>
-            <span class="t-prob-val">84%</span>
-          </div>
-          <div class="t-prob-bar"><div class="t-prob-fill"></div></div>
-        </div>
-        <div class="t-claim approved">
-          <div class="t-claim-top">
-            <span class="t-id">CLM-2025-0440</span>
-            <span class="t-badge t-badge-ok">APPROUVÉ · 48h</span>
-          </div>
-          <div class="t-model">2024 Winnebago Voyage 2831RL</div>
-          <div class="t-desc">Infiltration toiture fenêtre avant</div>
-        </div>
+      <p class="left-sub" data-fr="L'IA qui rédige, structure et optimise vos claims VR automatiquement. Tous les manufacturiers." data-en="The AI that drafts, structures and optimizes your RV warranty claims automatically. All manufacturers.">
+        L'IA qui rédige, structure et optimise vos claims VR automatiquement. Tous les manufacturiers.
+      </p>
+      <div class="left-stats">
+        <div><div class="lsv">3×</div><div class="lsl" data-fr="Plus rapide" data-en="Faster">Plus rapide</div></div>
+        <div><div class="lsv">+40%</div><div class="lsl" data-fr="Approbations" data-en="Approvals">Approbations</div></div>
+        <div><div class="lsv">8+</div><div class="lsl" data-fr="Manufacturiers" data-en="Manufacturers">Manufacturiers</div></div>
+      </div>
+    </div>
+    <div class="left-bottom">
+      <div class="chips">
+        <div class="chip"><div class="chip-i">🤖</div><span data-fr="Analyse IA automatique à chaque claim" data-en="Automatic AI analysis on every claim">Analyse IA automatique à chaque claim</span></div>
+        <div class="chip"><div class="chip-i">📱</div><span data-fr="Compatible avec vos formulaires mobiles" data-en="Compatible with your mobile forms">Compatible avec vos formulaires mobiles</span></div>
+        <div class="chip"><div class="chip-i">📊</div><span data-fr="Tableau de bord centralisé temps réel" data-en="Real-time centralized dashboard">Tableau de bord centralisé temps réel</span></div>
+        <div class="chip"><div class="chip-i">🔒</div><span data-fr="Données chiffrées, hébergées au Canada" data-en="Encrypted data, hosted in Canada">Données chiffrées, hébergées au Canada</span></div>
       </div>
     </div>
   </div>
-</section>
 
-<!-- MARQUEE -->
-<div class="marquee-wrap">
-  <div class="marquee-track">
-    <span class="marquee-item">Grand Design <span class="dot">●</span></span>
-    <span class="marquee-item">Jayco <span class="dot">●</span></span>
-    <span class="marquee-item">Forest River <span class="dot">●</span></span>
-    <span class="marquee-item">Winnebago <span class="dot">●</span></span>
-    <span class="marquee-item">Keystone RV <span class="dot">●</span></span>
-    <span class="marquee-item">Coachmen <span class="dot">●</span></span>
-    <span class="marquee-item">Thor Industries <span class="dot">●</span></span>
-    <span class="marquee-item">Heartland RV <span class="dot">●</span></span>
-    <span class="marquee-item">IA spécialisée VR <span class="dot">●</span></span>
-    <span class="marquee-item">Fait au Québec <span class="dot">●</span></span>
-    <span class="marquee-item">Grand Design <span class="dot">●</span></span>
-    <span class="marquee-item">Jayco <span class="dot">●</span></span>
-    <span class="marquee-item">Forest River <span class="dot">●</span></span>
-    <span class="marquee-item">Winnebago <span class="dot">●</span></span>
-    <span class="marquee-item">Keystone RV <span class="dot">●</span></span>
-    <span class="marquee-item">Coachmen <span class="dot">●</span></span>
-    <span class="marquee-item">Thor Industries <span class="dot">●</span></span>
-    <span class="marquee-item">Heartland RV <span class="dot">●</span></span>
-    <span class="marquee-item">IA spécialisée VR <span class="dot">●</span></span>
-    <span class="marquee-item">Fait au Québec <span class="dot">●</span></span>
+  <!-- RIGHT -->
+  <div class="right">
+    <div class="box">
+
+      <!-- ═══ LOGIN PANEL ═══ -->
+      <div class="panel show" id="panelLogin">
+        <div class="login-card">
+          <div class="card-logo">LUKANE <span class="acc">RV</span><span class="logo-dot" style="width:6px;height:6px;margin-left:3px"></span></div>
+
+          <div class="form-title" data-fr="BON RETOUR." data-en="WELCOME BACK.">BON<br/>RETOUR.</div>
+          <p class="form-sub" data-fr="Connectez-vous à votre espace LUKANE RV." data-en="Sign in to your LUKANE RV workspace.">Connectez-vous à votre espace LUKANE RV.</p>
+
+          <!-- Invite only badge -->
+          <div class="invite-badge">
+            <span class="invite-icon">🔑</span>
+            <div class="invite-text" data-fr="<strong>Accès sur invitation.</strong> Vos identifiants vous ont été fournis par l'équipe LUKANE RV." data-en="<strong>Invitation only.</strong> Your credentials were provided by the LUKANE RV team.">
+              <strong>Accès sur invitation.</strong> Vos identifiants vous ont été fournis par l'équipe LUKANE RV.
+            </div>
+          </div>
+
+          <div class="alert alert-err" id="loginErr"></div>
+
+          <div class="field">
+            <label data-fr="Courriel" data-en="Email">Courriel</label>
+            <input type="email" id="lEmail" placeholder="votre@courriel.com" autocomplete="email"/>
+          </div>
+          <div class="field">
+            <label data-fr="Mot de passe" data-en="Password">Mot de passe</label>
+            <div class="pw-wrap">
+              <input type="password" id="lPassword" placeholder="••••••••" autocomplete="current-password"/>
+              <button class="pw-eye" type="button" onclick="togglePw('lPassword',this)">👁</button>
+            </div>
+          </div>
+          <div class="forgot">
+            <a href="#" onclick="showForgot();return false;" data-fr="Mot de passe oublié ?" data-en="Forgot password?">Mot de passe oublié ?</a>
+          </div>
+          <button class="btn-submit" id="loginBtn" onclick="doLogin()" data-fr="Se connecter" data-en="Sign In">Se connecter</button>
+        </div>
+
+        <div class="contact-note">
+          <span data-fr="Pas encore de compte ?" data-en="Don't have an account?">Pas encore de compte ?</span>
+          <a href="mailto:info@lukanerv.ca" data-fr="Contactez-nous" data-en="Contact us">Contactez-nous</a>
+          <br/>
+          <span style="font-size:11px;font-family:var(--fm)">info@lukanerv.ca</span>
+        </div>
+        <div class="footer-note">// LUKANE RV · Données chiffrées · Hébergé au Canada 🇨🇦</div>
+      </div>
+
+      <!-- ═══ FORGOT PANEL ═══ -->
+      <div class="panel" id="panelForgot">
+        <div class="login-card">
+          <div class="card-logo">LUKANE <span class="acc">RV</span></div>
+          <div class="form-title" data-fr="MOT DE PASSE OUBLIÉ." data-en="FORGOT PASSWORD.">MOT DE<br/>PASSE<br/>OUBLIÉ.</div>
+          <p class="form-sub" data-fr="Entrez votre courriel pour recevoir un lien de réinitialisation." data-en="Enter your email to receive a reset link.">Entrez votre courriel pour recevoir un lien de réinitialisation.</p>
+          <div class="alert alert-err" id="forgotErr"></div>
+          <div class="alert alert-ok" id="forgotOk"></div>
+          <div class="field">
+            <label data-fr="Courriel" data-en="Email">Courriel</label>
+            <input type="email" id="fEmail" placeholder="votre@courriel.com"/>
+          </div>
+          <button class="btn-submit" id="forgotBtn" onclick="doForgot()" data-fr="Envoyer le lien" data-en="Send Reset Link">Envoyer le lien</button>
+        </div>
+        <div class="contact-note" style="margin-top:16px;">
+          <a href="#" onclick="showLogin();return false;" data-fr="← Retour à la connexion" data-en="← Back to sign in">← Retour à la connexion</a>
+        </div>
+        <div class="footer-note">// LUKANE RV · Données chiffrées · Hébergé au Canada 🇨🇦</div>
+      </div>
+
+    </div>
   </div>
 </div>
 
-<!-- PROBLÈME -->
-<section class="problem" id="probleme">
-  <div class="section-tag">Le problème</div>
-  <h2 class="section-h2 reveal">LES CLAIMS DE<br/>GARANTIE <span class="stroke">VOUS</span><br/>COÛTENT CHER.</h2>
-  <div class="pain-layout reveal">
-    <div class="pain-card">
-      <div class="pain-num">01</div>
-      <span class="pain-icon">⏳</span>
-      <div class="pain-title">30-45 min par claim</div>
-      <div class="pain-text">Rédiger dans le bon langage, trouver les bons codes de pièces, s'assurer que le dossier est complet. Multiplié par des dizaines de claims par mois, c'est des journées entières perdues.</div>
-    </div>
-    <div class="pain-card">
-      <div class="pain-num">02</div>
-      <span class="pain-icon">❌</span>
-      <div class="pain-title">Refus évitables</div>
-      <div class="pain-text">Une description imprécise, un code de pièce manquant, un mauvais champ rempli — et le manufacturier refuse. Vous perdez le remboursement sur du travail déjà accompli par vos techniciens.</div>
-    </div>
-    <div class="pain-card">
-      <div class="pain-num">03</div>
-      <span class="pain-icon">🗂️</span>
-      <div class="pain-title">Zéro visibilité</div>
-      <div class="pain-text">Les claims sont éparpillés entre vos formulaires, les portails Web des manufacturiers et les emails. Impossible de savoir en un coup d'œil ce qui est en attente ou en retard.</div>
-    </div>
-  </div>
-</section>
-
-<!-- COMMENT ÇA MARCHE -->
-<section class="how" id="comment">
-  <div class="how-bg-num">123</div>
-  <div class="how-header">
-    <div>
-      <div class="section-tag">Processus</div>
-      <h2 class="section-h2 reveal-left">DU FORMULAIRE<br/>À <span class="stroke">APPROUVÉ.</span></h2>
-    </div>
-    <p class="how-intro reveal-right">Trois étapes, zéro friction. Vos techniciens font leur travail sur leur formulaire mobile existant. LUKANE RV fait le reste automatiquement.</p>
-  </div>
-  <div class="steps-timeline reveal">
-    <div class="step">
-      <div class="step-num-wrap"><div class="step-circle">01</div></div>
-      <div class="step-title">Le tech remplit son formulaire</div>
-      <div class="step-text">Le technicien décrit le problème en langage simple sur son formulaire mobile habituel — en français, dans ses propres mots, sans contrainte de format ni vocabulaire technique.</div>
-      <span class="step-chip">Formulaire mobile · Aucun changement</span>
-    </div>
-    <div class="step">
-      <div class="step-num-wrap"><div class="step-circle">02</div></div>
-      <div class="step-title">L'IA analyse et structure</div>
-      <div class="step-text">La soumission arrive instantanément dans LUKANE RV. L'IA identifie le manufacturier, rédige la description officielle, suggère les codes de pièces et prédit la probabilité d'approbation.</div>
-      <span class="step-chip">IA spécialisée · Tous manufacturiers</span>
-    </div>
-    <div class="step">
-      <div class="step-num-wrap"><div class="step-circle">03</div></div>
-      <div class="step-title">Soumettez en confiance</div>
-      <div class="step-text">Dossier complet, professionnel, optimisé pour chaque manufacturier. Vous suivez chaque claim depuis un tableau de bord unique. Fini les surprises et les refus inutiles.</div>
-      <span class="step-chip">Tableau de bord centralisé</span>
-    </div>
-  </div>
-</section>
-
-<!-- MANUFACTURIERS -->
-<section class="manufacturers" id="manufacturiers">
-  <div class="section-tag">Compatibilité</div>
-  <h2 class="section-h2 reveal">TOUS VOS<br/><span class="stroke">MANUFACTURIERS.</span></h2>
-  <p style="color:var(--fog);font-size:16px;margin-top:12px;max-width:520px;">LUKANE RV connaît les exigences documentaires, les codes de pièces et le vocabulaire attendu de chaque grand manufacturier nord-américain.</p>
-  <div class="mfr-grid reveal">
-    <div class="mfr-card"><div class="mfr-logo-text">GRAND DESIGN</div><div class="mfr-country">Indiana, USA</div></div>
-    <div class="mfr-card"><div class="mfr-logo-text">JAYCO</div><div class="mfr-country">Indiana, USA</div></div>
-    <div class="mfr-card"><div class="mfr-logo-text">FOREST RIVER</div><div class="mfr-country">Indiana, USA</div></div>
-    <div class="mfr-card"><div class="mfr-logo-text">WINNEBAGO</div><div class="mfr-country">Iowa, USA</div></div>
-    <div class="mfr-card"><div class="mfr-logo-text">KEYSTONE RV</div><div class="mfr-country">Indiana, USA</div></div>
-    <div class="mfr-card"><div class="mfr-logo-text">COACHMEN</div><div class="mfr-country">Indiana, USA</div></div>
-    <div class="mfr-card"><div class="mfr-logo-text">HEARTLAND</div><div class="mfr-country">Indiana, USA</div></div>
-    <div class="mfr-card"><div class="mfr-logo-text">THOR INDUSTRIES</div><div class="mfr-country">Indiana, USA</div></div>
-    <div class="mfr-more"><div class="mfr-more-text">+ Tous les autres manufacturiers sur demande · Nouveaux ajoutés régulièrement</div></div>
-  </div>
-</section>
-
-<!-- FONCTIONNALITÉS -->
-<section class="features" id="fonctionnalites">
-  <div class="section-tag">Fonctionnalités</div>
-  <h2 class="section-h2 reveal">TOUT CE QU'IL<br/>VOUS <span class="stroke">FAUT.</span></h2>
-  <div class="bento reveal">
-    <div class="bento-card bc-a">
-      <div class="bento-icon">🤖</div>
-      <div class="bento-title">IA Spécialisée VR</div>
-      <div class="bento-text">Entraînée sur les exigences documentaires de tous les grands manufacturiers. Elle connaît leur langage, leurs codes de pièces, leurs critères d'approbation.</div>
-      <ul class="bento-list">
-        <li>Description reformulée en langage officiel</li>
-        <li>Codes de pièces avec quantités exactes</li>
-        <li>Score de probabilité d'approbation 0–100%</li>
-        <li>S'améliore avec votre historique de claims</li>
-      </ul>
-    </div>
-    <div class="bento-card bc-b">
-      <div class="bento-icon">📱</div>
-      <div class="bento-title">Vos Formulaires, Inchangés</div>
-      <div class="bento-text">Compatible avec n'importe quel formulaire mobile ou outil de collecte existant. Vos techniciens ne changent rien à leurs habitudes.</div>
-      <div class="live-feed">
-        <div class="feed-row"><span class="feed-id">CLM-2025-0443</span><span style="font-size:11px;color:var(--fog)">Forest River · Slide</span><span class="feed-status fs-new">REÇU</span></div>
-        <div class="feed-row"><span class="feed-id">CLM-2025-0442</span><span style="font-size:11px;color:var(--fog)">Keystone · Toiture</span><span class="feed-status fs-ok">APPROUVÉ</span></div>
-        <div class="feed-row"><span class="feed-id">CLM-2025-0441</span><span style="font-size:11px;color:var(--fog)">Winnebago · A/C</span><span class="feed-status fs-wait">EN ATTENTE</span></div>
-      </div>
-    </div>
-    <div class="bento-card bc-c">
-      <div class="bento-icon">📊</div>
-      <div class="bento-title">Dashboard Centralisé</div>
-      <div class="bento-text">Tous vos claims, tous vos manufacturiers, un seul endroit. Filtrez par technicien, marque ou statut en un clic.</div>
-    </div>
-    <div class="bento-card bc-d">
-      <div class="bento-icon">📈</div>
-      <div class="bento-title">Analytiques</div>
-      <div class="bento-text">Défauts récurrents, pièces les plus demandées, taux d'approbation par manufacturier. Optimisez vos opérations avec des données réelles.</div>
-    </div>
-    <div class="bento-card bc-e">
-      <div class="bento-icon">🔔</div>
-      <div class="bento-title">Alertes Intelligentes</div>
-      <div class="bento-text">Notification à chaque nouveau formulaire reçu. Alerte automatique sur les claims à risque de refus avant soumission au manufacturier.</div>
-    </div>
-  </div>
-</section>
-
-<!-- INTÉGRATION -->
-<section class="integrations" id="integration">
-  <div class="section-tag">Intégration</div>
-  <div class="integ-grid">
-    <div class="integ-visual reveal-left">
-      <div class="integ-flow">
-        <div class="integ-step">
-          <div class="integ-circle">📱</div>
-          <div class="integ-step-body">
-            <div class="integ-step-title">Votre formulaire mobile</div>
-            <div class="integ-step-text">Le technicien remplit son formulaire habituel sur le terrain — n'importe quel outil de collecte mobile que vous utilisez déjà.</div>
-            <span class="integ-chip">FastField · Jotform · Typeform · Ou autre</span>
-          </div>
-        </div>
-        <div class="integ-step">
-          <div class="integ-circle">⚡</div>
-          <div class="integ-step-body">
-            <div class="integ-step-title">Connexion en 10 minutes</div>
-            <div class="integ-step-text">On connecte votre formulaire existant à LUKANE RV. Aucun informaticien requis, aucune refonte de vos processus existants.</div>
-            <span class="integ-chip">Configuration guidée · Support inclus</span>
-          </div>
-        </div>
-        <div class="integ-step">
-          <div class="integ-circle">🤖</div>
-          <div class="integ-step-body">
-            <div class="integ-step-title">L'IA prend le relais</div>
-            <div class="integ-step-text">Chaque soumission est automatiquement analysée, structurée et optimisée pour le manufacturier concerné. Vous n'avez qu'à valider.</div>
-            <span class="integ-chip">Temps réel · Zéro double saisie</span>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="integ-right reveal-right">
-      <h3>COMPATIBLE AVEC<br/>CE QUE VOUS<br/><span style="color:var(--ore);">UTILISEZ DÉJÀ.</span></h3>
-      <p>Pas besoin de changer vos outils ni de former vos techniciens à un nouveau logiciel. LUKANE RV se branche sur votre processus existant.</p>
-      <div class="compat-list">
-        <div class="compat-item">Compatible avec tous les outils de formulaires mobiles</div>
-        <div class="compat-item">Aucune installation sur les appareils des techniciens</div>
-        <div class="compat-item">Configuration initiale en moins de 30 minutes</div>
-        <div class="compat-item">Support de migration inclus dans tous les plans</div>
-        <div class="compat-item">API disponible pour intégrations personnalisées</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- PRICING -->
-<section class="pricing" id="tarifs">
-  <div class="pricing-inner">
-    <div class="section-tag">Tarifs</div>
-    <h2 class="section-h2 reveal">SIMPLE ET<br/><span class="stroke">TRANSPARENT.</span></h2>
-    <p style="color:var(--fog);font-size:16px;margin-top:16px;">Aucun contrat. Annulez en tout temps. Accès sur invitation.</p>
-    <div class="pricing-grid reveal" style="grid-template-columns:repeat(2,1fr);max-width:780px;margin-left:auto;margin-right:auto;margin-top:56px;">
-
-      <!-- PLAN ANALYSE -->
-      <div class="price-card">
-        <div class="price-plan">// Analyse</div>
-        <div class="price-amount"><sup>$</sup>79</div>
-        <div class="price-period">par mois · par concessionnaire</div>
-        <div class="price-divider"></div>
-        <ul class="price-features">
-          <li><span class="check">✓</span> Réception auto des formulaires mobiles</li>
-          <li><span class="check">✓</span> Analyse IA — description en langage manufacturier</li>
-          <li><span class="check">✓</span> Suggestion de pièces & codes</li>
-          <li><span class="check">✓</span> Prédiction d'approbation 0–100%</li>
-          <li><span class="check">✓</span> Tableau de bord centralisé</li>
-          <li><span class="check">✓</span> Tous les manufacturiers inclus</li>
-          <li><span class="check">✓</span> Support par email</li>
-        </ul>
-        <button class="btn-plan btn-plan-outline" onclick="document.getElementById('essai').scrollIntoView({behavior:'smooth'})">Demander l'accès</button>
-      </div>
-
-      <!-- PLAN PRO -->
-      <div class="price-card featured">
-        <div class="popular-tag">⭐ Recommandé</div>
-        <div class="price-plan">// Pro</div>
-        <div class="price-amount"><sup>$</sup>149</div>
-        <div class="price-period">par mois · par concessionnaire</div>
-        <div class="price-divider"></div>
-        <ul class="price-features">
-          <li><span class="check">✓</span> Tout du plan Analyse</li>
-          <li><span class="check">✓</span> Pré-remplissage automatique portail manufacturier</li>
-          <li><span class="check">✓</span> Soumission en 1 clic — Grand Design, Jayco & +</li>
-          <li><span class="check">✓</span> Connexion sécurisée aux portails manufacturiers</li>
-          <li><span class="check">✓</span> Suivi de soumission en temps réel</li>
-          <li><span class="check">✓</span> Analytiques & rapports mensuels</li>
-          <li><span class="check">✓</span> Support prioritaire</li>
-        </ul>
-        <button class="btn-plan btn-plan-solid" onclick="document.getElementById('essai').scrollIntoView({behavior:'smooth'})">Demander l'accès</button>
-      </div>
-
-    </div>
-    <p class="price-note">// Accès sur invitation · Aucune carte de crédit pour commencer · Annulation en tout temps</p>
-  </div>
-</section>
-
-<!-- TESTIMONIAL -->
-<section class="testimonial">
-  <div class="test-inner reveal">
-    <p class="test-quote">Depuis LUKANE RV, nos claims passent du premier coup, peu importe le manufacturier. On a arrêté de perdre des après-midis à reformuler des descriptions — l'IA le fait mieux que nous en 10 secondes.</p>
-    <div class="test-author-row">
-      <div class="test-avatar">🧑</div>
-      <div>
-        <div class="test-name">Marc-Antoine Tremblay</div>
-        <div class="test-role">Directeur du Service · Concessionnaire VR, Québec</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- FAQ -->
-<section class="faq" id="faq">
-  <div class="faq-inner">
-    <div class="section-tag">FAQ</div>
-    <h2 class="section-h2 reveal" style="margin-bottom:48px;">QUESTIONS<br/><span class="stroke">FRÉQUENTES.</span></h2>
-    <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-q">Est-ce compatible avec mon formulaire mobile actuel ?<div class="faq-toggle">+</div></div>
-      <div class="faq-a">Oui. LUKANE RV se connecte à n'importe quel outil de formulaires mobiles. On configure la connexion avec vous lors de l'intégration initiale — inclus dans tous les plans, sans frais supplémentaires.</div>
-    </div>
-    <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-q">L'IA connaît vraiment tous les manufacturiers VR ?<div class="faq-toggle">+</div></div>
-      <div class="faq-a">Oui. LUKANE RV est entraîné sur les exigences documentaires de tous les grands manufacturiers nord-américains (Grand Design, Jayco, Forest River, Winnebago, Keystone, Coachmen, Heartland, Thor et plus). De nouveaux manufacturiers sont ajoutés régulièrement.</div>
-    </div>
-    <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-q">Combien de temps pour être opérationnel ?<div class="faq-toggle">+</div></div>
-      <div class="faq-a">Moins de 30 minutes. La connexion de votre formulaire prend environ 10-15 minutes avec notre guide. Votre premier claim peut être analysé le même jour. Aucun informaticien, aucune installation requise.</div>
-    </div>
-    <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-q">Est-ce que les techniciens doivent changer leurs habitudes ?<div class="faq-toggle">+</div></div>
-      <div class="faq-a">Non, c'est l'un des grands avantages. Ils continuent d'utiliser leur formulaire mobile habituel, en français, dans leurs propres mots. LUKANE RV reçoit la soumission automatiquement et fait la transformation en arrière-plan.</div>
-    </div>
-    <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-q">Mes données sont-elles sécurisées ?<div class="faq-toggle">+</div></div>
-      <div class="faq-a">Absolument. Toutes les données sont chiffrées, hébergées au Canada, et ne sont jamais partagées avec des tiers. Chaque concessionnaire a un environnement complètement isolé.</div>
-    </div>
-    <div class="faq-item" onclick="toggleFaq(this)">
-      <div class="faq-q">Y a-t-il un contrat à long terme ?<div class="faq-toggle">+</div></div>
-      <div class="faq-a">Non. Abonnement mensuel, sans engagement. Annulez en tout temps depuis votre compte, sans frais ni pénalité.</div>
-    </div>
-  </div>
-</section>
-
-<!-- CTA FINAL -->
-<section class="cta-final" id="essai">
-  <div class="cta-grid-bg"></div>
-  <div class="cta-glow"></div>
-  <div class="cta-final-inner" style="max-width:560px">
-    <h2 class="cta-h2">DEMANDEZ<br/>VOTRE <span class="stroke">ACCÈS.</span></h2>
-    <p class="cta-sub">Remplissez ce formulaire et nous vous contacterons dans les 24h pour configurer votre accès LUKANE RV.</p>
-
-    <!-- Formspree form -->
-    <div id="ctaForm" style="display:flex;flex-direction:column;gap:10px;text-align:left">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div style="display:flex;flex-direction:column;gap:5px">
-          <label style="font-family:var(--fm);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--fog)">Prénom</label>
-          <input class="cta-input" id="ctaFirst" type="text" placeholder="Marc" autocomplete="given-name" style="font-size:14px;padding:13px 16px"/>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:5px">
-          <label style="font-family:var(--fm);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--fog)">Nom</label>
-          <input class="cta-input" id="ctaLast" type="text" placeholder="Tremblay" autocomplete="family-name" style="font-size:14px;padding:13px 16px"/>
-        </div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:5px">
-        <label style="font-family:var(--fm);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--fog)">Concessionnaire</label>
-        <input class="cta-input" id="ctaDealer" type="text" placeholder="RV Pro Montréal" style="font-size:14px;padding:13px 16px"/>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:5px">
-        <label style="font-family:var(--fm);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--fog)">Courriel professionnel</label>
-        <input class="cta-input" id="ctaEmail" type="email" placeholder="votre@courriel.com" autocomplete="email" style="font-size:14px;padding:13px 16px"/>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:5px">
-        <label style="font-family:var(--fm);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--fog)">Plan d'intérêt</label>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <label id="planAnalyse" onclick="selectPlanCTA('analyse')" style="cursor:pointer;background:var(--coal2);border:1.5px solid var(--wire);border-radius:3px;padding:12px 16px;transition:all .2s;display:flex;flex-direction:column;gap:3px">
-            <span style="font-family:var(--fd);font-size:16px;font-weight:800;color:var(--bone)">Analyse — 79$/mois</span>
-            <span style="font-size:11px;color:var(--fog)">Réception formulaires + IA</span>
-          </label>
-          <label id="planPro" onclick="selectPlanCTA('pro')" style="cursor:pointer;background:rgba(224,92,26,.08);border:1.5px solid var(--ore);border-radius:3px;padding:12px 16px;transition:all .2s;display:flex;flex-direction:column;gap:3px">
-            <span style="font-family:var(--fd);font-size:16px;font-weight:800;color:var(--ore)">Pro — 149$/mois</span>
-            <span style="font-size:11px;color:var(--fog)">IA + soumission automatique</span>
-          </label>
-        </div>
-        <input type="hidden" id="ctaPlan" value="pro"/>
-      </div>
-      <button class="cta-submit" id="ctaBtn" type="button" style="margin-top:4px;width:100%;cursor:pointer">Demander l'accès →</button>
-    </div>
-
-    <!-- Success message -->
-    <div class="success-msg" id="successMsg">
-      <div class="success-icon">✅</div>
-      <div class="success-title">Demande reçue !</div>
-      <div class="success-text">On vous contacte dans les 24h pour configurer votre accès LUKANE RV.<br/>Vérifiez votre boîte de courriel.</div>
-    </div>
-
-    <p class="cta-note" id="ctaNote" style="margin-top:14px">// info@lukanerv.ca · Fait au Québec 🇨🇦 · Accès sur invitation</p>
-  </div>
-</section>
-
-<!-- FOOTER -->
-<footer>
-  <div class="footer-logo">LUKANE <span>RV</span></div>
-  <div class="footer-links">
-    <a href="#">Confidentialité</a>
-    <a href="#">Conditions</a>
-    <a href="mailto:info@lukanerv.ca">info@lukanerv.ca</a>
-  </div>
-  <div class="footer-copy">© 2025 LUKANE RV Inc.</div>
-</footer>
-
 <script>
-/* ── Cursor ── */
+/* ══ CONFIG ══ */
+const SUPA_URL = 'https://zxprifyiqhsxysdfeyti.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4cHJpZnlpcWhzeHlzZGZleXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3MzU0MTgsImV4cCI6MjA5NjMxMTQxOH0.F9yZWgDt7xxRKpb3nJByBIHmsozsHjZDR5Egk_QgWTA';
+const sb = window.supabase?.createClient(SUPA_URL, SUPA_KEY);
 
-
-/* ── Nav scroll ── */
-window.addEventListener('scroll', () =>
-  document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 60)
-);
-
-/* ── Reveal on scroll ── */
-const obs = new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
-  });
-}, { threshold: .1 });
-document.querySelectorAll('.reveal, .reveal-left, .reveal-right').forEach(r => obs.observe(r));
-document.querySelectorAll('.bento-card, .mfr-card').forEach((c, i) => {
-  c.style.transitionDelay = (i * .07) + 's';
-  c.classList.add('reveal');
-  obs.observe(c);
-});
-
-/* ── FAQ ── */
-function toggleFaq(el) {
-  document.querySelectorAll('.faq-item.open').forEach(x => { if (x !== el) x.classList.remove('open'); });
-  el.classList.toggle('open');
+/* ══ THEME ══ */
+function initTheme() {
+  var saved = localStorage.getItem('lukane_theme') || 'light';
+  setTheme(saved);
+}
+function setTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem('lukane_theme', t);
+  var isDark = t === 'dark';
+  document.getElementById('themeIcon').textContent  = isDark ? '☀️' : '🌙';
+  document.getElementById('themeLabel').textContent = isDark ? (LANG==='fr'?'Clair':'Light') : (LANG==='fr'?'Sombre':'Dark');
+}
+function toggleTheme() {
+  var cur = document.documentElement.getAttribute('data-theme');
+  setTheme(cur === 'dark' ? 'light' : 'dark');
 }
 
-/* ── Smooth scroll ── */
-document.querySelectorAll('a[href^="#"]').forEach(a => {
-  a.addEventListener('click', e => {
-    const t = document.querySelector(a.getAttribute('href'));
-    if (t) { e.preventDefault(); t.scrollIntoView({ behavior: 'smooth' }); }
+/* ══ LANG ══ */
+var LANG = localStorage.getItem('lukane_lang') || 'fr';
+function initLang() { applyLang(LANG); }
+function toggleLang() {
+  LANG = LANG === 'fr' ? 'en' : 'fr';
+  localStorage.setItem('lukane_lang', LANG);
+  applyLang(LANG);
+}
+function applyLang(lang) {
+  document.getElementById('langLabel').textContent = lang === 'fr' ? 'EN' : 'FR';
+  document.documentElement.setAttribute('lang', lang);
+  // Update all elements with data-fr / data-en
+  document.querySelectorAll('[data-fr]').forEach(function(el) {
+    var val = el.getAttribute('data-' + lang);
+    if (!val) return;
+    if (val.includes('<')) el.innerHTML = val;
+    else el.textContent = val;
   });
-});
-
-/* ══════════════════════════════════════════
-   FORMSPREE — DEMANDE D'ACCÈS
-   https://formspree.io/f/xjgdvroe
-══════════════════════════════════════════ */
-const FORMSPREE_URL = 'https://formspree.io/f/xjgdvroe';
-
-// Plan selector
-function selectPlanCTA(plan) {
-  document.getElementById('ctaPlan').value = plan;
-  var styles = {
-    analyse: { bg:'rgba(224,92,26,.08)', border:'var(--ore)', color:'var(--ore)' },
-    other:   { bg:'var(--coal2)',         border:'var(--wire)', color:'var(--bone)' }
+  // Update placeholders
+  var phs = {
+    fr: { lEmail:'votre@courriel.com', lPassword:'••••••••', fEmail:'votre@courriel.com' },
+    en: { lEmail:'your@email.com',     lPassword:'••••••••', fEmail:'your@email.com'     },
   };
-  var planAnalyse = document.getElementById('planAnalyse');
-  var planPro     = document.getElementById('planPro');
-  if (plan === 'analyse') {
-    planAnalyse.style.background   = styles.analyse.bg;
-    planAnalyse.style.borderColor  = styles.analyse.border;
-    planAnalyse.querySelector('span').style.color = styles.analyse.color;
-    planPro.style.background  = styles.other.bg;
-    planPro.style.borderColor = styles.other.border;
-    planPro.querySelector('span').style.color = styles.other.color;
-  } else {
-    planPro.style.background      = styles.analyse.bg;
-    planPro.style.borderColor     = styles.analyse.border;
-    planPro.querySelector('span').style.color = styles.analyse.color;
-    planAnalyse.style.background  = styles.other.bg;
-    planAnalyse.style.borderColor = styles.other.border;
-    planAnalyse.querySelector('span').style.color = styles.other.color;
+  Object.keys(phs[lang]).forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.placeholder = phs[lang][id];
+  });
+  // Update button labels
+  var btns = {
+    fr: { loginBtn:'Se connecter', forgotBtn:'Envoyer le lien' },
+    en: { loginBtn:'Sign In',      forgotBtn:'Send Reset Link' },
+  };
+  Object.keys(btns[lang]).forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el && !el.disabled) el.textContent = btns[lang][id];
+  });
+  // Update theme button label
+  var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  document.getElementById('themeLabel').textContent = isDark
+    ? (lang==='fr'?'Clair':'Light')
+    : (lang==='fr'?'Sombre':'Dark');
+}
+
+/* ══ PANELS ══ */
+function showForgot() {
+  document.getElementById('panelLogin').classList.remove('show');
+  document.getElementById('panelForgot').classList.add('show');
+}
+function showLogin() {
+  document.getElementById('panelForgot').classList.remove('show');
+  document.getElementById('panelLogin').classList.add('show');
+}
+
+/* ══ ALERTS ══ */
+function showErr(id, msg) { var e=document.getElementById(id); e.textContent=msg; e.classList.add('show'); }
+function clearAlerts()    { document.querySelectorAll('.alert').forEach(function(a){ a.classList.remove('show'); }); }
+
+/* ══ PASSWORD TOGGLE ══ */
+function togglePw(id, btn) {
+  var inp = document.getElementById(id);
+  inp.type = inp.type==='password' ? 'text' : 'password';
+  btn.textContent = inp.type==='password' ? '👁' : '🙈';
+}
+
+/* ══ SET BUTTON LOADING ══ */
+function setBtn(id, loading, label) {
+  var btn = document.getElementById(id);
+  btn.disabled = loading;
+  btn.innerHTML = loading ? '<span class="spinner"></span>' + (LANG==='fr'?'En cours…':'Loading…') : label;
+}
+
+const delay = function(ms){ return new Promise(function(r){ setTimeout(r, ms); }); };
+
+/* ══ LOGIN ══ */
+async function doLogin() {
+  clearAlerts();
+  var email = document.getElementById('lEmail').value.trim();
+  var pass  = document.getElementById('lPassword').value;
+  if (!email || !pass) {
+    showErr('loginErr', LANG==='fr' ? '⚠️ Remplis tous les champs.' : '⚠️ Please fill in all fields.');
+    return;
+  }
+  setBtn('loginBtn', true, '');
+  try {
+    var res = await sb.auth.signInWithPassword({ email: email, password: pass });
+    if (res.error) throw res.error;
+    window.location.href = 'dashboard.html';
+  } catch(e) {
+    setBtn('loginBtn', false, LANG==='fr' ? 'Se connecter' : 'Sign In');
+    var msg = e.message?.includes('Invalid')
+      ? (LANG==='fr' ? '❌ Courriel ou mot de passe incorrect.' : '❌ Invalid email or password.')
+      : '❌ ' + e.message;
+    showErr('loginErr', msg);
   }
 }
 
-document.getElementById('ctaBtn').addEventListener('click', async () => {
-  const first  = document.getElementById('ctaFirst').value.trim();
-  const last   = document.getElementById('ctaLast').value.trim();
-  const dealer = document.getElementById('ctaDealer').value.trim();
-  const email  = document.getElementById('ctaEmail').value.trim();
-  const plan   = document.getElementById('ctaPlan').value;
-  const btn    = document.getElementById('ctaBtn');
-
-  // Validation
-  if (!first || !last || !dealer || !email) {
-    [
-      {id:'ctaFirst',  val:first,  msg:'Entrez votre prénom'},
-      {id:'ctaLast',   val:last,   msg:'Entrez votre nom'},
-      {id:'ctaDealer', val:dealer, msg:'Entrez le nom de votre concessionnaire'},
-      {id:'ctaEmail',  val:email,  msg:'Entrez votre courriel'},
-    ].forEach(function(f) {
-      var el = document.getElementById(f.id);
-      if (!f.val) {
-        el.classList.add('error');
-        el.placeholder = f.msg;
-        setTimeout(function(){ el.classList.remove('error'); el.placeholder = ''; }, 2500);
-      }
-    });
+/* ══ FORGOT PASSWORD ══ */
+async function doForgot() {
+  clearAlerts();
+  var email = document.getElementById('fEmail').value.trim();
+  if (!email) {
+    showErr('forgotErr', LANG==='fr' ? '⚠️ Entrez votre courriel.' : '⚠️ Enter your email.');
     return;
   }
-  if (!email.includes('@') || !email.includes('.')) {
-    var emailEl = document.getElementById('ctaEmail');
-    emailEl.classList.add('error');
-    emailEl.value = '';
-    emailEl.placeholder = 'Courriel invalide';
-    setTimeout(function(){ emailEl.classList.remove('error'); emailEl.placeholder = 'votre@courriel.com'; }, 2500);
-    return;
-  }
-
-  // Loading
-  btn.disabled = true;
-  btn.textContent = '⏳ Envoi...';
-
+  setBtn('forgotBtn', true, '');
   try {
-    const res = await fetch(FORMSPREE_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({
-        prenom:         first,
-        nom:            last,
-        concessionnaire:dealer,
-        email:          email,
-        plan:           plan === 'pro' ? 'Pro — 149$/mois' : 'Analyse — 79$/mois',
-        source:         'Landing page LUKANE RV',
-        date:           new Date().toLocaleDateString('fr-CA')
-      })
-    });
-
-    if (res.ok) {
-      document.getElementById('ctaForm').style.display = 'none';
-      document.getElementById('ctaNote').style.display = 'none';
-      document.getElementById('successMsg').classList.add('visible');
-    } else {
-      const data = await res.json();
-      throw new Error(data?.error || 'Erreur serveur');
-    }
-  } catch (err) {
-    btn.disabled = false;
-    btn.textContent = '⚠️ Réessayer';
-    btn.style.background = '#c0392b';
-    setTimeout(function() {
-      btn.textContent = "Demander l'acc\u00e8s \u2192";
-      btn.style.background = '';
-    }, 3000);
+    await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/dashboard.html' });
+    var ok = document.getElementById('forgotOk');
+    ok.textContent = LANG==='fr'
+      ? '✅ Lien envoyé ! Vérifiez votre boîte courriel.'
+      : '✅ Link sent! Check your email inbox.';
+    ok.classList.add('show');
+  } catch(e) {
+    showErr('forgotErr', '❌ ' + e.message);
   }
+  setBtn('forgotBtn', false, LANG==='fr' ? 'Envoyer le lien' : 'Send Reset Link');
+}
+
+/* ══ ENTER KEY ══ */
+document.addEventListener('keydown', function(e) {
+  if (e.key !== 'Enter') return;
+  if (document.getElementById('panelLogin').classList.contains('show')) doLogin();
+  if (document.getElementById('panelForgot').classList.contains('show')) doForgot();
 });
 
-// Enter key
-document.getElementById('ctaEmail').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') document.getElementById('ctaBtn').click();
-});
+/* ══ AUTO REDIRECT IF SESSION ══ */
+(async function() {
+  initTheme();
+  initLang();
+  try {
+    var res = await sb.auth.getSession();
+    if (res.data?.session) window.location.href = 'dashboard.html';
+  } catch(e) {}
+})();
 </script>
 </body>
 </html>
