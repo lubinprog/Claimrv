@@ -349,7 +349,7 @@ footer{background:var(--coal2);border-top:1px solid var(--wire);padding:32px 56p
   </div>
   <div style="display:flex;align-items:center;gap:10px;">
     <a href="login.html" class="nav-login">Se connecter</a>
-    <a href="#essai" class="nav-cta">Essai 14 jours gratuit</a>
+    <a href="#essai" class="nav-cta">Demander l'accès</a>
   </div>
 </nav>
 
@@ -367,7 +367,7 @@ footer{background:var(--coal2);border-top:1px solid var(--wire);padding:32px 56p
     </h1>
     <p class="hero-sub">Le premier logiciel IA conçu pour les concessionnaires VR canadiens.<br/><strong>Tous les manufacturiers.</strong> Vos formulaires mobiles existants. Un seul tableau de bord intelligent.</p>
     <div class="hero-actions">
-      <a href="login.html?tab=signup" class="btn-fire">Commencer gratuitement</a>
+      <a href="#essai" class="btn-fire">Demander l'accès</a>
       <a href="#comment" class="btn-ghost">Voir comment ça marche <span>→</span></a>
     </div>
     <div class="hero-stats">
@@ -615,55 +615,48 @@ footer{background:var(--coal2);border-top:1px solid var(--wire);padding:32px 56p
   <div class="pricing-inner">
     <div class="section-tag">Tarifs</div>
     <h2 class="section-h2 reveal">SIMPLE ET<br/><span class="stroke">TRANSPARENT.</span></h2>
-    <p style="color:var(--fog);font-size:16px;margin-top:16px;">Aucun contrat. Annulez en tout temps.</p>
-    <div class="pricing-grid reveal">
+    <p style="color:var(--fog);font-size:16px;margin-top:16px;">Aucun contrat. Annulez en tout temps. Accès sur invitation.</p>
+    <div class="pricing-grid reveal" style="grid-template-columns:repeat(2,1fr);max-width:780px;margin-left:auto;margin-right:auto;margin-top:56px;">
+
+      <!-- PLAN ANALYSE -->
       <div class="price-card">
-        <div class="price-plan">// Démarrage</div>
+        <div class="price-plan">// Analyse</div>
         <div class="price-amount"><sup>$</sup>79</div>
-        <div class="price-period">par mois · 1 utilisateur</div>
+        <div class="price-period">par mois · par concessionnaire</div>
         <div class="price-divider"></div>
         <ul class="price-features">
-          <li><span class="check">✓</span> Claims illimités</li>
-          <li><span class="check">✓</span> 1 formulaire connecté</li>
-          <li><span class="check">✓</span> Analyse IA complète</li>
+          <li><span class="check">✓</span> Réception auto des formulaires mobiles</li>
+          <li><span class="check">✓</span> Analyse IA — description en langage manufacturier</li>
+          <li><span class="check">✓</span> Suggestion de pièces & codes</li>
+          <li><span class="check">✓</span> Prédiction d'approbation 0–100%</li>
+          <li><span class="check">✓</span> Tableau de bord centralisé</li>
           <li><span class="check">✓</span> Tous les manufacturiers inclus</li>
           <li><span class="check">✓</span> Support par email</li>
         </ul>
-        <button class="btn-plan btn-plan-outline" onclick="document.getElementById('essai').scrollIntoView({behavior:'smooth'})">Commencer l'essai gratuit</button>
+        <button class="btn-plan btn-plan-outline" onclick="document.getElementById('essai').scrollIntoView({behavior:'smooth'})">Demander l'accès</button>
       </div>
+
+      <!-- PLAN PRO -->
       <div class="price-card featured">
-        <div class="popular-tag">⭐ Populaire</div>
-        <div class="price-plan">// Professionnel</div>
+        <div class="popular-tag">⭐ Recommandé</div>
+        <div class="price-plan">// Pro</div>
         <div class="price-amount"><sup>$</sup>149</div>
-        <div class="price-period">par mois · jusqu'à 5 utilisateurs</div>
+        <div class="price-period">par mois · par concessionnaire</div>
         <div class="price-divider"></div>
         <ul class="price-features">
-          <li><span class="check">✓</span> Tout du plan Démarrage</li>
-          <li><span class="check">✓</span> 5 techniciens inclus</li>
-          <li><span class="check">✓</span> Formulaires illimités connectés</li>
-          <li><span class="check">✓</span> Prédiction d'approbation avancée</li>
+          <li><span class="check">✓</span> Tout du plan Analyse</li>
+          <li><span class="check">✓</span> Pré-remplissage automatique portail manufacturier</li>
+          <li><span class="check">✓</span> Soumission en 1 clic — Grand Design, Jayco & +</li>
+          <li><span class="check">✓</span> Connexion sécurisée aux portails manufacturiers</li>
+          <li><span class="check">✓</span> Suivi de soumission en temps réel</li>
           <li><span class="check">✓</span> Analytiques & rapports mensuels</li>
           <li><span class="check">✓</span> Support prioritaire</li>
         </ul>
-        <button class="btn-plan btn-plan-solid" onclick="document.getElementById('essai').scrollIntoView({behavior:'smooth'})">Commencer l'essai gratuit</button>
+        <button class="btn-plan btn-plan-solid" onclick="document.getElementById('essai').scrollIntoView({behavior:'smooth'})">Demander l'accès</button>
       </div>
-      <div class="price-card">
-        <div class="price-plan">// Réseau</div>
-        <div class="price-amount" style="font-size:52px;letter-spacing:-2px;">Devis</div>
-        <div class="price-period">multi-succursales · volume</div>
-        <div class="price-divider"></div>
-        <ul class="price-features">
-          <li><span class="check">✓</span> Utilisateurs illimités</li>
-          <li><span class="check">✓</span> Plusieurs emplacements</li>
-          <li><span class="check">✓</span> Dashboard consolidé groupe</li>
-          <li><span class="check">✓</span> Intégrations sur mesure</li>
-          <li><span class="check">✓</span> Gestionnaire de compte dédié</li>
-          <li><span class="check">✓</span> Formation sur site</li>
-        </ul>
-        <button class="btn-plan btn-plan-outline" onclick="alert('Contactez-nous : info@lukanerv.ca')">Nous contacter</button>
-      </div>
+
     </div>
-    <p class="price-note">// Essai 14 jours · Aucune carte de crédit · Annulation en tout temps</p>
+    <p class="price-note">// Accès sur invitation · Aucune carte de crédit pour commencer · Annulation en tout temps</p>
   </div>
 </section>
 
@@ -717,24 +710,55 @@ footer{background:var(--coal2);border-top:1px solid var(--wire);padding:32px 56p
 <section class="cta-final" id="essai">
   <div class="cta-grid-bg"></div>
   <div class="cta-glow"></div>
-  <div class="cta-final-inner">
-    <h2 class="cta-h2">ARRÊTEZ<br/>DE <span class="stroke">PERDRE</span><br/>DU TEMPS.</h2>
-    <p class="cta-sub">14 jours gratuits. Aucune carte de crédit.<br/>Votre premier claim analysé par l'IA aujourd'hui.</p>
+  <div class="cta-final-inner" style="max-width:560px">
+    <h2 class="cta-h2">DEMANDEZ<br/>VOTRE <span class="stroke">ACCÈS.</span></h2>
+    <p class="cta-sub">Remplissez ce formulaire et nous vous contacterons dans les 24h pour configurer votre accès LUKANE RV.</p>
 
     <!-- Formspree form -->
-    <div class="cta-form" id="ctaForm">
-      <input class="cta-input" id="ctaEmail" type="email" placeholder="votre@courriel.com" autocomplete="email"/>
-      <button class="cta-submit" id="ctaBtn" type="button">Commencer →</button>
+    <div id="ctaForm" style="display:flex;flex-direction:column;gap:10px;text-align:left">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <label style="font-family:var(--fm);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--fog)">Prénom</label>
+          <input class="cta-input" id="ctaFirst" type="text" placeholder="Marc" autocomplete="given-name" style="font-size:14px;padding:13px 16px"/>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <label style="font-family:var(--fm);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--fog)">Nom</label>
+          <input class="cta-input" id="ctaLast" type="text" placeholder="Tremblay" autocomplete="family-name" style="font-size:14px;padding:13px 16px"/>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <label style="font-family:var(--fm);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--fog)">Concessionnaire</label>
+        <input class="cta-input" id="ctaDealer" type="text" placeholder="RV Pro Montréal" style="font-size:14px;padding:13px 16px"/>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <label style="font-family:var(--fm);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--fog)">Courriel professionnel</label>
+        <input class="cta-input" id="ctaEmail" type="email" placeholder="votre@courriel.com" autocomplete="email" style="font-size:14px;padding:13px 16px"/>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <label style="font-family:var(--fm);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--fog)">Plan d'intérêt</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <label id="planAnalyse" onclick="selectPlanCTA('analyse')" style="cursor:pointer;background:var(--coal2);border:1.5px solid var(--wire);border-radius:3px;padding:12px 16px;transition:all .2s;display:flex;flex-direction:column;gap:3px">
+            <span style="font-family:var(--fd);font-size:16px;font-weight:800;color:var(--bone)">Analyse — 79$/mois</span>
+            <span style="font-size:11px;color:var(--fog)">Réception formulaires + IA</span>
+          </label>
+          <label id="planPro" onclick="selectPlanCTA('pro')" style="cursor:pointer;background:rgba(224,92,26,.08);border:1.5px solid var(--ore);border-radius:3px;padding:12px 16px;transition:all .2s;display:flex;flex-direction:column;gap:3px">
+            <span style="font-family:var(--fd);font-size:16px;font-weight:800;color:var(--ore)">Pro — 149$/mois</span>
+            <span style="font-size:11px;color:var(--fog)">IA + soumission automatique</span>
+          </label>
+        </div>
+        <input type="hidden" id="ctaPlan" value="pro"/>
+      </div>
+      <button class="cta-submit" id="ctaBtn" type="button" style="margin-top:4px;width:100%;cursor:pointer">Demander l'accès →</button>
     </div>
 
-    <!-- Success message (hidden by default) -->
+    <!-- Success message -->
     <div class="success-msg" id="successMsg">
-      <div class="success-icon">🎉</div>
-      <div class="success-title">Vous êtes inscrit !</div>
-      <div class="success-text">On vous contacte dans les prochaines 24h pour configurer votre essai gratuit.<br/>Vérifiez votre boîte de courriel.</div>
+      <div class="success-icon">✅</div>
+      <div class="success-title">Demande reçue !</div>
+      <div class="success-text">On vous contacte dans les 24h pour configurer votre accès LUKANE RV.<br/>Vérifiez votre boîte de courriel.</div>
     </div>
 
-    <p class="cta-note" id="ctaNote">// 14 jours gratuits · sans carte · annulation en tout temps · fait au Québec 🇨🇦</p>
+    <p class="cta-note" id="ctaNote" style="margin-top:14px">// info@lukanerv.ca · Fait au Québec 🇨🇦 · Accès sur invitation</p>
   </div>
 </section>
 
@@ -786,71 +810,111 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
 });
 
 /* ══════════════════════════════════════════
-   FORMSPREE CTA — https://formspree.io/f/xjgdvroe
+   FORMSPREE — DEMANDE D'ACCÈS
+   https://formspree.io/f/xjgdvroe
 ══════════════════════════════════════════ */
 const FORMSPREE_URL = 'https://formspree.io/f/xjgdvroe';
 
-document.getElementById('ctaBtn').addEventListener('click', async () => {
-  const emailInput = document.getElementById('ctaEmail');
-  const btn        = document.getElementById('ctaBtn');
-  const email      = emailInput.value.trim();
+// Plan selector
+function selectPlanCTA(plan) {
+  document.getElementById('ctaPlan').value = plan;
+  var styles = {
+    analyse: { bg:'rgba(224,92,26,.08)', border:'var(--ore)', color:'var(--ore)' },
+    other:   { bg:'var(--coal2)',         border:'var(--wire)', color:'var(--bone)' }
+  };
+  var planAnalyse = document.getElementById('planAnalyse');
+  var planPro     = document.getElementById('planPro');
+  if (plan === 'analyse') {
+    planAnalyse.style.background   = styles.analyse.bg;
+    planAnalyse.style.borderColor  = styles.analyse.border;
+    planAnalyse.querySelector('span').style.color = styles.analyse.color;
+    planPro.style.background  = styles.other.bg;
+    planPro.style.borderColor = styles.other.border;
+    planPro.querySelector('span').style.color = styles.other.color;
+  } else {
+    planPro.style.background      = styles.analyse.bg;
+    planPro.style.borderColor     = styles.analyse.border;
+    planPro.querySelector('span').style.color = styles.analyse.color;
+    planAnalyse.style.background  = styles.other.bg;
+    planAnalyse.style.borderColor = styles.other.border;
+    planAnalyse.querySelector('span').style.color = styles.other.color;
+  }
+}
 
-  /* ── Validation ── */
-  if (!email || !email.includes('@') || !email.includes('.')) {
-    emailInput.classList.add('error');
-    emailInput.placeholder = 'Entrez un courriel valide';
-    emailInput.value = '';
-    setTimeout(() => {
-      emailInput.classList.remove('error');
-      emailInput.placeholder = 'votre@courriel.com';
-    }, 2500);
+document.getElementById('ctaBtn').addEventListener('click', async () => {
+  const first  = document.getElementById('ctaFirst').value.trim();
+  const last   = document.getElementById('ctaLast').value.trim();
+  const dealer = document.getElementById('ctaDealer').value.trim();
+  const email  = document.getElementById('ctaEmail').value.trim();
+  const plan   = document.getElementById('ctaPlan').value;
+  const btn    = document.getElementById('ctaBtn');
+
+  // Validation
+  if (!first || !last || !dealer || !email) {
+    [
+      {id:'ctaFirst',  val:first,  msg:'Entrez votre prénom'},
+      {id:'ctaLast',   val:last,   msg:'Entrez votre nom'},
+      {id:'ctaDealer', val:dealer, msg:'Entrez le nom de votre concessionnaire'},
+      {id:'ctaEmail',  val:email,  msg:'Entrez votre courriel'},
+    ].forEach(function(f) {
+      var el = document.getElementById(f.id);
+      if (!f.val) {
+        el.classList.add('error');
+        el.placeholder = f.msg;
+        setTimeout(function(){ el.classList.remove('error'); el.placeholder = ''; }, 2500);
+      }
+    });
+    return;
+  }
+  if (!email.includes('@') || !email.includes('.')) {
+    var emailEl = document.getElementById('ctaEmail');
+    emailEl.classList.add('error');
+    emailEl.value = '';
+    emailEl.placeholder = 'Courriel invalide';
+    setTimeout(function(){ emailEl.classList.remove('error'); emailEl.placeholder = 'votre@courriel.com'; }, 2500);
     return;
   }
 
-  /* ── Loading state ── */
+  // Loading
   btn.disabled = true;
   btn.textContent = '⏳ Envoi...';
 
   try {
     const res = await fetch(FORMSPREE_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify({
-        email: email,
-        source: 'Landing page LUKANE RV',
-        date: new Date().toLocaleDateString('fr-CA')
+        prenom:         first,
+        nom:            last,
+        concessionnaire:dealer,
+        email:          email,
+        plan:           plan === 'pro' ? 'Pro — 149$/mois' : 'Analyse — 79$/mois',
+        source:         'Landing page LUKANE RV',
+        date:           new Date().toLocaleDateString('fr-CA')
       })
     });
 
     if (res.ok) {
-      /* ── Success ── */
       document.getElementById('ctaForm').style.display = 'none';
       document.getElementById('ctaNote').style.display = 'none';
       document.getElementById('successMsg').classList.add('visible');
     } else {
-      /* ── Server error ── */
       const data = await res.json();
       throw new Error(data?.error || 'Erreur serveur');
     }
-
   } catch (err) {
-    /* ── Network / other error ── */
     btn.disabled = false;
     btn.textContent = '⚠️ Réessayer';
     btn.style.background = '#c0392b';
-    setTimeout(() => {
-      btn.textContent = 'Commencer →';
+    setTimeout(function() {
+      btn.textContent = "Demander l'acc\u00e8s \u2192";
       btn.style.background = '';
     }, 3000);
-    console.error('Formspree error:', err);
   }
 });
 
-/* Allow Enter key to submit */
-document.getElementById('ctaEmail').addEventListener('keydown', e => {
+// Enter key
+document.getElementById('ctaEmail').addEventListener('keydown', function(e) {
   if (e.key === 'Enter') document.getElementById('ctaBtn').click();
 });
 </script>
