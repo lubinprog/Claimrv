@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-theme="light">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
@@ -9,152 +9,238 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Barlow:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{
-  --coal:#0c0d0f;--coal2:#141618;--coal3:#1c1e22;--wire:#2e333d;
-  --ore:#e05c1a;--ore2:#f07030;--bone:#f0ece3;--fog:#8a9099;
-  --chalk:#ffffff;--green:#2ecc71;--red:#e74c3c;
+/* ══ TOKENS ══ */
+:root {
   --fd:'Barlow Condensed',sans-serif;
   --fb:'Barlow',sans-serif;
   --fm:'JetBrains Mono',monospace;
+  --ore:#e05c1a;--ore2:#f07030;--green:#2ecc71;--red:#e74c3c;
   --ease:cubic-bezier(.25,.46,.45,.94);
+  --radius:8px;
 }
+
+/* ── LIGHT THEME (default) ── */
+[data-theme="light"] {
+  --bg:       #f5f6fa;
+  --bg2:      #ffffff;
+  --bg3:      #f0f1f5;
+  --border:   #e2e4ea;
+  --text:     #1a1d23;
+  --text2:    #4a5060;
+  --muted:    #8a9099;
+  --shadow:   rgba(0,0,0,.08);
+  --shadow2:  rgba(0,0,0,.14);
+  --left-bg:  #1a1d23;
+  --left-text:#f5f6fa;
+  --left-sub: rgba(245,246,250,.55);
+  --left-stat:#e05c1a;
+  --input-bg: #f8f9fc;
+}
+
+/* ── DARK THEME ── */
+[data-theme="dark"] {
+  --bg:       #0c0d0f;
+  --bg2:      #141618;
+  --bg3:      #1c1e22;
+  --border:   #2e333d;
+  --text:     #f0ece3;
+  --text2:    #b0b8c4;
+  --muted:    #8a9099;
+  --shadow:   rgba(0,0,0,.3);
+  --shadow2:  rgba(0,0,0,.5);
+  --left-bg:  #141618;
+  --left-text:#f0ece3;
+  --left-sub: rgba(240,236,227,.5);
+  --left-stat:#e05c1a;
+  --input-bg: #0c0d0f;
+}
+
 *{box-sizing:border-box;margin:0;padding:0;}
-html{height:100%;}
-body{min-height:100%;background:var(--coal);color:var(--bone);font-family:var(--fb);}
+html,body{min-height:100%;}
+body{background:var(--bg);color:var(--text);font-family:var(--fb);transition:background .3s,color .3s;}
 
-/* grain */
-body::before{content:'';position:fixed;inset:0;z-index:999;pointer-events:none;opacity:.028;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");}
+/* ── UTILITY BAR (top right) ── */
+.util-bar{
+  position:fixed;top:16px;right:20px;z-index:999;
+  display:flex;align-items:center;gap:8px;
+}
+.util-btn{
+  display:flex;align-items:center;gap:6px;
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:20px;padding:6px 12px;
+  font-family:var(--fm);font-size:11px;font-weight:500;
+  letter-spacing:.5px;color:var(--text2);
+  cursor:pointer;transition:all .2s;box-shadow:0 2px 8px var(--shadow);
+}
+.util-btn:hover{border-color:var(--ore);color:var(--ore);}
+.util-btn .icon{font-size:13px;}
 
-/* layout */
+/* ── LAYOUT ── */
 .page{display:grid;grid-template-columns:1fr 1fr;min-height:100vh;}
 
-/* left panel */
+/* ── LEFT PANEL ── */
 .left{
-  position:sticky;top:0;height:100vh;
-  background:var(--coal2);border-right:1px solid var(--wire);
+  background:var(--left-bg);
   display:flex;flex-direction:column;justify-content:space-between;
-  padding:48px 52px;overflow:hidden;
+  padding:52px 56px;overflow:hidden;position:relative;
+  position:sticky;top:0;height:100vh;
 }
-.left-grid{position:absolute;inset:0;z-index:0;
-  background-image:linear-gradient(rgba(224,92,26,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(224,92,26,.04) 1px,transparent 1px);
+.left-grid{
+  position:absolute;inset:0;z-index:0;
+  background-image:linear-gradient(rgba(224,92,26,.05) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(224,92,26,.05) 1px,transparent 1px);
   background-size:40px 40px;
   mask-image:radial-gradient(ellipse 90% 90% at 30% 50%,black 30%,transparent 100%);
-  animation:gridDrift 24s linear infinite;}
+  animation:gridDrift 24s linear infinite;
+}
 @keyframes gridDrift{from{background-position:0 0}to{background-position:40px 40px}}
-.left-glow{position:absolute;width:500px;height:500px;
-  background:radial-gradient(circle,rgba(224,92,26,.15),transparent 65%);
-  top:50%;left:-10%;transform:translateY(-50%);
-  pointer-events:none;z-index:0;
-  animation:glowPulse 7s ease-in-out infinite;}
-@keyframes glowPulse{0%,100%{opacity:.6;transform:translateY(-50%) scale(1)}50%{opacity:1;transform:translateY(-52%) scale(1.1)}}
-.left-top{position:relative;z-index:1;}
-.left-bottom{position:relative;z-index:1;}
-.logo{font-family:var(--fd);font-size:30px;font-weight:900;letter-spacing:1px;color:var(--chalk);text-decoration:none;display:flex;align-items:center;}
-.logo .accent{color:var(--ore);}
-.logo-dot{width:7px;height:7px;border-radius:50%;background:var(--ore);margin-left:3px;display:inline-block;animation:blink 2.4s infinite;}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
-.left-h{font-family:var(--fd);font-size:clamp(48px,4.5vw,72px);font-weight:900;line-height:.88;letter-spacing:-1.5px;color:var(--chalk);margin-top:64px;}
-.left-h .stroke{color:transparent;-webkit-text-stroke:1.5px var(--ore);}
-.left-h span{display:block;}
-.left-sub{font-size:15px;font-weight:300;color:var(--fog);line-height:1.7;margin-top:18px;max-width:300px;}
-.left-stats{display:flex;gap:32px;margin-top:44px;}
-.lsv{font-family:var(--fd);font-size:34px;font-weight:900;color:var(--ore);line-height:1;letter-spacing:-1px;}
-.lsl{font-family:var(--fm);font-size:10px;color:var(--fog);margin-top:4px;letter-spacing:1.5px;text-transform:uppercase;}
-.chips{display:flex;flex-direction:column;gap:10px;}
-.chip{display:flex;align-items:center;gap:12px;font-size:13px;color:var(--fog);}
-.chip-i{width:30px;height:30px;border-radius:4px;background:rgba(224,92,26,.1);border:1px solid rgba(224,92,26,.2);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.left-glow{
+  position:absolute;width:500px;height:500px;
+  background:radial-gradient(circle,rgba(224,92,26,.18),transparent 65%);
+  top:50%;left:-10%;transform:translateY(-50%);pointer-events:none;z-index:0;
+  animation:glowPulse 7s ease-in-out infinite;
+}
+@keyframes glowPulse{0%,100%{opacity:.7;transform:translateY(-50%) scale(1)}50%{opacity:1;transform:translateY(-52%) scale(1.1)}}
 
-/* right panel */
-.right{display:flex;align-items:flex-start;justify-content:center;padding:56px 48px;overflow-y:auto;}
+.left-top,.left-bottom{position:relative;z-index:1;}
+.logo{font-family:var(--fd);font-size:32px;font-weight:900;letter-spacing:1px;color:var(--left-text);text-decoration:none;display:flex;align-items:center;}
+.logo .acc{color:var(--ore);}
+.logo-dot{width:8px;height:8px;border-radius:50%;background:var(--ore);margin-left:3px;display:inline-block;animation:blink 2.4s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+.left-h{
+  font-family:var(--fd);font-size:clamp(48px,4.5vw,70px);
+  font-weight:900;line-height:.88;letter-spacing:-1.5px;
+  color:var(--left-text);margin-top:64px;
+}
+.left-h span{display:block;}
+.left-h .stroke{color:transparent;-webkit-text-stroke:1.5px var(--ore);}
+.left-sub{font-size:15px;font-weight:300;color:var(--left-sub);line-height:1.7;margin-top:18px;max-width:300px;}
+.left-stats{display:flex;gap:32px;margin-top:44px;}
+.lsv{font-family:var(--fd);font-size:34px;font-weight:900;color:var(--left-stat);line-height:1;letter-spacing:-1px;}
+.lsl{font-family:var(--fm);font-size:10px;color:var(--left-sub);margin-top:4px;letter-spacing:1.5px;text-transform:uppercase;}
+.chips{display:flex;flex-direction:column;gap:10px;}
+.chip{display:flex;align-items:center;gap:12px;font-size:13px;color:var(--left-sub);}
+.chip-i{width:30px;height:30px;border-radius:4px;background:rgba(224,92,26,.12);border:1px solid rgba(224,92,26,.25);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+
+/* ── RIGHT PANEL ── */
+.right{
+  display:flex;align-items:center;justify-content:center;
+  padding:56px 48px;background:var(--bg);
+  overflow-y:auto;
+}
 .box{width:100%;max-width:400px;}
 
-/* tabs */
-.tabs{display:flex;background:var(--coal2);border:1px solid var(--wire);border-radius:6px;padding:4px;margin-bottom:32px;}
-.tab-btn{flex:1;padding:10px;font-family:var(--fd);font-size:15px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--fog);background:transparent;border:none;border-radius:4px;cursor:pointer;transition:all .2s;}
-.tab-btn.active{background:var(--ore);color:var(--chalk);box-shadow:0 4px 16px rgba(224,92,26,.3);}
+/* ── CARD ── */
+.login-card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:16px;padding:40px 36px;
+  box-shadow:0 4px 24px var(--shadow);
+}
+.card-logo{
+  font-family:var(--fd);font-size:22px;font-weight:900;
+  letter-spacing:1px;color:var(--text);
+  display:flex;align-items:center;margin-bottom:28px;
+}
+.card-logo .acc{color:var(--ore);}
 
-/* form panel */
-.panel{display:none;}
-.panel.show{display:block;}
+.form-title{font-family:var(--fd);font-size:32px;font-weight:900;letter-spacing:-1px;line-height:.9;color:var(--text);margin-bottom:6px;}
+.form-sub{font-size:14px;color:var(--muted);margin-bottom:28px;line-height:1.5;}
 
-.form-title{font-family:var(--fd);font-size:38px;font-weight:900;letter-spacing:-1px;line-height:.9;color:var(--chalk);margin-bottom:8px;}
-.form-sub{font-size:14px;color:var(--fog);margin-bottom:28px;line-height:1.5;}
+/* ── INVITE ONLY BADGE ── */
+.invite-badge{
+  display:inline-flex;align-items:center;gap:7px;
+  background:rgba(224,92,26,.08);border:1px solid rgba(224,92,26,.2);
+  border-radius:6px;padding:10px 14px;margin-bottom:24px;width:100%;
+}
+.invite-icon{font-size:18px;flex-shrink:0;}
+.invite-text{font-size:12.5px;color:var(--text2);line-height:1.5;}
+.invite-text strong{color:var(--ore);}
 
-/* fields */
+/* ── FIELDS ── */
 .field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
-.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
-.field-row .field{margin-bottom:0;}
-label{font-family:var(--fm);font-size:10px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--fog);}
-input{background:var(--coal2);border:1px solid var(--wire);border-radius:4px;color:var(--bone);font-family:var(--fb);font-size:14px;padding:12px 14px;outline:none;width:100%;transition:border-color .2s,box-shadow .2s;}
-input::placeholder{color:rgba(138,144,153,.45);}
+label{font-family:var(--fm);font-size:10px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+input{
+  background:var(--input-bg);border:1.5px solid var(--border);
+  border-radius:var(--radius);color:var(--text);
+  font-family:var(--fb);font-size:14px;
+  padding:12px 14px;outline:none;width:100%;
+  transition:border-color .2s,box-shadow .2s;
+}
+input::placeholder{color:var(--muted);opacity:.6;}
 input:focus{border-color:var(--ore);box-shadow:0 0 0 3px rgba(224,92,26,.1);}
 input.err{border-color:var(--red);box-shadow:0 0 0 3px rgba(231,76,60,.1);}
 .pw-wrap{position:relative;}
 .pw-wrap input{padding-right:44px;}
-.pw-eye{position:absolute;right:13px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--fog);font-size:15px;transition:color .2s;}
-.pw-eye:hover{color:var(--bone);}
-.field-err{font-family:var(--fm);font-size:11px;color:var(--red);display:none;margin-top:3px;}
-.field-err.show{display:block;}
+.pw-eye{position:absolute;right:13px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:15px;transition:color .2s;}
+.pw-eye:hover{color:var(--text);}
 
-/* password strength */
-.pw-strength{display:none;margin-bottom:14px;}
-.pw-bars{display:flex;gap:4px;margin-bottom:4px;}
-.pw-bar{height:3px;flex:1;border-radius:99px;background:var(--wire);transition:background .3s;}
-.pw-strength-label{font-family:var(--fm);font-size:10px;color:var(--fog);letter-spacing:1px;}
-
-/* alert */
-.alert{border-radius:4px;padding:11px 14px;font-size:13px;line-height:1.5;margin-bottom:16px;display:none;}
-.alert.show{display:block;}
-.alert-err{background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.25);color:#f1948a;font-family:var(--fm);}
-.alert-ok{background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.25);color:#82e0aa;font-family:var(--fm);}
-
-/* submit btn */
-.btn-submit{width:100%;padding:14px;font-family:var(--fd);font-size:17px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;background:var(--ore);color:var(--chalk);border:none;border-radius:4px;cursor:pointer;margin-top:6px;transition:all .25s var(--ease);clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));}
-.btn-submit:hover:not(:disabled){background:var(--ore2);transform:translateY(-1px);box-shadow:0 8px 28px rgba(224,92,26,.35);}
-.btn-submit:disabled{opacity:.5;cursor:not-allowed;transform:none;}
-
-.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.2);border-top-color:var(--chalk);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-/* divider */
-.divider{display:flex;align-items:center;gap:12px;margin:20px 0;}
-.div-line{flex:1;height:1px;background:var(--wire);}
-.div-txt{font-family:var(--fm);font-size:10px;color:var(--fog);letter-spacing:2px;text-transform:uppercase;}
-
-/* forgot */
-.forgot{text-align:right;margin-bottom:8px;margin-top:-6px;}
-.forgot a{font-family:var(--fm);font-size:11px;color:var(--fog);text-decoration:none;transition:color .2s;}
+/* ── FORGOT ── */
+.forgot{text-align:right;margin-bottom:6px;margin-top:-6px;}
+.forgot a{font-family:var(--fm);font-size:11px;color:var(--muted);text-decoration:none;transition:color .2s;}
 .forgot a:hover{color:var(--ore);}
 
-/* switch link */
-.switch{text-align:center;margin-top:20px;font-size:13px;color:var(--fog);}
-.switch a{color:var(--ore);text-decoration:none;}
-.switch a:hover{text-decoration:underline;}
+/* ── SUBMIT BTN ── */
+.btn-submit{
+  width:100%;padding:14px;margin-top:8px;
+  font-family:var(--fd);font-size:18px;font-weight:800;
+  letter-spacing:1.5px;text-transform:uppercase;
+  background:var(--ore);color:#fff;
+  border:none;border-radius:var(--radius);cursor:pointer;
+  transition:all .25s var(--ease);
+  clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));
+}
+.btn-submit:hover:not(:disabled){background:var(--ore2);transform:translateY(-2px);box-shadow:0 8px 28px rgba(224,92,26,.3);}
+.btn-submit:disabled{opacity:.5;cursor:not-allowed;}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-/* terms */
-.terms{font-size:12px;color:var(--fog);text-align:center;margin-top:14px;line-height:1.6;}
-.terms a{color:var(--ore);text-decoration:none;}
+/* ── ALERT ── */
+.alert{border-radius:var(--radius);padding:11px 14px;font-size:13px;line-height:1.5;margin-bottom:16px;display:none;}
+.alert.show{display:block;}
+.alert-err{background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.2);color:var(--red);font-family:var(--fm);}
+.alert-ok{background:rgba(46,204,113,.08);border:1px solid rgba(46,204,113,.2);color:var(--green);font-family:var(--fm);}
 
-/* success screen */
-.success-screen{display:none;flex-direction:column;align-items:center;text-align:center;gap:14px;padding:32px 0;}
-.success-screen.show{display:flex;}
-.success-icon{width:68px;height:68px;border-radius:50%;background:rgba(46,204,113,.1);border:2px solid rgba(46,204,113,.3);display:flex;align-items:center;justify-content:center;font-size:30px;animation:popIn .4s var(--ease);}
-@keyframes popIn{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
-.success-title{font-family:var(--fd);font-size:30px;font-weight:900;color:var(--chalk);}
-.success-text{font-size:14px;color:var(--fog);line-height:1.7;max-width:280px;}
+/* ── FORGOT PANEL ── */
+.panel{display:none;}
+.panel.show{display:block;}
 
-.footer-note{font-family:var(--fm);font-size:10px;color:var(--wire);text-align:center;margin-top:28px;letter-spacing:1px;}
+/* ── CONTACT ── */
+.contact-note{
+  text-align:center;margin-top:22px;
+  font-size:12.5px;color:var(--muted);line-height:1.6;
+}
+.contact-note a{color:var(--ore);text-decoration:none;}
+.contact-note a:hover{text-decoration:underline;}
 
-/* responsive */
+/* ── DIVIDER ── */
+.divider{display:flex;align-items:center;gap:12px;margin:18px 0;}
+.div-line{flex:1;height:1px;background:var(--border);}
+.div-txt{font-family:var(--fm);font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;}
+
+.footer-note{font-family:var(--fm);font-size:10px;color:var(--muted);text-align:center;margin-top:22px;letter-spacing:.5px;}
+
+/* ── RESPONSIVE ── */
 @media(max-width:820px){
   .page{grid-template-columns:1fr;}
   .left{display:none;}
-  .right{padding:40px 24px;}
+  .right{padding:40px 20px;align-items:flex-start;padding-top:80px;}
+  .util-bar{top:12px;right:12px;}
 }
 </style>
 </head>
 <body>
+
+<!-- ── UTILITY BAR ── -->
+<div class="util-bar">
+  <button class="util-btn" onclick="toggleLang()" id="langBtn">
+    <span class="icon">🌐</span>
+    <span id="langLabel">EN</span>
+  </button>
+  <button class="util-btn" onclick="toggleTheme()" id="themeBtn">
+    <span class="icon" id="themeIcon">🌙</span>
+    <span id="themeLabel">Sombre</span>
+  </button>
+</div>
 
 <div class="page">
   <!-- LEFT -->
@@ -162,26 +248,28 @@ input.err{border-color:var(--red);box-shadow:0 0 0 3px rgba(231,76,60,.1);}
     <div class="left-grid"></div>
     <div class="left-glow"></div>
     <div class="left-top">
-      <a class="logo" href="index.html">LUKANE <span class="accent">RV</span><span class="logo-dot"></span></a>
+      <div class="logo">LUKANE <span class="acc">RV</span><span class="logo-dot"></span></div>
       <div class="left-h" style="margin-top:60px;">
-        <span>GÉREZ</span>
-        <span>VOS</span>
-        <span class="stroke">GARANTIES</span>
-        <span>EN MINUTES.</span>
+        <span data-fr="GÉREZ" data-en="MANAGE">GÉREZ</span>
+        <span data-fr="VOS" data-en="YOUR">VOS</span>
+        <span class="stroke" data-fr="GARANTIES" data-en="WARRANTIES">GARANTIES</span>
+        <span data-fr="EN MINUTES." data-en="IN MINUTES.">EN MINUTES.</span>
       </div>
-      <p class="left-sub">L'IA qui rédige, structure et optimise vos claims VR automatiquement. Tous les manufacturiers.</p>
+      <p class="left-sub" data-fr="L'IA qui rédige, structure et optimise vos claims VR automatiquement. Tous les manufacturiers." data-en="The AI that drafts, structures and optimizes your RV warranty claims automatically. All manufacturers.">
+        L'IA qui rédige, structure et optimise vos claims VR automatiquement. Tous les manufacturiers.
+      </p>
       <div class="left-stats">
-        <div><div class="lsv">3×</div><div class="lsl">Plus rapide</div></div>
-        <div><div class="lsv">+40%</div><div class="lsl">Approbations</div></div>
-        <div><div class="lsv">8+</div><div class="lsl">Manufacturiers</div></div>
+        <div><div class="lsv">3×</div><div class="lsl" data-fr="Plus rapide" data-en="Faster">Plus rapide</div></div>
+        <div><div class="lsv">+40%</div><div class="lsl" data-fr="Approbations" data-en="Approvals">Approbations</div></div>
+        <div><div class="lsv">8+</div><div class="lsl" data-fr="Manufacturiers" data-en="Manufacturers">Manufacturiers</div></div>
       </div>
     </div>
     <div class="left-bottom">
       <div class="chips">
-        <div class="chip"><div class="chip-i">🤖</div>Analyse IA automatique à chaque claim</div>
-        <div class="chip"><div class="chip-i">📱</div>Compatible avec vos formulaires mobiles</div>
-        <div class="chip"><div class="chip-i">📊</div>Tableau de bord centralisé temps réel</div>
-        <div class="chip"><div class="chip-i">🔒</div>Données chiffrées, hébergées au Canada</div>
+        <div class="chip"><div class="chip-i">🤖</div><span data-fr="Analyse IA automatique à chaque claim" data-en="Automatic AI analysis on every claim">Analyse IA automatique à chaque claim</span></div>
+        <div class="chip"><div class="chip-i">📱</div><span data-fr="Compatible avec vos formulaires mobiles" data-en="Compatible with your mobile forms">Compatible avec vos formulaires mobiles</span></div>
+        <div class="chip"><div class="chip-i">📊</div><span data-fr="Tableau de bord centralisé temps réel" data-en="Real-time centralized dashboard">Tableau de bord centralisé temps réel</span></div>
+        <div class="chip"><div class="chip-i">🔒</div><span data-fr="Données chiffrées, hébergées au Canada" data-en="Encrypted data, hosted in Canada">Données chiffrées, hébergées au Canada</span></div>
       </div>
     </div>
   </div>
@@ -190,332 +278,230 @@ input.err{border-color:var(--red);box-shadow:0 0 0 3px rgba(231,76,60,.1);}
   <div class="right">
     <div class="box">
 
-      <!-- TABS -->
-      <div class="tabs">
-        <button class="tab-btn active" id="tabLogin" onclick="showTab('login')">Connexion</button>
-        <button class="tab-btn" id="tabSignup" onclick="showTab('signup')">Créer un compte</button>
-      </div>
-
-      <!-- ═══ LOGIN ═══ -->
+      <!-- ═══ LOGIN PANEL ═══ -->
       <div class="panel show" id="panelLogin">
-        <div class="form-title">BON<br/>RETOUR.</div>
-        <p class="form-sub">Connectez-vous à votre espace LUKANE RV.</p>
-        <div class="alert alert-err" id="loginErr"></div>
-        <div class="field">
-          <label>Courriel</label>
-          <input type="email" id="lEmail" placeholder="votre@courriel.com" autocomplete="email"/>
-        </div>
-        <div class="field">
-          <label>Mot de passe</label>
-          <div class="pw-wrap">
-            <input type="password" id="lPassword" placeholder="••••••••" autocomplete="current-password"/>
-            <button class="pw-eye" type="button" onclick="togglePw('lPassword',this)">👁</button>
-          </div>
-        </div>
-        <div class="forgot"><a href="#" onclick="showTab('forgot');return false;">Mot de passe oublié ?</a></div>
-        <button class="btn-submit" id="loginBtn" onclick="doLogin()">Se connecter</button>
-        <div class="divider"><div class="div-line"></div><span class="div-txt">ou</span><div class="div-line"></div></div>
-        <div class="switch">Pas encore de compte ? <a href="#" onclick="showTab('signup');return false;">Créer un compte gratuit</a></div>
-      </div>
+        <div class="login-card">
+          <div class="card-logo">LUKANE <span class="acc">RV</span><span class="logo-dot" style="width:6px;height:6px;margin-left:3px"></span></div>
 
-      <!-- ═══ SIGNUP ═══ -->
-      <div class="panel" id="panelSignup">
-        <!-- Form fields -->
-        <div id="signupForm">
-          <div class="form-title">DÉMARREZ<br/>GRATUITEMENT.</div>
-          <p class="form-sub">14 jours d'essai gratuit. Aucune carte de crédit.</p>
-          <div class="alert alert-err" id="signupErr"></div>
-          <div class="field-row">
-            <div class="field">
-              <label>Prénom</label>
-              <input type="text" id="sFirst" placeholder="Marc" autocomplete="given-name"/>
-            </div>
-            <div class="field">
-              <label>Nom</label>
-              <input type="text" id="sLast" placeholder="Tremblay" autocomplete="family-name"/>
+          <div class="form-title" data-fr="BON RETOUR." data-en="WELCOME BACK.">BON<br/>RETOUR.</div>
+          <p class="form-sub" data-fr="Connectez-vous à votre espace LUKANE RV." data-en="Sign in to your LUKANE RV workspace.">Connectez-vous à votre espace LUKANE RV.</p>
+
+          <!-- Invite only badge -->
+          <div class="invite-badge">
+            <span class="invite-icon">🔑</span>
+            <div class="invite-text" data-fr="<strong>Accès sur invitation.</strong> Vos identifiants vous ont été fournis par l'équipe LUKANE RV." data-en="<strong>Invitation only.</strong> Your credentials were provided by the LUKANE RV team.">
+              <strong>Accès sur invitation.</strong> Vos identifiants vous ont été fournis par l'équipe LUKANE RV.
             </div>
           </div>
+
+          <div class="alert alert-err" id="loginErr"></div>
+
           <div class="field">
-            <label>Nom du concessionnaire</label>
-            <input type="text" id="sDealer" placeholder="RV Pro Montréal" autocomplete="organization"/>
+            <label data-fr="Courriel" data-en="Email">Courriel</label>
+            <input type="email" id="lEmail" placeholder="votre@courriel.com" autocomplete="email"/>
           </div>
           <div class="field">
-            <label>Courriel professionnel</label>
-            <input type="email" id="sEmail" placeholder="votre@courriel.com" autocomplete="email"/>
-          </div>
-          <div class="field">
-            <label>Mot de passe</label>
+            <label data-fr="Mot de passe" data-en="Password">Mot de passe</label>
             <div class="pw-wrap">
-              <input type="password" id="sPassword" placeholder="8 caractères minimum" autocomplete="new-password" oninput="checkPwStrength(this.value)"/>
-              <button class="pw-eye" type="button" onclick="togglePw('sPassword',this)">👁</button>
+              <input type="password" id="lPassword" placeholder="••••••••" autocomplete="current-password"/>
+              <button class="pw-eye" type="button" onclick="togglePw('lPassword',this)">👁</button>
             </div>
-            <div class="field-err" id="pwErr">Minimum 8 caractères requis.</div>
           </div>
-          <div class="pw-strength" id="pwStrength">
-            <div class="pw-bars">
-              <div class="pw-bar" id="b1"></div>
-              <div class="pw-bar" id="b2"></div>
-              <div class="pw-bar" id="b3"></div>
-              <div class="pw-bar" id="b4"></div>
-            </div>
-            <div class="pw-strength-label" id="pwLabel"></div>
+          <div class="forgot">
+            <a href="#" onclick="showForgot();return false;" data-fr="Mot de passe oublié ?" data-en="Forgot password?">Mot de passe oublié ?</a>
           </div>
-          <button class="btn-submit" id="signupBtn" onclick="doSignup()">Créer mon compte gratuit</button>
-          <p class="terms">En créant un compte, vous acceptez nos <a href="#">Conditions</a> et notre <a href="#">Politique de confidentialité</a>.</p>
-          <div class="switch" style="margin-top:16px;">Déjà un compte ? <a href="#" onclick="showTab('login');return false;">Se connecter</a></div>
+          <button class="btn-submit" id="loginBtn" onclick="doLogin()" data-fr="Se connecter" data-en="Sign In">Se connecter</button>
         </div>
-        <!-- Success -->
-        <div class="success-screen" id="signupSuccess">
-          <div class="success-icon">✅</div>
-          <div class="success-title">COMPTE CRÉÉ !</div>
-          <p class="success-text">Votre essai gratuit de 14 jours commence maintenant. Bienvenue dans LUKANE RV !</p>
-          <button class="btn-submit" style="max-width:240px;margin-top:8px;" onclick="window.location.href='dashboard.html'">Accéder au dashboard →</button>
+
+        <div class="contact-note">
+          <span data-fr="Pas encore de compte ?" data-en="Don't have an account?">Pas encore de compte ?</span>
+          <a href="mailto:info@lukanerv.ca" data-fr="Contactez-nous" data-en="Contact us">Contactez-nous</a>
+          <br/>
+          <span style="font-size:11px;font-family:var(--fm)">info@lukanerv.ca</span>
         </div>
+        <div class="footer-note">// LUKANE RV · Données chiffrées · Hébergé au Canada 🇨🇦</div>
       </div>
 
-      <!-- ═══ FORGOT ═══ -->
+      <!-- ═══ FORGOT PANEL ═══ -->
       <div class="panel" id="panelForgot">
-        <div class="form-title">MOT DE<br/>PASSE<br/>OUBLIÉ.</div>
-        <p class="form-sub">Entrez votre courriel pour recevoir un lien de réinitialisation.</p>
-        <div class="alert alert-err" id="forgotErr"></div>
-        <div class="alert alert-ok" id="forgotOk"></div>
-        <div class="field">
-          <label>Courriel</label>
-          <input type="email" id="fEmail" placeholder="votre@courriel.com"/>
+        <div class="login-card">
+          <div class="card-logo">LUKANE <span class="acc">RV</span></div>
+          <div class="form-title" data-fr="MOT DE PASSE OUBLIÉ." data-en="FORGOT PASSWORD.">MOT DE<br/>PASSE<br/>OUBLIÉ.</div>
+          <p class="form-sub" data-fr="Entrez votre courriel pour recevoir un lien de réinitialisation." data-en="Enter your email to receive a reset link.">Entrez votre courriel pour recevoir un lien de réinitialisation.</p>
+          <div class="alert alert-err" id="forgotErr"></div>
+          <div class="alert alert-ok" id="forgotOk"></div>
+          <div class="field">
+            <label data-fr="Courriel" data-en="Email">Courriel</label>
+            <input type="email" id="fEmail" placeholder="votre@courriel.com"/>
+          </div>
+          <button class="btn-submit" id="forgotBtn" onclick="doForgot()" data-fr="Envoyer le lien" data-en="Send Reset Link">Envoyer le lien</button>
         </div>
-        <button class="btn-submit" id="forgotBtn" onclick="doForgot()">Envoyer le lien</button>
-        <div class="switch" style="margin-top:20px;"><a href="#" onclick="showTab('login');return false;">← Retour à la connexion</a></div>
+        <div class="contact-note" style="margin-top:16px;">
+          <a href="#" onclick="showLogin();return false;" data-fr="← Retour à la connexion" data-en="← Back to sign in">← Retour à la connexion</a>
+        </div>
+        <div class="footer-note">// LUKANE RV · Données chiffrées · Hébergé au Canada 🇨🇦</div>
       </div>
 
-      <div class="footer-note">// LUKANE RV · Données chiffrées · Hébergé au Canada 🇨🇦</div>
     </div>
   </div>
 </div>
 
 <script>
-/* ══════════════════════════════════════
-   CONFIG SUPABASE
-   Remplace avec tes vraies valeurs sur
-   supabase.com → Settings → API
-══════════════════════════════════════ */
-const SUPA_URL  = 'https://zxprifyiqhsxysdfeyti.supabase.co';
-const SUPA_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4cHJpZnlpcWhzeHlzZGZleXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3MzU0MTgsImV4cCI6MjA5NjMxMTQxOH0.F9yZWgDt7xxRKpb3nJByBIHmsozsHjZDR5Egk_QgWTA';
-const DEMO_MODE = SUPA_URL.includes('VOTRE_PROJECT_ID');
+/* ══ CONFIG ══ */
+const SUPA_URL = 'https://zxprifyiqhsxysdfeyti.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4cHJpZnlpcWhzeHlzZGZleXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3MzU0MTgsImV4cCI6MjA5NjMxMTQxOH0.F9yZWgDt7xxRKpb3nJByBIHmsozsHjZDR5Egk_QgWTA';
+const sb = window.supabase?.createClient(SUPA_URL, SUPA_KEY);
 
-const sb = !DEMO_MODE && window.supabase
-  ? window.supabase.createClient(SUPA_URL, SUPA_KEY)
-  : null;
+/* ══ THEME ══ */
+function initTheme() {
+  var saved = localStorage.getItem('lukane_theme') || 'light';
+  setTheme(saved);
+}
+function setTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem('lukane_theme', t);
+  var isDark = t === 'dark';
+  document.getElementById('themeIcon').textContent  = isDark ? '☀️' : '🌙';
+  document.getElementById('themeLabel').textContent = isDark ? (LANG==='fr'?'Clair':'Light') : (LANG==='fr'?'Sombre':'Dark');
+}
+function toggleTheme() {
+  var cur = document.documentElement.getAttribute('data-theme');
+  setTheme(cur === 'dark' ? 'light' : 'dark');
+}
 
-/* ══ STORAGE HELPERS ══
-   Stocke les comptes localement en mode démo
-   En prod → Supabase gère tout */
-const DB = {
-  getUsers() { return JSON.parse(localStorage.getItem('lukane_users') || '{}'); },
-  saveUsers(u) { localStorage.setItem('lukane_users', JSON.stringify(u)); },
-  getUser(email) { return this.getUsers()[email.toLowerCase()] || null; },
-  createUser(email, password, first, last, dealer) {
-    const users = this.getUsers();
-    const now = new Date().toISOString();
-    users[email.toLowerCase()] = { email, password, first, last, dealer, createdAt: now, plan: 'trial' };
-    this.saveUsers(users);
-    return users[email.toLowerCase()];
-  },
-  setSession(user) { localStorage.setItem('lukane_session', JSON.stringify(user)); },
-  getSession() { return JSON.parse(localStorage.getItem('lukane_session') || 'null'); },
-  clearSession() { localStorage.removeItem('lukane_session'); }
-};
-
-/* ══ TABS ══ */
-function showTab(tab) {
-  ['Login','Signup','Forgot'].forEach(t => {
-    document.getElementById('panel'+t).classList.toggle('show', t.toLowerCase() === tab);
+/* ══ LANG ══ */
+var LANG = localStorage.getItem('lukane_lang') || 'fr';
+function initLang() { applyLang(LANG); }
+function toggleLang() {
+  LANG = LANG === 'fr' ? 'en' : 'fr';
+  localStorage.setItem('lukane_lang', LANG);
+  applyLang(LANG);
+}
+function applyLang(lang) {
+  document.getElementById('langLabel').textContent = lang === 'fr' ? 'EN' : 'FR';
+  document.documentElement.setAttribute('lang', lang);
+  // Update all elements with data-fr / data-en
+  document.querySelectorAll('[data-fr]').forEach(function(el) {
+    var val = el.getAttribute('data-' + lang);
+    if (!val) return;
+    if (val.includes('<')) el.innerHTML = val;
+    else el.textContent = val;
   });
-  document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
-  document.getElementById('tabSignup').classList.toggle('active', tab === 'signup');
-  clearAlerts();
+  // Update placeholders
+  var phs = {
+    fr: { lEmail:'votre@courriel.com', lPassword:'••••••••', fEmail:'votre@courriel.com' },
+    en: { lEmail:'your@email.com',     lPassword:'••••••••', fEmail:'your@email.com'     },
+  };
+  Object.keys(phs[lang]).forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.placeholder = phs[lang][id];
+  });
+  // Update button labels
+  var btns = {
+    fr: { loginBtn:'Se connecter', forgotBtn:'Envoyer le lien' },
+    en: { loginBtn:'Sign In',      forgotBtn:'Send Reset Link' },
+  };
+  Object.keys(btns[lang]).forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el && !el.disabled) el.textContent = btns[lang][id];
+  });
+  // Update theme button label
+  var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  document.getElementById('themeLabel').textContent = isDark
+    ? (lang==='fr'?'Clair':'Light')
+    : (lang==='fr'?'Sombre':'Dark');
 }
 
-function clearAlerts() {
-  document.querySelectorAll('.alert').forEach(a => a.classList.remove('show'));
+/* ══ PANELS ══ */
+function showForgot() {
+  document.getElementById('panelLogin').classList.remove('show');
+  document.getElementById('panelForgot').classList.add('show');
+}
+function showLogin() {
+  document.getElementById('panelForgot').classList.remove('show');
+  document.getElementById('panelLogin').classList.add('show');
 }
 
-function showErr(id, msg) {
-  const el = document.getElementById(id);
-  el.textContent = msg;
-  el.classList.add('show');
-}
+/* ══ ALERTS ══ */
+function showErr(id, msg) { var e=document.getElementById(id); e.textContent=msg; e.classList.add('show'); }
+function clearAlerts()    { document.querySelectorAll('.alert').forEach(function(a){ a.classList.remove('show'); }); }
 
 /* ══ PASSWORD TOGGLE ══ */
 function togglePw(id, btn) {
-  const inp = document.getElementById(id);
-  inp.type = inp.type === 'password' ? 'text' : 'password';
-  btn.textContent = inp.type === 'password' ? '👁' : '🙈';
-}
-
-/* ══ PASSWORD STRENGTH ══ */
-function checkPwStrength(pw) {
-  const wrap = document.getElementById('pwStrength');
-  if (!pw) { wrap.style.display = 'none'; return; }
-  wrap.style.display = 'block';
-  let score = 0;
-  if (pw.length >= 8)  score++;
-  if (pw.length >= 12) score++;
-  if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++;
-  if (/[0-9!@#$%^&*]/.test(pw)) score++;
-  const colors = ['#e74c3c','#e67e22','#f1c40f','#2ecc71'];
-  const labels = ['FAIBLE','MOYEN','FORT','EXCELLENT'];
-  [1,2,3,4].forEach(i => {
-    document.getElementById('b'+i).style.background = i <= score ? colors[score-1] : 'var(--wire)';
-  });
-  document.getElementById('pwLabel').textContent = labels[score-1] || '';
-  document.getElementById('pwLabel').style.color = colors[score-1] || 'var(--fog)';
+  var inp = document.getElementById(id);
+  inp.type = inp.type==='password' ? 'text' : 'password';
+  btn.textContent = inp.type==='password' ? '👁' : '🙈';
 }
 
 /* ══ SET BUTTON LOADING ══ */
 function setBtn(id, loading, label) {
-  const btn = document.getElementById(id);
+  var btn = document.getElementById(id);
   btn.disabled = loading;
-  btn.innerHTML = loading ? '<span class="spinner"></span> En cours…' : label;
+  btn.innerHTML = loading ? '<span class="spinner"></span>' + (LANG==='fr'?'En cours…':'Loading…') : label;
 }
 
-/* ══════════════════════════════════════
-   LOGIN
-══════════════════════════════════════ */
+const delay = function(ms){ return new Promise(function(r){ setTimeout(r, ms); }); };
+
+/* ══ LOGIN ══ */
 async function doLogin() {
   clearAlerts();
-  const email = document.getElementById('lEmail').value.trim();
-  const pass  = document.getElementById('lPassword').value;
-
-  if (!email || !pass) { showErr('loginErr', '⚠️ Remplis tous les champs.'); return; }
-
-  setBtn('loginBtn', true, 'Se connecter');
-
-  /* ── DEMO MODE ── */
-  if (DEMO_MODE) {
-    await delay(900);
-    const user = DB.getUser(email);
-    if (!user || user.password !== pass) {
-      setBtn('loginBtn', false, 'Se connecter');
-      showErr('loginErr', '❌ Courriel ou mot de passe incorrect.');
-      return;
-    }
-    DB.setSession(user);
-    window.location.href = 'dashboard.html';
+  var email = document.getElementById('lEmail').value.trim();
+  var pass  = document.getElementById('lPassword').value;
+  if (!email || !pass) {
+    showErr('loginErr', LANG==='fr' ? '⚠️ Remplis tous les champs.' : '⚠️ Please fill in all fields.');
     return;
   }
-
-  /* ── SUPABASE ── */
+  setBtn('loginBtn', true, '');
   try {
-    const { error } = await sb.auth.signInWithPassword({ email, password: pass });
-    if (error) throw error;
+    var res = await sb.auth.signInWithPassword({ email: email, password: pass });
+    if (res.error) throw res.error;
     window.location.href = 'dashboard.html';
   } catch(e) {
-    setBtn('loginBtn', false, 'Se connecter');
-    showErr('loginErr', e.message?.includes('Invalid') ? '❌ Courriel ou mot de passe incorrect.' : `❌ ${e.message}`);
+    setBtn('loginBtn', false, LANG==='fr' ? 'Se connecter' : 'Sign In');
+    var msg = e.message?.includes('Invalid')
+      ? (LANG==='fr' ? '❌ Courriel ou mot de passe incorrect.' : '❌ Invalid email or password.')
+      : '❌ ' + e.message;
+    showErr('loginErr', msg);
   }
 }
 
-/* ══════════════════════════════════════
-   SIGNUP
-══════════════════════════════════════ */
-async function doSignup() {
-  clearAlerts();
-  const first  = document.getElementById('sFirst').value.trim();
-  const last   = document.getElementById('sLast').value.trim();
-  const dealer = document.getElementById('sDealer').value.trim();
-  const email  = document.getElementById('sEmail').value.trim();
-  const pass   = document.getElementById('sPassword').value;
-
-  /* validation */
-  let valid = true;
-  if (!first || !last || !dealer || !email || !pass) {
-    showErr('signupErr', '⚠️ Veuillez remplir tous les champs.'); valid = false;
-  } else if (!email.includes('@') || !email.includes('.')) {
-    showErr('signupErr', '⚠️ Courriel invalide.'); valid = false;
-  } else if (pass.length < 8) {
-    document.getElementById('pwErr').classList.add('show');
-    document.getElementById('sPassword').classList.add('err');
-    valid = false;
-  }
-  if (!valid) return;
-
-  document.getElementById('pwErr').classList.remove('show');
-  document.getElementById('sPassword').classList.remove('err');
-  setBtn('signupBtn', true, 'Créer mon compte gratuit');
-
-  /* ── DEMO MODE ── */
-  if (DEMO_MODE) {
-    await delay(1100);
-    const existing = DB.getUser(email);
-    if (existing) {
-      setBtn('signupBtn', false, 'Créer mon compte gratuit');
-      showErr('signupErr', '⚠️ Ce courriel est déjà utilisé. Connectez-vous.');
-      return;
-    }
-    const user = DB.createUser(email, pass, first, last, dealer);
-    DB.setSession(user);
-    /* show success then redirect */
-    document.getElementById('signupForm').style.display = 'none';
-    document.getElementById('signupSuccess').classList.add('show');
-    return;
-  }
-
-  /* ── SUPABASE ── */
-  try {
-    const { error } = await sb.auth.signUp({
-      email, password: pass,
-      options: { data: { first_name: first, last_name: last, dealer, plan: 'trial', trial_start: new Date().toISOString() } }
-    });
-    if (error) throw error;
-    document.getElementById('signupForm').style.display = 'none';
-    document.getElementById('signupSuccess').classList.add('show');
-  } catch(e) {
-    setBtn('signupBtn', false, 'Créer mon compte gratuit');
-    showErr('signupErr', e.message?.includes('already') ? '⚠️ Ce courriel est déjà utilisé.' : `❌ ${e.message}`);
-  }
-}
-
-/* ══════════════════════════════════════
-   FORGOT PASSWORD
-══════════════════════════════════════ */
+/* ══ FORGOT PASSWORD ══ */
 async function doForgot() {
   clearAlerts();
-  const email = document.getElementById('fEmail').value.trim();
-  if (!email || !email.includes('@')) { showErr('forgotErr', '⚠️ Courriel invalide.'); return; }
-  setBtn('forgotBtn', true, 'Envoyer le lien');
-  await delay(900);
-  if (!DEMO_MODE && sb) {
-    await sb.auth.resetPasswordForEmail(email, { redirectTo: `${location.origin}/reset.html` });
+  var email = document.getElementById('fEmail').value.trim();
+  if (!email) {
+    showErr('forgotErr', LANG==='fr' ? '⚠️ Entrez votre courriel.' : '⚠️ Enter your email.');
+    return;
   }
-  setBtn('forgotBtn', false, 'Envoyer le lien');
-  const ok = document.getElementById('forgotOk');
-  ok.textContent = '✅ Si ce courriel existe, vous recevrez un lien sous peu.';
-  ok.classList.add('show');
+  setBtn('forgotBtn', true, '');
+  try {
+    await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/dashboard.html' });
+    var ok = document.getElementById('forgotOk');
+    ok.textContent = LANG==='fr'
+      ? '✅ Lien envoyé ! Vérifiez votre boîte courriel.'
+      : '✅ Link sent! Check your email inbox.';
+    ok.classList.add('show');
+  } catch(e) {
+    showErr('forgotErr', '❌ ' + e.message);
+  }
+  setBtn('forgotBtn', false, LANG==='fr' ? 'Envoyer le lien' : 'Send Reset Link');
 }
 
-/* ══ UTILS ══ */
-const delay = ms => new Promise(r => setTimeout(r, ms));
-
 /* ══ ENTER KEY ══ */
-document.addEventListener('keydown', e => {
+document.addEventListener('keydown', function(e) {
   if (e.key !== 'Enter') return;
-  if (document.getElementById('panelLogin').classList.contains('show'))  doLogin();
-  if (document.getElementById('panelSignup').classList.contains('show')) doSignup();
+  if (document.getElementById('panelLogin').classList.contains('show')) doLogin();
   if (document.getElementById('panelForgot').classList.contains('show')) doForgot();
 });
 
 /* ══ AUTO REDIRECT IF SESSION ══ */
-(function() {
-  if (DEMO_MODE) {
-    const s = DB.getSession();
-    if (s) window.location.href = 'dashboard.html';
-  } else if (sb) {
-    sb.auth.getSession().then(({ data: { session } }) => {
-      if (session) window.location.href = 'dashboard.html';
-    });
-  }
-  /* URL param ?tab=signup */
-  if (new URLSearchParams(location.search).get('tab') === 'signup') showTab('signup');
+(async function() {
+  initTheme();
+  initLang();
+  try {
+    var res = await sb.auth.getSession();
+    if (res.data?.session) window.location.href = 'dashboard.html';
+  } catch(e) {}
 })();
 </script>
 </body>
