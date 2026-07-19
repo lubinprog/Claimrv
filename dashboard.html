@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-theme="light">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
@@ -10,14 +10,24 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
-  --coal:#0c0d0f;--coal2:#141618;--coal3:#1c1e22;--coal4:#242830;--wire:#2e333d;
-  --ore:#e05c1a;--ore2:#f07030;--bone:#f0ece3;--fog:#8a9099;
-  --chalk:#fff;--green:#2ecc71;--red:#e74c3c;--gold:#d4a820;--blue:#3b82f6;
+  --ore:#e05c1a;--ore2:#f07030;--green:#2ecc71;--red:#e74c3c;--gold:#d4a820;--blue:#3b82f6;
   --fd:'Barlow Condensed',sans-serif;--fb:'Barlow',sans-serif;--fm:'JetBrains Mono',monospace;
   --ease:cubic-bezier(.25,.46,.45,.94);
 }
+[data-theme="light"]{
+  --coal:#f5f6fa;--coal2:#ffffff;--coal3:#f0f1f6;--coal4:#e8eaf0;
+  --wire:#dde0e8;--bone:#1a1d23;--fog:#6b7280;--chalk:#1a1d23;
+  --sidebar-bg:#1a1d23;--sidebar-text:#f5f6fa;--sidebar-muted:rgba(245,246,250,.55);
+  --topbar-bg:#ffffff;
+}
+[data-theme="dark"]{
+  --coal:#0c0d0f;--coal2:#141618;--coal3:#1c1e22;--coal4:#242830;
+  --wire:#2e333d;--bone:#f0ece3;--fog:#8a9099;--chalk:#ffffff;
+  --sidebar-bg:#141618;--sidebar-text:#f0ece3;--sidebar-muted:rgba(240,236,227,.55);
+  --topbar-bg:#141618;
+}
 *{box-sizing:border-box;margin:0;padding:0;}
-body{background:var(--coal);color:var(--bone);font-family:var(--fb);min-height:100vh;}
+body{background:var(--coal);color:var(--bone);font-family:var(--fb);min-height:100vh;transition:background .3s,color .3s;}
 body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.025;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");}
 
@@ -45,7 +55,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .app{display:flex;min-height:calc(100vh - 0px);}
 
 /* sidebar */
-.sidebar{width:218px;flex-shrink:0;background:var(--coal2);border-right:1px solid var(--wire);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow:hidden;}
+.sidebar{width:218px;flex-shrink:0;background:var(--sidebar-bg,var(--coal2));border-right:1px solid var(--wire);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow:hidden;}
 .sb-logo{padding:20px 18px 16px;border-bottom:1px solid var(--wire);}
 .logo{font-family:var(--fd);font-size:24px;font-weight:900;letter-spacing:1px;color:var(--chalk);text-decoration:none;}
 .logo .acc{color:var(--ore);}
@@ -458,12 +468,12 @@ tr:hover .btn-del-row{opacity:1;}
     </div>
     <nav class="nav">
       <div class="nav-sec">Principal</div>
-      <button class="nav-item active" onclick="goView('dashboard',this)"><span class="nav-icon">📊</span>Dashboard</button>
-      <button class="nav-item" onclick="goView('claims',this)"><span class="nav-icon">📋</span>Claims<span class="nav-badge" id="newBadge" style="display:none">0</span></button>
-      <button class="nav-item" onclick="goView('analytics',this)"><span class="nav-icon">📈</span>Analytiques</button>
-      <div class="nav-sec" style="margin-top:8px">Compte</div>
-      <button class="nav-item" onclick="goView('settings',this)"><span class="nav-icon">⚙️</span>Paramètres</button>
-      <button class="nav-item" onclick="showExpired()"><span class="nav-icon">💳</span>Abonnement</button>
+      <button class="nav-item active" onclick="goView('dashboard',this)"><span class="nav-icon">📊</span><span data-fr="Dashboard" data-en="Dashboard">Dashboard</span></button>
+      <button class="nav-item" onclick="goView('claims',this)"><span class="nav-icon">📋</span><span data-fr="Claims" data-en="Claims">Claims</span><span class="nav-badge" id="newBadge" style="display:none">0</span></button>
+      <button class="nav-item" onclick="goView('analytics',this)"><span class="nav-icon">📈</span><span data-fr="Analytiques" data-en="Analytics">Analytiques</span></button>
+      <div class="nav-sec" style="margin-top:8px" data-fr="Compte" data-en="Account">Compte</div>
+      <button class="nav-item" onclick="goView('settings',this)"><span class="nav-icon">⚙️</span><span data-fr="Paramètres" data-en="Settings">Paramètres</span></button>
+      <button class="nav-item" onclick="showExpired()"><span class="nav-icon">💳</span><span data-fr="Abonnement" data-en="Subscription">Abonnement</span></button>
     </nav>
     <div class="sb-footer">
       <div class="user-row">
@@ -482,7 +492,9 @@ tr:hover .btn-del-row{opacity:1;}
     <div class="topbar">
       <span class="page-title" id="pageTitle">Dashboard</span>
       <div class="topbar-actions">
-        <button class="btn btn-primary btn-sm" id="btnNewClaim" onclick="openPanel()">+ Nouveau claim</button>
+        <button class="btn btn-ghost btn-sm" onclick="toggleLang()" id="langBtn" style="font-family:var(--fm);font-size:11px">🌐 <span id="langLabel">EN</span></button>
+        <button class="btn btn-ghost btn-sm" onclick="toggleTheme()" id="themeBtn"><span id="themeIcon">🌙</span> <span id="themeLabel">Sombre</span></button>
+        <button class="btn btn-primary btn-sm" id="btnNewClaim" onclick="openPanel()">+ <span data-fr="Nouveau claim" data-en="New Claim">Nouveau claim</span></button>
       </div>
     </div>
     <div class="content">
@@ -1513,6 +1525,8 @@ async function init() {
   document.getElementById('setEmail').value       = USER.email || '';
 
   initTrial(USER);
+  initTheme();
+  initLang();
   loadClaims();
 }
 
@@ -2839,6 +2853,105 @@ function toggleNotif(id, btn) {
   const saved = JSON.parse(localStorage.getItem('lukane_notifs') || '{}');
   saved[id] = btn.classList.contains('on');
   localStorage.setItem('lukane_notifs', JSON.stringify(saved));
+}
+
+/* ══════════════════════════════════════
+   THEME & LANGUAGE
+══════════════════════════════════════ */
+var LANG = localStorage.getItem('lukane_lang') || 'fr';
+
+function initTheme() {
+  var saved = localStorage.getItem('lukane_theme') || 'light';
+  applyTheme(saved);
+}
+
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem('lukane_theme', t);
+  var isDark = t === 'dark';
+  var icon  = document.getElementById('themeIcon');
+  var label = document.getElementById('themeLabel');
+  if (icon)  icon.textContent  = isDark ? '☀️' : '🌙';
+  if (label) label.textContent = isDark
+    ? (LANG==='fr' ? 'Clair'  : 'Light')
+    : (LANG==='fr' ? 'Sombre' : 'Dark');
+}
+
+function toggleTheme() {
+  var cur = document.documentElement.getAttribute('data-theme');
+  applyTheme(cur === 'dark' ? 'light' : 'dark');
+}
+
+function initLang() { applyLang(LANG); }
+
+function toggleLang() {
+  LANG = LANG === 'fr' ? 'en' : 'fr';
+  localStorage.setItem('lukane_lang', LANG);
+  applyLang(LANG);
+}
+
+function applyLang(lang) {
+  document.documentElement.setAttribute('lang', lang);
+  var lblEl = document.getElementById('langLabel');
+  if (lblEl) lblEl.textContent = lang === 'fr' ? 'EN' : 'FR';
+
+  // Translate all elements with data-fr / data-en attributes
+  document.querySelectorAll('[data-fr]').forEach(function(el) {
+    var val = el.getAttribute('data-' + lang);
+    if (!val) return;
+    if (val.includes('<')) el.innerHTML = val;
+    else el.textContent = val;
+  });
+
+  // Translations map
+  var T = {
+    fr: {
+      dashboard:'Dashboard', claims:'Claims', analytics:'Analytiques', settings:'Paramètres',
+      newClaim:'+ Nouveau claim', allStatuses:'Tous les statuts',
+      new:'Nouveau', open:'Ouvert', approved:'Approuvé', refused:'Refusé', pending:'En attente',
+      selectAll:'☐ Tout sélectionner', deselectAll:'☑ Tout désélectionner',
+      logout:'Déconnexion',
+    },
+    en: {
+      dashboard:'Dashboard', claims:'Claims', analytics:'Analytics', settings:'Settings',
+      newClaim:'+ New Claim', allStatuses:'All statuses',
+      new:'New', open:'Open', approved:'Approved', refused:'Refused', pending:'Pending',
+      selectAll:'☐ Select all', deselectAll:'☑ Deselect all',
+      logout:'Sign Out',
+    }
+  };
+  var t = T[lang];
+
+  // Nav items
+  VIEWS = { dashboard:t.dashboard, claims:t.claims, analytics:t.analytics, settings:t.settings };
+
+  // Update page title
+  var titleEl = document.getElementById('pageTitle');
+  if (titleEl) {
+    var cur = Object.keys(T.fr).find(function(k){ return T.fr[k]===titleEl.textContent || T.en[k]===titleEl.textContent; });
+    if (cur && t[cur]) titleEl.textContent = t[cur];
+  }
+
+  // Filter select options
+  var filterSel = document.getElementById('filterSel');
+  if (filterSel) {
+    filterSel.options[0].text = t.allStatuses;
+    filterSel.options[1].text = t.new;
+    filterSel.options[2].text = t.open;
+    filterSel.options[3].text = t.approved;
+    filterSel.options[4].text = t.refused;
+    filterSel.options[5].text = t.pending;
+  }
+
+  // Logout button
+  var logoutBtn = document.querySelector('.btn-logout');
+  if (logoutBtn) logoutBtn.textContent = t.logout;
+
+  // Re-render theme label
+  applyTheme(document.documentElement.getAttribute('data-theme') || 'light');
+
+  // Re-render claims if visible to update badge labels
+  renderAll();
 }
 
 /* ══ BOOT ══ */
