@@ -350,6 +350,22 @@ tr.clickable:hover td{background:rgba(255,255,255,.02);cursor:pointer;}
 .ocr-field-val.highlight{color:var(--ore);font-family:var(--fm);}
 .ocr-confidence{font-family:var(--fm);font-size:9px;color:var(--green);margin-left:auto;flex-shrink:0;}
 
+/* ═══ TEAM MEMBERS ═══ */
+.team-row{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-bottom:1px solid var(--wire);gap:12px;}
+.team-row:last-child{border-bottom:none;}
+.team-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0;color:#fff;}
+.team-avatar.admin{background:linear-gradient(135deg,var(--ore),var(--ore2));}
+.team-avatar.tech{background:linear-gradient(135deg,#3b82f6,#6366f1);}
+.team-info{flex:1;min-width:0;}
+.team-name{font-size:13.5px;font-weight:600;color:var(--chalk);}
+.team-email{font-family:var(--fm);font-size:11px;color:var(--fog);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.team-meta{display:flex;gap:6px;align-items:center;margin-top:4px;}
+.role-badge{font-family:var(--fm);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;padding:2px 8px;border-radius:2px;}
+.role-admin{background:rgba(224,92,26,.12);color:var(--ore);}
+.role-tech{background:rgba(59,130,246,.12);color:var(--blue);}
+.claims-count{font-family:var(--fm);font-size:10px;color:var(--fog);}
+.team-actions{display:flex;gap:6px;flex-shrink:0;}
+
 /* ═══ PHOTO ADD BUTTONS ═══ */
 .photo-add-btns{
   display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;
@@ -638,6 +654,7 @@ tr:hover .btn-del-row{opacity:1;}
         <!-- TABS settings -->
         <div style="display:flex;gap:0;border-bottom:1px solid var(--wire);margin-bottom:20px;">
           <button class="set-tab active" onclick="showSetTab('compte',this)">👤 Compte</button>
+          <button class="set-tab" onclick="showSetTab('equipe',this)">👥 Mon équipe</button>
           <button class="set-tab" onclick="showSetTab('integ',this)">🔗 Intégrations</button>
           <button class="set-tab" onclick="showSetTab('notif',this)">🔔 Notifications</button>
         </div>
@@ -697,7 +714,65 @@ tr:hover .btn-del-row{opacity:1;}
           </div>
         </div>
 
-        <!-- ── TAB: INTÉGRATIONS ── -->
+        <!-- ── TAB: ÉQUIPE ── -->
+        <div id="st-equipe" style="display:none">
+
+          <!-- Invite banner -->
+          <div style="background:rgba(224,92,26,.06);border:1px solid rgba(224,92,26,.2);border-radius:6px;padding:16px 18px;margin-bottom:18px;display:flex;align-items:flex-start;gap:12px">
+            <span style="font-size:22px;flex-shrink:0">👥</span>
+            <div>
+              <div style="font-family:var(--fd);font-size:16px;font-weight:800;color:var(--chalk);margin-bottom:4px">Comptes techniciens</div>
+              <div style="font-size:13px;color:var(--fog);line-height:1.65">
+                Invitez vos techniciens par courriel. Ils reçoivent un lien pour choisir leur mot de passe et accèdent directement à <strong style="color:var(--bone)">technicien.html</strong> — juste le formulaire de claim, rien d'autre.
+              </div>
+            </div>
+          </div>
+
+          <!-- Invite form -->
+          <div class="section" style="margin-bottom:16px">
+            <div class="sec-hdr"><span class="sec-title">➕ Inviter un technicien</span></div>
+            <div style="padding:18px;display:flex;flex-direction:column;gap:12px;max-width:520px">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                <div class="fgrp"><label class="flbl">Prénom</label><input class="finp" id="invFirst" placeholder="Marc"/></div>
+                <div class="fgrp"><label class="flbl">Nom</label><input class="finp" id="invLast" placeholder="Tremblay"/></div>
+              </div>
+              <div class="fgrp"><label class="flbl">Courriel professionnel</label><input class="finp" id="invEmail" type="email" placeholder="technicien@concessionnaire.com"/></div>
+              <div style="background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.15);border-radius:5px;padding:11px 14px;font-size:12px;color:var(--fog);line-height:1.65">
+                💡 Le technicien recevra un email de <strong style="color:var(--bone)">noreply@supabase.io</strong> avec un lien pour activer son compte. Il sera automatiquement lié à votre concessionnaire.
+              </div>
+              <div id="invAlert" style="display:none;border-radius:5px;padding:10px 14px;font-family:var(--fm);font-size:12px"></div>
+              <button class="btn btn-primary btn-sm" onclick="inviteTech()" id="invBtn" style="width:fit-content">📧 Envoyer l'invitation</button>
+            </div>
+          </div>
+
+          <!-- Team list -->
+          <div class="section">
+            <div class="sec-hdr">
+              <span class="sec-title">Mon équipe</span>
+              <button class="btn btn-ghost btn-sm" onclick="loadTeam()">🔄 Actualiser</button>
+            </div>
+            <div id="teamList">
+              <div class="empty" style="padding:32px">
+                <div class="empty-icon">👥</div>
+                <div class="empty-title">AUCUN TECHNICIEN</div>
+                <div class="empty-txt">Invitez votre premier technicien ci-dessus.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tech link -->
+          <div class="section" style="margin-top:16px">
+            <div class="sec-hdr"><span class="sec-title">🔗 Lien portail technicien</span></div>
+            <div style="padding:16px 18px;display:flex;flex-direction:column;gap:10px">
+              <div style="font-size:13px;color:var(--fog)">Partagez ce lien à vos techniciens. Ils se connectent avec leurs identifiants et accèdent directement au formulaire de claim.</div>
+              <div style="display:flex;gap:8px;align-items:center">
+                <div style="flex:1;font-family:var(--fm);font-size:12px;background:var(--coal);border:1px solid var(--ore);border-radius:4px;padding:10px 14px;color:var(--ore)" id="techUrl">https://lukanerv.vercel.app/technicien.html</div>
+                <button class="btn btn-primary btn-sm" onclick="copyTechUrl()">📋 Copier</button>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /st-equipe -->
         <div id="st-integ" style="display:none">
 
           <!-- INTRO BANNER -->
@@ -2684,13 +2759,15 @@ let WM_EDIT_ID      = null;
 
 /* ══ SETTINGS TABS ══ */
 function showSetTab(tab, btn) {
-  ['compte','integ','notif'].forEach(t => {
-    document.getElementById('st-'+t).style.display = t===tab ? 'block' : 'none';
+  ['compte','equipe','integ','notif'].forEach(function(t) {
+    var el = document.getElementById('st-'+t);
+    if (el) el.style.display = t===tab ? 'block' : 'none';
   });
-  document.querySelectorAll('.set-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.set-tab').forEach(function(b) { b.classList.remove('active'); });
   if (btn) btn.classList.add('active');
   if (tab === 'integ')  renderWebhookList();
   if (tab === 'notif')  renderNotifSettings();
+  if (tab === 'equipe') loadTeam();
 }
 
 function saveSettingsApiKey() {
@@ -3280,6 +3357,182 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 });
+
+/* ══════════════════════════════════════
+   GESTION DE L'ÉQUIPE
+══════════════════════════════════════ */
+
+// Inviter un technicien
+async function inviteTech() {
+  var first = document.getElementById('invFirst').value.trim();
+  var last  = document.getElementById('invLast').value.trim();
+  var email = document.getElementById('invEmail').value.trim();
+  var alert = document.getElementById('invAlert');
+
+  if (!first || !last || !email) {
+    showInvAlert('err', '⚠️ Remplis tous les champs.');
+    return;
+  }
+  if (!email.includes('@')) {
+    showInvAlert('err', '⚠️ Courriel invalide.');
+    return;
+  }
+
+  var btn = document.getElementById('invBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Envoi...';
+
+  try {
+    if (DEMO_MODE || !sb) {
+      // Demo mode simulation
+      await new Promise(function(r){ setTimeout(r, 1000); });
+      showInvAlert('ok', '✅ Invitation envoyée à ' + email + ' (mode démo)');
+      document.getElementById('invFirst').value = '';
+      document.getElementById('invLast').value  = '';
+      document.getElementById('invEmail').value = '';
+      btn.disabled = false;
+      btn.textContent = '📧 Envoyer l\'invitation';
+      return;
+    }
+
+    // Get current admin's dealer_id
+    var profileRes = await sb.from('profiles').select('dealer_id,dealer').eq('id', USER.id).single();
+    var dealerId   = profileRes.data?.dealer_id || USER.id;
+    var dealerName = profileRes.data?.dealer || '';
+
+    // Invite via Supabase Admin (needs service role — use edge function in prod)
+    // For now, use signUp with metadata
+    var res = await sb.auth.admin?.inviteUserByEmail(email, {
+      data: {
+        first_name: first,
+        last_name:  last,
+        dealer:     dealerName,
+        role:       'technician',
+        dealer_id:  dealerId,
+      },
+      redirectTo: window.location.origin + '/technicien.html'
+    });
+
+    if (res?.error) throw res.error;
+
+    showInvAlert('ok', '✅ Invitation envoyée à ' + email + ' — ' + first + ' recevra un email pour activer son compte.');
+    document.getElementById('invFirst').value = '';
+    document.getElementById('invLast').value  = '';
+    document.getElementById('invEmail').value = '';
+    setTimeout(loadTeam, 1500);
+
+  } catch(e) {
+    // Fallback: Supabase admin invite requires service role
+    // Show instructions to do it via Supabase dashboard
+    showInvAlert('info',
+      '⚠️ L\'invitation automatique nécessite une fonction serveur. ' +
+      'En attendant : Supabase → Authentication → Users → Invite user → ' +
+      'entrez ' + email + ' et ajoutez dans "User Metadata" : ' +
+      '{"role":"technician","first_name":"' + first + '","last_name":"' + last + '","dealer_id":"' + USER.id + '"}'
+    );
+  }
+
+  btn.disabled = false;
+  btn.textContent = '📧 Envoyer l\'invitation';
+}
+
+function showInvAlert(type, msg) {
+  var el = document.getElementById('invAlert');
+  el.style.display = 'block';
+  var styles = {
+    ok:   { bg:'rgba(46,204,113,.08)',  border:'rgba(46,204,113,.2)',  color:'var(--green)' },
+    err:  { bg:'rgba(231,76,60,.08)',   border:'rgba(231,76,60,.2)',   color:'var(--red)'   },
+    info: { bg:'rgba(59,130,246,.08)',  border:'rgba(59,130,246,.2)',  color:'var(--blue)'  },
+  };
+  var s = styles[type] || styles.info;
+  el.style.background   = s.bg;
+  el.style.border       = '1px solid ' + s.border;
+  el.style.color        = s.color;
+  el.style.borderRadius = '5px';
+  el.style.padding      = '10px 14px';
+  el.textContent = msg;
+}
+
+// Charger la liste de l'équipe
+async function loadTeam() {
+  var list = document.getElementById('teamList');
+  if (!list) return;
+
+  if (DEMO_MODE || !sb) {
+    renderTeam([
+      { id:'demo1', first_name:'Marc',   last_name:'Tremblay', email:'marc@rv.ca',   role:'admin',      claim_count:12, is_you:true },
+      { id:'demo2', first_name:'Sophie', last_name:'Gagné',    email:'sophie@rv.ca', role:'technician', claim_count:8,  is_you:false },
+      { id:'demo3', first_name:'Jean',   last_name:'Côté',     email:'jean@rv.ca',   role:'technician', claim_count:5,  is_you:false },
+    ]);
+    return;
+  }
+
+  list.innerHTML = '<div style="padding:20px;text-align:center;font-family:var(--fm);font-size:12px;color:var(--fog)"><span class="spinner"></span> Chargement...</div>';
+
+  try {
+    var res = await sb.from('team_members').select('*');
+    if (res.error) throw res.error;
+    var members = (res.data || []).map(function(m) {
+      return {
+        id:          m.id,
+        first_name:  m.first_name || '—',
+        last_name:   m.last_name  || '',
+        email:       m.email,
+        role:        m.role,
+        claim_count: m.claim_count || 0,
+        is_you:      m.id === USER.id,
+      };
+    });
+    renderTeam(members);
+  } catch(e) {
+    list.innerHTML = '<div style="padding:16px;font-family:var(--fm);font-size:12px;color:var(--red)">Erreur : ' + e.message + '</div>';
+  }
+}
+
+function renderTeam(members) {
+  var list = document.getElementById('teamList');
+  if (!members.length) {
+    list.innerHTML = '<div class="empty" style="padding:32px"><div class="empty-icon">👥</div><div class="empty-title">AUCUN TECHNICIEN</div><div class="empty-txt">Invitez votre premier technicien ci-dessus.</div></div>';
+    return;
+  }
+
+  list.innerHTML = members.map(function(m) {
+    var initials = (m.first_name[0]||'') + (m.last_name[0]||'');
+    var isAdmin  = m.role === 'admin';
+    return '<div class="team-row">'
+      + '<div class="team-avatar ' + (isAdmin?'admin':'tech') + '">' + initials + '</div>'
+      + '<div class="team-info">'
+        + '<div class="team-name">' + m.first_name + ' ' + m.last_name + (m.is_you ? ' <span style="font-family:var(--fm);font-size:10px;color:var(--fog)">(vous)</span>' : '') + '</div>'
+        + '<div class="team-email">' + (m.email||'—') + '</div>'
+        + '<div class="team-meta">'
+          + '<span class="role-badge ' + (isAdmin?'role-admin':'role-tech') + '">' + (isAdmin?'Admin':'Technicien') + '</span>'
+          + '<span class="claims-count">· ' + m.claim_count + ' claim(s)</span>'
+        + '</div>'
+      + '</div>'
+      + '<div class="team-actions">'
+        + (!m.is_you ? '<button class="btn btn-xs" style="background:rgba(231,76,60,.1);color:var(--red);border:1px solid rgba(231,76,60,.2)" onclick="removeTech(\'' + m.id + '\',\'' + m.first_name + '\')">Retirer</button>' : '')
+      + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+async function removeTech(id, name) {
+  if (!confirm('Retirer ' + name + ' de votre équipe ? Ses claims resteront dans le dashboard.')) return;
+  if (DEMO_MODE || !sb) { toast('ok', name + ' retiré', ''); loadTeam(); return; }
+  try {
+    await sb.from('profiles').update({ dealer_id: id }).eq('id', id);
+    toast('ok', name + ' retiré de l\'équipe', '');
+    loadTeam();
+  } catch(e) {
+    toast('err', 'Erreur', e.message);
+  }
+}
+
+function copyTechUrl() {
+  var url = document.getElementById('techUrl')?.textContent;
+  navigator.clipboard?.writeText(url);
+  toast('ok', 'Lien copié !', 'Partagez-le à vos techniciens.');
+}
 
 /* ══ BOOT ══ */
 init();
