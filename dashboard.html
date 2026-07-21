@@ -350,6 +350,27 @@ tr.clickable:hover td{background:rgba(255,255,255,.02);cursor:pointer;}
 .ocr-field-val.highlight{color:var(--ore);font-family:var(--fm);}
 .ocr-confidence{font-family:var(--fm);font-size:9px;color:var(--green);margin-left:auto;flex-shrink:0;}
 
+/* ═══ PHOTO ADD BUTTONS ═══ */
+.photo-add-btns{
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;
+}
+.photo-add-btn{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:5px;padding:16px 10px;
+  background:var(--coal2);border:1.5px solid var(--wire);border-radius:8px;
+  cursor:pointer;transition:all .2s;text-align:center;
+}
+.photo-add-btn:hover{border-color:var(--ore);background:rgba(224,92,26,.05);}
+.photo-add-btn:active{transform:scale(.97);}
+.photo-add-drop{border-style:dashed !important;}
+.photo-add-icon{font-size:24px;line-height:1;}
+.photo-add-label{font-size:12px;font-weight:600;color:var(--bone);}
+.photo-add-sub{font-family:var(--fm);font-size:10px;color:var(--fog);}
+@media(max-width:480px){
+  .photo-add-btns{grid-template-columns:1fr 1fr;}
+  .photo-add-drop{display:none;}
+}
+
 /* ═══ PHOTOS — NOUVEAU CLAIM PANEL ═══ */
 .np-drop-zone{border:2px dashed var(--wire);border-radius:6px;padding:24px 16px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:10px;}
 .np-drop-zone:hover,.np-drop-zone.drag-over{border-color:var(--ore);background:rgba(224,92,26,.04);}
@@ -1168,17 +1189,43 @@ tr:hover .btn-del-row{opacity:1;}
 
       <!-- PHOTOS défaut -->
       <div class="fg-full">
-        <label class="flbl" style="margin-bottom:8px;display:block">📷 Photos du défaut</label>
-        <div class="np-drop-zone" id="npDropZone" onclick="document.getElementById('npPhotoInput').click()">
-          <input type="file" id="npPhotoInput" accept="image/*" multiple style="display:none" onchange="npAddPhotos(event)"/>
-          <div style="font-size:24px;margin-bottom:6px;opacity:.4">📷</div>
-          <div style="font-size:13px;color:var(--fog)"><strong style="color:var(--bone)">Cliquez ou glissez les photos du défaut</strong><br/>JPG, PNG, HEIC — Max 10 Mo par photo</div>
+        <label class="flbl" style="margin-bottom:10px;display:block">📷 Photos du défaut</label>
+
+        <!-- Inputs cachés — camera et galerie séparés -->
+        <input type="file" id="npCameraInput"  accept="image/*" capture="environment" multiple style="display:none" onchange="npAddPhotos(event)"/>
+        <input type="file" id="npGalleryInput" accept="image/*" multiple style="display:none" onchange="npAddPhotos(event)"/>
+
+        <!-- Boutons d'ajout photo -->
+        <div class="photo-add-btns">
+          <button class="photo-add-btn" onclick="document.getElementById('npCameraInput').click()">
+            <span class="photo-add-icon">📸</span>
+            <span class="photo-add-label">Prendre une photo</span>
+            <span class="photo-add-sub">Ouvre l'appareil photo</span>
+          </button>
+          <button class="photo-add-btn" onclick="document.getElementById('npGalleryInput').click()">
+            <span class="photo-add-icon">🖼️</span>
+            <span class="photo-add-label">Choisir de la galerie</span>
+            <span class="photo-add-sub">Vos photos existantes</span>
+          </button>
+          <div class="photo-add-btn photo-add-drop" id="npDropZone" onclick="document.getElementById('npGalleryInput').click()">
+            <span class="photo-add-icon">📁</span>
+            <span class="photo-add-label">Glisser-déposer</span>
+            <span class="photo-add-sub">Déposez vos fichiers ici</span>
+          </div>
         </div>
+
+        <!-- Source formulaire -->
         <div class="np-source-bar" id="npSourceBar" style="display:none">
           <span style="font-family:var(--fm);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ore)">📎 Photos reçues du formulaire</span>
           <span class="np-source-count" id="npSourceCount">0 photo(s)</span>
         </div>
-        <div class="np-photo-grid" id="npPhotoGrid" style="display:none"></div>
+
+        <!-- Grille photos -->
+        <div class="np-photo-grid" id="npPhotoGrid" style="display:none;margin-top:10px"></div>
+
+        <div style="font-family:var(--fm);font-size:10px;color:var(--fog);margin-top:8px;letter-spacing:.3px">
+          💡 Sur mobile : "Prendre une photo" ouvre directement l'appareil photo de votre cell.
+        </div>
       </div>
 
       <div class="fg-full">
@@ -2434,12 +2481,22 @@ function npDeletePhoto(event, index) {
 document.addEventListener('DOMContentLoaded', function() {
   var zone = document.getElementById('npDropZone');
   if (!zone) return;
-  zone.addEventListener('dragover',  function(e) { e.preventDefault(); zone.classList.add('drag-over'); });
-  zone.addEventListener('dragleave', function()  { zone.classList.remove('drag-over'); });
+  zone.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    zone.style.borderColor = 'var(--ore)';
+    zone.style.background  = 'rgba(224,92,26,.08)';
+  });
+  zone.addEventListener('dragleave', function() {
+    zone.style.borderColor = '';
+    zone.style.background  = '';
+  });
   zone.addEventListener('drop', function(e) {
     e.preventDefault();
-    zone.classList.remove('drag-over');
-    if (e.dataTransfer.files.length) npAddPhotos({ target: { files: e.dataTransfer.files }, preventDefault: function(){} });
+    zone.style.borderColor = '';
+    zone.style.background  = '';
+    if (e.dataTransfer.files.length) {
+      npAddPhotos({ target: { files: e.dataTransfer.files }, preventDefault: function(){} });
+    }
   });
 });
 
