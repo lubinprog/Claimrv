@@ -316,6 +316,40 @@ tr.clickable:hover td{background:rgba(255,255,255,.02);cursor:pointer;}
 .modal-footer{padding:14px 24px;border-top:1px solid var(--wire);display:flex;gap:10px;justify-content:space-between;align-items:center;flex-shrink:0;}
 .modal-footer-left{font-family:var(--fm);font-size:11px;color:var(--fog);}
 
+/* ═══ OCR — SCAN BON DE TRAVAIL ═══ */
+.ocr-drop-zone{
+  border:2px dashed var(--ore);border-radius:8px;
+  padding:28px 20px;text-align:center;cursor:pointer;
+  background:rgba(224,92,26,.03);
+  transition:all .2s;margin-bottom:12px;
+  position:relative;
+}
+.ocr-drop-zone:hover{background:rgba(224,92,26,.07);border-style:solid;}
+.ocr-drop-zone.drag-over{background:rgba(224,92,26,.1);border-style:solid;}
+.ocr-drop-zone.scanning{cursor:default;pointer-events:none;background:rgba(224,92,26,.05);}
+.ocr-spinner{
+  width:36px;height:36px;
+  border:3px solid rgba(224,92,26,.2);
+  border-top-color:var(--ore);
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+  margin:0 auto 4px;
+}
+.ocr-result-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(46,204,113,.07);border:1px solid rgba(46,204,113,.2);
+  border-radius:5px;padding:9px 14px;
+}
+.ocr-field-row{
+  display:flex;align-items:baseline;gap:8px;padding:3px 0;
+  border-bottom:1px solid rgba(46,51,61,.2);
+}
+.ocr-field-row:last-child{border-bottom:none;}
+.ocr-field-key{font-family:var(--fm);font-size:10px;letter-spacing:1px;color:var(--fog);flex-shrink:0;min-width:110px;}
+.ocr-field-val{font-size:12.5px;color:var(--bone);font-weight:500;}
+.ocr-field-val.highlight{color:var(--ore);font-family:var(--fm);}
+.ocr-confidence{font-family:var(--fm);font-size:9px;color:var(--green);margin-left:auto;flex-shrink:0;}
+
 /* ═══ PHOTOS — NOUVEAU CLAIM PANEL ═══ */
 .np-drop-zone{border:2px dashed var(--wire);border-radius:6px;padding:24px 16px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:10px;}
 .np-drop-zone:hover,.np-drop-zone.drag-over{border-color:var(--ore);background:rgba(224,92,26,.04);}
@@ -1046,6 +1080,60 @@ tr:hover .btn-del-row{opacity:1;}
     <button class="btn btn-ghost btn-sm" onclick="closePanel()">✕ Fermer</button>
   </div>
   <div class="panel-body">
+
+    <!-- ═══ SCAN BON DE TRAVAIL ═══ -->
+    <div id="ocrSection">
+      <!-- Zone de scan -->
+      <div id="ocrDropZone" class="ocr-drop-zone" onclick="document.getElementById('ocrInput').click()">
+        <input type="file" id="ocrInput" accept="image/*" style="display:none" onchange="scanBonDeTravail(event)"/>
+        <div id="ocrIdle">
+          <div style="font-size:36px;margin-bottom:10px">📄</div>
+          <div style="font-family:var(--fd);font-size:18px;font-weight:800;color:var(--chalk);margin-bottom:6px">Scanner le bon de travail</div>
+          <div style="font-size:13px;color:var(--fog);line-height:1.6">Prenez en photo le bon de travail de la roulotte.<br/>L'IA extrait automatiquement <strong style="color:var(--bone)">modèle, VIN, date de mise en service, bon de travail</strong> et plus.</div>
+          <div style="margin-top:12px;display:inline-flex;align-items:center;gap:6px;background:rgba(224,92,26,.1);border:1px solid rgba(224,92,26,.25);border-radius:4px;padding:6px 14px">
+            <span style="font-size:14px">📷</span>
+            <span style="font-family:var(--fm);font-size:11px;letter-spacing:1px;color:var(--ore)">CLIQUER OU GLISSER UNE PHOTO</span>
+          </div>
+        </div>
+
+        <!-- Scanning state -->
+        <div id="ocrScanning" style="display:none;flex-direction:column;align-items:center;gap:10px">
+          <div class="ocr-spinner"></div>
+          <div style="font-family:var(--fm);font-size:12px;color:var(--fog)">Lecture du bon de travail en cours...</div>
+          <div style="font-size:11px;color:var(--wire);font-family:var(--fm)" id="ocrStep">Envoi à l'IA...</div>
+        </div>
+      </div>
+
+      <!-- Résultat OCR -->
+      <div id="ocrResult" style="display:none">
+        <div class="ocr-result-bar">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green)"></div>
+            <span style="font-family:var(--fm);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--green)">Bon de travail scanné</span>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-ghost btn-xs" onclick="ocrRescan()" style="font-size:11px">🔄 Rescanner</button>
+            <button class="btn btn-ghost btn-xs" onclick="ocrClear()" style="font-size:11px">✕ Effacer</button>
+          </div>
+        </div>
+        <!-- Preview image + extracted fields side by side -->
+        <div style="display:grid;grid-template-columns:120px 1fr;gap:12px;margin-top:10px;align-items:start">
+          <img id="ocrPreview" style="width:120px;border-radius:4px;border:1px solid var(--wire);object-fit:cover;max-height:90px" alt="Bon de travail"/>
+          <div id="ocrExtracted" style="display:flex;flex-direction:column;gap:6px;font-size:12px"></div>
+        </div>
+        <div style="margin-top:8px;font-family:var(--fm);font-size:10px;color:var(--fog)">
+          ✅ Les champs ont été remplis automatiquement. Vérifiez et corrigez si nécessaire.
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <div style="display:flex;align-items:center;gap:10px;margin:16px 0">
+        <div style="flex:1;height:1px;background:var(--wire)"></div>
+        <span style="font-family:var(--fm);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--fog)">Détails du claim</span>
+        <div style="flex:1;height:1px;background:var(--wire)"></div>
+      </div>
+    </div>
+
     <div class="fg">
       <div class="fgrp"><label class="flbl">Manufacturier</label>
         <select class="fsel" id="fMfr">
@@ -1055,10 +1143,11 @@ tr:hover .btn-del-row{opacity:1;}
         </select>
       </div>
       <div class="fgrp"><label class="flbl">Année</label>
-        <select class="fsel" id="fYear"><option>2025</option><option>2024</option><option>2023</option><option>2022</option><option>2021</option></select>
+        <select class="fsel" id="fYear"><option>2026</option><option>2025</option><option>2024</option><option>2023</option><option>2022</option><option>2021</option></select>
       </div>
       <div class="fgrp fg-full"><label class="flbl">Modèle / Unité</label><input class="finp" id="fUnit" placeholder="ex: Forest River Rockwood 2608BS"/></div>
       <div class="fgrp fg-full"><label class="flbl">VIN</label><input class="finp" id="fVin" placeholder="17 caractères" style="font-family:var(--fm);letter-spacing:1px"/></div>
+      <div class="fgrp fg-full"><label class="flbl">Date de mise en service</label><input class="finp" id="fServiceDate" type="text" placeholder="ex: 2024-06-15"/></div>
       <div class="fgrp"><label class="flbl">Technicien</label><input class="finp" id="fTech" placeholder="Prénom Nom"/></div>
       <div class="fgrp"><label class="flbl">Bon de travail</label><input class="finp" id="fBt" placeholder="BT-2025-XXXX"/></div>
       <div class="fgrp fg-full"><label class="flbl">Catégorie de défaut</label>
@@ -1077,29 +1166,19 @@ tr:hover .btn-del-row{opacity:1;}
         <textarea class="ftxt" id="fDesc" placeholder="Décris le problème simplement — l'IA va reformuler en langage officiel du manufacturier..."></textarea>
       </div>
 
-      <!-- PHOTOS — Nouveau Claim -->
+      <!-- PHOTOS défaut -->
       <div class="fg-full">
-        <label class="flbl" style="margin-bottom:8px;display:block">Photos du défaut</label>
-
-        <!-- Zone de dépôt -->
+        <label class="flbl" style="margin-bottom:8px;display:block">📷 Photos du défaut</label>
         <div class="np-drop-zone" id="npDropZone" onclick="document.getElementById('npPhotoInput').click()">
           <input type="file" id="npPhotoInput" accept="image/*" multiple style="display:none" onchange="npAddPhotos(event)"/>
-          <div style="font-size:28px;margin-bottom:6px;opacity:.45">📷</div>
-          <div style="font-size:13px;color:var(--fog)"><strong style="color:var(--bone)">Cliquez ou glissez vos photos</strong><br/>JPG, PNG, HEIC — Max 10 Mo par photo</div>
+          <div style="font-size:24px;margin-bottom:6px;opacity:.4">📷</div>
+          <div style="font-size:13px;color:var(--fog)"><strong style="color:var(--bone)">Cliquez ou glissez les photos du défaut</strong><br/>JPG, PNG, HEIC — Max 10 Mo par photo</div>
         </div>
-
-        <!-- Source formulaire -->
         <div class="np-source-bar" id="npSourceBar" style="display:none">
           <span style="font-family:var(--fm);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ore)">📎 Photos reçues du formulaire</span>
           <span class="np-source-count" id="npSourceCount">0 photo(s)</span>
         </div>
-
-        <!-- Grille photos -->
         <div class="np-photo-grid" id="npPhotoGrid" style="display:none"></div>
-
-        <div style="font-family:var(--fm);font-size:10px;color:var(--wire);margin-top:6px;letter-spacing:.5px">
-          Les photos soumises via FastField / Tally apparaissent automatiquement ici.
-        </div>
       </div>
 
       <div class="fg-full">
@@ -1885,6 +1964,7 @@ function openPanel(){
   AI={desc:'',parts:[],prob:null};
   NP_PHOTOS = [];
   renderNpPhotos();
+  ocrClear();
 }
 function closePanel(){
   document.getElementById('overlay').classList.remove('open');
@@ -2956,6 +3036,193 @@ function applyLang(lang) {
   // Re-render claims if visible to update badge labels
   renderAll();
 }
+
+/* ══════════════════════════════════════
+   OCR — SCAN BON DE TRAVAIL
+   Utilise Claude Vision pour extraire
+   automatiquement les infos du bon de travail
+══════════════════════════════════════ */
+var OCR_IMAGE_DATA = null; // base64 de l'image scannée
+
+async function scanBonDeTravail(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  if (!checkApiKey()) { event.target.value=''; return; }
+
+  // Preview image
+  var reader = new FileReader();
+  reader.onload = async function(e) {
+    OCR_IMAGE_DATA = e.target.result;
+
+    // Show scanning state
+    var zone = document.getElementById('ocrDropZone');
+    document.getElementById('ocrIdle').style.display = 'none';
+    document.getElementById('ocrScanning').style.display = 'flex';
+    zone.classList.add('scanning');
+
+    try {
+      // Extract base64 data (remove data:image/...;base64, prefix)
+      var base64 = OCR_IMAGE_DATA.split(',')[1];
+      var mimeType = OCR_IMAGE_DATA.split(';')[0].split(':')[1];
+
+      document.getElementById('ocrStep').textContent = 'Claude analyse le bon de travail...';
+
+      var apiKey = getApiKey();
+      var res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: AI_MODEL,
+          max_tokens: 800,
+          messages: [{
+            role: 'user',
+            content: [
+              {
+                type: 'image',
+                source: { type: 'base64', media_type: mimeType, data: base64 }
+              },
+              {
+                type: 'text',
+                text: 'Ceci est un bon de travail ou RO (Repair Order) d\'un concessionnaire de véhicules récréatifs (RV). Extrais les informations suivantes en JSON uniquement, sans backticks ni texte autour. Si un champ n\'est pas visible ou lisible, mets null.\n\n{"manufacturier":"nom du fabricant ex Grand Design Jayco Forest River","modele":"modèle complet ex Reflection 303RLS","annee":"année 4 chiffres","vin":"numéro VIN 17 caractères","date_service":"date de mise en service format YYYY-MM-DD","no_bon_travail":"numéro du bon de travail","technicien":"nom du technicien si présent","kilometrage":"kilométrage ou milles si présent","client":"nom du client si présent","telephone":"téléphone si présent"}'
+              }
+            ]
+          }]
+        })
+      });
+
+      if (!res.ok) {
+        var errData = await res.json().catch(function(){ return {}; });
+        throw new Error(errData.error?.message || 'Erreur API ' + res.status);
+      }
+
+      var data = await res.json();
+      var text = (data.content || []).map(function(b){ return b.text||''; }).join('');
+      var cleaned = text.replace(/```json|```/g, '').trim();
+      var extracted = JSON.parse(cleaned);
+
+      // Populate the form fields
+      ocrPopulateFields(extracted);
+
+      // Show result
+      document.getElementById('ocrScanning').style.display = 'none';
+      document.getElementById('ocrPreview').src = OCR_IMAGE_DATA;
+      document.getElementById('ocrResult').style.display = 'block';
+      document.getElementById('ocrDropZone').style.display = 'none';
+      renderOcrExtracted(extracted);
+
+      toast('ok', '✅ Bon de travail scanné !', 'Les champs ont été remplis automatiquement.');
+
+    } catch(err) {
+      // Reset on error
+      document.getElementById('ocrIdle').style.display = 'block';
+      document.getElementById('ocrScanning').style.display = 'none';
+      zone.classList.remove('scanning');
+      OCR_IMAGE_DATA = null;
+      toast('err', 'Erreur de lecture', err.message || 'Impossible de lire le bon de travail.');
+    }
+
+    event.target.value = '';
+  };
+  reader.readAsDataURL(file);
+}
+
+function ocrPopulateFields(data) {
+  // Map extracted fields to form inputs
+  var MFR_MAP = {
+    'grand design':'Grand Design','granddesign':'Grand Design',
+    'jayco':'Jayco',
+    'forest river':'Forest River','forestriver':'Forest River',
+    'winnebago':'Winnebago',
+    'keystone':'Keystone RV',
+    'coachmen':'Coachmen',
+    'heartland':'Heartland',
+    'thor':'Thor Industries',
+  };
+
+  if (data.manufacturier) {
+    var mfrKey = data.manufacturier.toLowerCase().replace(/\s+/g,'');
+    var matched = Object.keys(MFR_MAP).find(function(k){ return mfrKey.includes(k) || k.includes(mfrKey); });
+    if (matched) {
+      var sel = document.getElementById('fMfr');
+      for (var i=0; i<sel.options.length; i++) {
+        if (sel.options[i].value === MFR_MAP[matched]) { sel.selectedIndex = i; break; }
+      }
+    }
+  }
+
+  if (data.modele)        document.getElementById('fUnit').value = data.modele;
+  if (data.vin)           document.getElementById('fVin').value  = data.vin.replace(/\s/g,'').toUpperCase();
+  if (data.no_bon_travail)document.getElementById('fBt').value   = data.no_bon_travail;
+  if (data.technicien)    document.getElementById('fTech').value = data.technicien;
+  if (data.date_service)  document.getElementById('fServiceDate').value = data.date_service;
+
+  if (data.annee) {
+    var sel = document.getElementById('fYear');
+    for (var i=0; i<sel.options.length; i++) {
+      if (sel.options[i].value === data.annee) { sel.selectedIndex = i; break; }
+    }
+  }
+}
+
+function renderOcrExtracted(data) {
+  var fields = [
+    { key:'manufacturier',   label:'Manufacturier',       val:data.manufacturier },
+    { key:'modele',          label:'Modèle',              val:data.modele },
+    { key:'annee',           label:'Année',               val:data.annee },
+    { key:'vin',             label:'VIN',                 val:data.vin, highlight:true },
+    { key:'date_service',    label:'Mise en service',     val:data.date_service },
+    { key:'no_bon_travail',  label:'Bon de travail',      val:data.no_bon_travail, highlight:true },
+    { key:'technicien',      label:'Technicien',          val:data.technicien },
+    { key:'client',          label:'Client',              val:data.client },
+  ];
+
+  var el = document.getElementById('ocrExtracted');
+  el.innerHTML = fields.filter(function(f){ return f.val; }).map(function(f) {
+    return '<div class="ocr-field-row">'
+      + '<span class="ocr-field-key">' + f.label + '</span>'
+      + '<span class="ocr-field-val' + (f.highlight?' highlight':'') + '">' + f.val + '</span>'
+      + '</div>';
+  }).join('');
+}
+
+function ocrRescan() {
+  ocrClear();
+  setTimeout(function(){ document.getElementById('ocrInput').click(); }, 100);
+}
+
+function ocrClear() {
+  OCR_IMAGE_DATA = null;
+  document.getElementById('ocrResult').style.display   = 'none';
+  document.getElementById('ocrDropZone').style.display = 'block';
+  document.getElementById('ocrIdle').style.display     = 'block';
+  document.getElementById('ocrScanning').style.display = 'none';
+  document.getElementById('ocrDropZone').classList.remove('scanning');
+}
+
+// Drag & drop — OCR zone
+document.addEventListener('DOMContentLoaded', function() {
+  var zone = document.getElementById('ocrDropZone');
+  if (!zone) return;
+  zone.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    if (!zone.classList.contains('scanning')) zone.classList.add('drag-over');
+  });
+  zone.addEventListener('dragleave', function() { zone.classList.remove('drag-over'); });
+  zone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    if (zone.classList.contains('scanning')) return;
+    var file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+      scanBonDeTravail({ target: { files: [file] }, preventDefault: function(){} });
+    }
+  });
+});
 
 /* ══ BOOT ══ */
 init();
