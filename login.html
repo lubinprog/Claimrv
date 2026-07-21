@@ -455,7 +455,7 @@ async function doLogin() {
   try {
     var res = await sb.auth.signInWithPassword({ email: email, password: pass });
     if (res.error) throw res.error;
-    window.location.href = 'dashboard.html';
+    await redirectByRole(res.data.user.id);
   } catch(e) {
     setBtn('loginBtn', false, LANG==='fr' ? 'Se connecter' : 'Sign In');
     var msg = e.message?.includes('Invalid')
@@ -494,13 +494,26 @@ document.addEventListener('keydown', function(e) {
   if (document.getElementById('panelForgot').classList.contains('show')) doForgot();
 });
 
+/* ══ REDIRECT BY ROLE ══ */
+async function redirectByRole(userId) {
+  try {
+    var res = await sb.from('profiles').select('role').eq('id', userId).single();
+    var role = res.data?.role || 'technician';
+    window.location.href = role === 'admin' ? 'dashboard.html' : 'technicien.html';
+  } catch(e) {
+    window.location.href = 'dashboard.html';
+  }
+}
+
 /* ══ AUTO REDIRECT IF SESSION ══ */
 (async function() {
   initTheme();
   initLang();
   try {
     var res = await sb.auth.getSession();
-    if (res.data?.session) window.location.href = 'dashboard.html';
+    if (res.data?.session) {
+      await redirectByRole(res.data.session.user.id);
+    }
   } catch(e) {}
 })();
 </script>
