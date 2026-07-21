@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<title>LUKANE RV — Nouveau Claim</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --ore:#e05c1a;--ore2:#f07030;--green:#2ecc71;--red:#e74c3c;--blue:#3b82f6;
+  --fd:'Barlow Condensed',sans-serif;--fb:'Barlow',sans-serif;--fm:'JetBrains Mono',monospace;
+}
+[data-theme="light"]{
+  --bg:#f5f6fa;--card:#ffffff;--border:#e2e4ea;--text:#1a1d23;--text2:#4a5060;
+  --muted:#8a9099;--input:#f8f9fc;--shadow:rgba(0,0,0,.08);
+}
+[data-theme="dark"]{
+  --bg:#0c0d0f;--card:#141618;--border:#2e333d;--text:#f0ece3;--text2:#b0b8c4;
+  --muted:#8a9099;--input:#0c0d0f;--shadow:rgba(0,0,0,.3);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:var(--fb);}
+body{padding-bottom:100px;} /* space for sticky submit button */
+
+/* ── TOPBAR ── */
+.topbar{
+  position:sticky;top:0;z-index:100;
+  background:var(--card);border-bottom:1px solid var(--border);
+  padding:14px 16px;display:flex;align-items:center;justify-content:space-between;
+  box-shadow:0 2px 8px var(--shadow);
+}
+.top-logo{font-family:var(--fd);font-size:20px;font-weight:900;letter-spacing:1px;color:var(--text);}
+.top-logo span{color:var(--ore);}
+.top-actions{display:flex;gap:8px;align-items:center;}
+.top-btn{background:none;border:1px solid var(--border);border-radius:20px;padding:6px 12px;font-family:var(--fm);font-size:11px;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:5px;}
+.top-btn:hover{border-color:var(--ore);color:var(--ore);}
+
+/* ── STEPS INDICATOR ── */
+.steps{display:flex;padding:14px 16px 0;gap:0;}
+.step{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;position:relative;}
+.step::after{content:'';position:absolute;top:12px;left:50%;width:100%;height:2px;background:var(--border);z-index:0;}
+.step:last-child::after{display:none;}
+.step-dot{
+  width:24px;height:24px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;z-index:1;
+  border:2px solid var(--border);background:var(--card);color:var(--muted);
+  transition:all .3s;
+}
+.step.done .step-dot{background:var(--green);border-color:var(--green);color:#fff;}
+.step.active .step-dot{background:var(--ore);border-color:var(--ore);color:#fff;box-shadow:0 0 0 4px rgba(224,92,26,.2);}
+.step-label{font-family:var(--fm);font-size:9px;letter-spacing:.5px;color:var(--muted);text-align:center;margin-top:2px;}
+.step.active .step-label{color:var(--ore);}
+.step.done .step-label{color:var(--green);}
+
+/* ── CONTENT ── */
+.content{padding:16px;}
+
+/* ── SECTION CARDS ── */
+.section-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:12px;padding:18px 16px;margin-bottom:14px;
+  box-shadow:0 2px 8px var(--shadow);
+}
+.section-title{
+  font-family:var(--fd);font-size:17px;font-weight:800;
+  letter-spacing:.5px;color:var(--text);margin-bottom:14px;
+  display:flex;align-items:center;gap:8px;
+}
+.section-badge{
+  font-family:var(--fm);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;
+  background:rgba(224,92,26,.1);color:var(--ore);border:1px solid rgba(224,92,26,.2);
+  border-radius:3px;padding:2px 7px;
+}
+
+/* ── FORM FIELDS ── */
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;}
+.field:last-child{margin-bottom:0;}
+.flbl{font-family:var(--fm);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+.finp,.fsel,.ftxt{
+  background:var(--input);border:1.5px solid var(--border);
+  border-radius:8px;color:var(--text);font-family:var(--fb);
+  font-size:16px; /* 16px = no zoom on iOS */
+  padding:13px 14px;outline:none;width:100%;
+  transition:border-color .2s;
+  -webkit-appearance:none;
+}
+.finp:focus,.fsel:focus,.ftxt:focus{border-color:var(--ore);}
+.finp::placeholder{color:var(--muted);opacity:.6;}
+.ftxt{resize:none;min-height:100px;line-height:1.6;}
+.fsel{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a9099' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;}
+
+/* ── OCR ZONE ── */
+.ocr-zone{
+  border:2px dashed var(--ore);border-radius:10px;
+  background:rgba(224,92,26,.04);
+  padding:24px 16px;text-align:center;cursor:pointer;
+  transition:all .2s;margin-bottom:12px;
+}
+.ocr-zone:active{background:rgba(224,92,26,.1);}
+.ocr-zone-icon{font-size:36px;margin-bottom:8px;}
+.ocr-zone-title{font-family:var(--fd);font-size:20px;font-weight:800;color:var(--text);margin-bottom:4px;}
+.ocr-zone-sub{font-size:13px;color:var(--muted);line-height:1.5;}
+.ocr-zone-badge{
+  display:inline-flex;align-items:center;gap:5px;margin-top:12px;
+  background:rgba(224,92,26,.12);border:1px solid rgba(224,92,26,.2);
+  border-radius:20px;padding:6px 14px;
+  font-family:var(--fm);font-size:11px;color:var(--ore);letter-spacing:.5px;
+}
+
+/* OCR scanning */
+.ocr-scanning{display:none;flex-direction:column;align-items:center;gap:10px;padding:20px;}
+.ocr-spin{width:40px;height:40px;border:3px solid rgba(224,92,26,.2);border-top-color:var(--ore);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* OCR result */
+.ocr-result{display:none;margin-bottom:12px;}
+.ocr-result-header{
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(46,204,113,.08);border:1px solid rgba(46,204,113,.2);
+  border-radius:8px;padding:10px 14px;margin-bottom:10px;
+}
+.ocr-result-left{display:flex;align-items:center;gap:8px;}
+.ocr-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);}
+.ocr-result-label{font-family:var(--fm);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--green);}
+.ocr-actions{display:flex;gap:6px;}
+.ocr-action-btn{background:none;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;color:var(--muted);cursor:pointer;}
+.ocr-preview-row{display:grid;grid-template-columns:90px 1fr;gap:10px;align-items:start;}
+.ocr-preview-img{width:90px;height:68px;object-fit:cover;border-radius:6px;border:1px solid var(--border);}
+.ocr-fields{display:flex;flex-direction:column;gap:4px;}
+.ocr-field-row{display:flex;gap:6px;align-items:baseline;padding:3px 0;border-bottom:1px solid var(--border);}
+.ocr-field-row:last-child{border-bottom:none;}
+.ocr-fkey{font-family:var(--fm);font-size:10px;color:var(--muted);min-width:100px;flex-shrink:0;}
+.ocr-fval{font-size:13px;color:var(--text);font-weight:500;}
+.ocr-fval.hl{color:var(--ore);font-family:var(--fm);}
+
+/* ── PHOTO BUTTONS ── */
+.photo-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.photo-btn{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:6px;padding:20px 12px;
+  background:var(--card);border:1.5px solid var(--border);border-radius:10px;
+  cursor:pointer;transition:all .15s;text-align:center;
+}
+.photo-btn:active{transform:scale(.96);background:rgba(224,92,26,.05);border-color:var(--ore);}
+.photo-btn-icon{font-size:30px;}
+.photo-btn-label{font-size:13px;font-weight:600;color:var(--text);}
+.photo-btn-sub{font-family:var(--fm);font-size:10px;color:var(--muted);}
+
+/* ── PHOTO GRID ── */
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px;}
+.photo-thumb{position:relative;border-radius:8px;overflow:hidden;aspect-ratio:1;border:1px solid var(--border);}
+.photo-thumb img{width:100%;height:100%;object-fit:cover;}
+.photo-del{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.7);border:none;color:#fff;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.photo-count{font-family:var(--fm);font-size:11px;color:var(--muted);margin-top:6px;text-align:center;}
+
+/* ── AI RESULT ── */
+.ai-result{
+  background:linear-gradient(135deg,rgba(224,92,26,.06),rgba(212,168,32,.04));
+  border:1px solid rgba(224,92,26,.2);border-radius:10px;
+  padding:14px;margin-top:14px;display:none;
+}
+.ai-result-label{font-family:var(--fm);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--ore);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.ai-result-text{font-size:14px;color:var(--text);line-height:1.7;}
+.ai-prob-row{display:flex;align-items:center;gap:10px;margin-top:10px;}
+.ai-prob-bar{flex:1;height:6px;background:var(--border);border-radius:99px;overflow:hidden;}
+.ai-prob-fill{height:100%;border-radius:99px;transition:width .8s;}
+.ai-prob-pct{font-family:var(--fd);font-size:22px;font-weight:900;letter-spacing:-1px;}
+.ai-prob-label{font-family:var(--fm);font-size:11px;color:var(--muted);}
+
+/* ── STICKY SUBMIT ── */
+.submit-bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:200;
+  background:var(--card);border-top:1px solid var(--border);
+  padding:12px 16px;box-shadow:0 -4px 16px var(--shadow);
+}
+.submit-btn{
+  width:100%;padding:16px;
+  font-family:var(--fd);font-size:20px;font-weight:900;
+  letter-spacing:1.5px;text-transform:uppercase;
+  background:var(--ore);color:#fff;border:none;border-radius:10px;
+  cursor:pointer;transition:all .2s;
+  clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));
+}
+.submit-btn:active{background:var(--ore2);transform:scale(.98);}
+.submit-btn:disabled{opacity:.5;cursor:not-allowed;}
+
+/* ── SPINNER BTN ── */
+.spinner-sm{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;}
+
+/* ── SUCCESS SCREEN ── */
+.success-screen{
+  display:none;flex-direction:column;align-items:center;
+  text-align:center;padding:60px 24px;gap:16px;
+}
+.success-screen.show{display:flex;}
+.success-circle{width:80px;height:80px;border-radius:50%;background:rgba(46,204,113,.1);border:2px solid rgba(46,204,113,.3);display:flex;align-items:center;justify-content:center;font-size:36px;animation:popIn .4s;}
+@keyframes popIn{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+.success-title{font-family:var(--fd);font-size:32px;font-weight:900;letter-spacing:-1px;color:var(--text);}
+.success-id{font-family:var(--fm);font-size:14px;color:var(--ore);}
+.success-sub{font-size:14px;color:var(--muted);line-height:1.7;max-width:280px;}
+.success-new-btn{
+  margin-top:8px;padding:14px 32px;
+  font-family:var(--fd);font-size:16px;font-weight:800;letter-spacing:1px;
+  background:var(--ore);color:#fff;border:none;border-radius:8px;cursor:pointer;
+}
+
+/* ── LOGIN SCREEN ── */
+.login-screen{
+  min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:32px 24px;
+}
+.login-card{
+  background:var(--card);border:1px solid var(--border);border-radius:16px;
+  padding:32px 24px;width:100%;max-width:340px;box-shadow:0 4px 24px var(--shadow);
+}
+.alert{border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none;font-family:var(--fm);}
+.alert.show{display:block;}
+.alert-err{background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.2);color:var(--red);}
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN SCREEN ── -->
+<div id="loginScreen" class="login-screen">
+  <div class="login-card">
+    <div style="font-family:var(--fd);font-size:28px;font-weight:900;color:var(--text);margin-bottom:4px">LUKANE <span style="color:var(--ore)">RV</span></div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:24px">Portail technicien</div>
+    <div class="alert alert-err" id="loginErr"></div>
+    <div class="field">
+      <label class="flbl">Courriel</label>
+      <input class="finp" type="email" id="lEmail" placeholder="votre@courriel.com" autocomplete="email"/>
+    </div>
+    <div class="field" style="margin-bottom:20px">
+      <label class="flbl">Mot de passe</label>
+      <input class="finp" type="password" id="lPassword" placeholder="••••••••" autocomplete="current-password"/>
+    </div>
+    <button class="submit-btn" id="loginBtn" onclick="doLogin()" style="position:relative;clip-path:none;border-radius:10px">Se connecter</button>
+    <div style="text-align:center;margin-top:16px;font-size:12px;color:var(--muted)">
+      Accès sur invitation · <a href="mailto:info@lukanerv.ca" style="color:var(--ore);text-decoration:none">info@lukanerv.ca</a>
+    </div>
+  </div>
+  <div style="margin-top:16px;font-family:var(--fm);font-size:10px;color:var(--muted)">LUKANE RV · Portail technicien · 🇨🇦</div>
+</div>
+
+<!-- ── APP ── -->
+<div id="app" style="display:none">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="top-logo">LUKANE <span>RV</span></div>
+    <div class="top-actions">
+      <button class="top-btn" onclick="toggleTheme()"><span id="themeIcon">🌙</span></button>
+      <button class="top-btn" onclick="doLogout()" style="color:var(--red);border-color:rgba(231,76,60,.3)">Sortir</button>
+    </div>
+  </div>
+
+  <!-- MAIN FORM -->
+  <div id="mainForm">
+    <!-- STEPS -->
+    <div class="steps">
+      <div class="step active" id="step1"><div class="step-dot">1</div><div class="step-label">BT</div></div>
+      <div class="step" id="step2"><div class="step-dot">2</div><div class="step-label">Infos</div></div>
+      <div class="step" id="step3"><div class="step-dot">3</div><div class="step-label">Photos</div></div>
+      <div class="step" id="step4"><div class="step-dot">4</div><div class="step-label">Analyse</div></div>
+    </div>
+
+    <div class="content">
+
+      <!-- ═══ ÉTAPE 1 — SCANNER LE BON DE TRAVAIL ═══ -->
+      <div class="section-card">
+        <div class="section-title">📄 Bon de travail <span class="section-badge">ÉTAPE 1</span></div>
+
+        <!-- Inputs cachés -->
+        <input type="file" id="ocrCam" accept="image/*" capture="environment" style="display:none" onchange="scanBT(event)"/>
+        <input type="file" id="ocrGal" accept="image/*" style="display:none" onchange="scanBT(event)"/>
+
+        <!-- Zone de scan -->
+        <div class="ocr-zone" id="ocrZone">
+          <div id="ocrIdle">
+            <div class="ocr-zone-icon">📄</div>
+            <div class="ocr-zone-title">Scanner le bon de travail</div>
+            <div class="ocr-zone-sub">Prenez en photo le bon de travail.<br/>L'IA extrait le modèle, VIN, date de mise en service et plus.</div>
+          </div>
+          <div class="ocr-scanning" id="ocrScanning">
+            <div class="ocr-spin"></div>
+            <div style="font-family:var(--fm);font-size:12px;color:var(--muted)">Lecture du bon de travail...</div>
+          </div>
+        </div>
+
+        <!-- Boutons scanner -->
+        <div id="ocrBtns" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <button class="photo-btn" onclick="document.getElementById('ocrCam').click()">
+            <span class="photo-btn-icon">📸</span>
+            <span class="photo-btn-label">Prendre une photo</span>
+            <span class="photo-btn-sub">Appareil photo</span>
+          </button>
+          <button class="photo-btn" onclick="document.getElementById('ocrGal').click()">
+            <span class="photo-btn-icon">🖼️</span>
+            <span class="photo-btn-label">Choisir de la galerie</span>
+            <span class="photo-btn-sub">Photos existantes</span>
+          </button>
+        </div>
+
+        <!-- Résultat OCR -->
+        <div class="ocr-result" id="ocrResult">
+          <div class="ocr-result-header">
+            <div class="ocr-result-left">
+              <div class="ocr-dot"></div>
+              <span class="ocr-result-label">Bon de travail lu</span>
+            </div>
+            <div class="ocr-actions">
+              <button class="ocr-action-btn" onclick="ocrRescan()">🔄 Rescanner</button>
+              <button class="ocr-action-btn" onclick="ocrClear()">✕</button>
+            </div>
+          </div>
+          <div class="ocr-preview-row">
+            <img id="ocrPreview" class="ocr-preview-img" alt="BT"/>
+            <div class="ocr-fields" id="ocrExtracted"></div>
+          </div>
+          <div style="font-family:var(--fm);font-size:10px;color:var(--muted);margin-top:8px">✅ Champs remplis automatiquement — vérifiez à l'étape 2</div>
+        </div>
+      </div>
+
+      <!-- ═══ ÉTAPE 2 — INFOS DU CLAIM ═══ -->
+      <div class="section-card">
+        <div class="section-title">🔧 Informations <span class="section-badge">ÉTAPE 2</span></div>
+        <div class="field">
+          <label class="flbl">Manufacturier</label>
+          <select class="fsel" id="fMfr">
+            <option>Grand Design</option><option>Jayco</option><option>Forest River</option>
+            <option>Winnebago</option><option>Keystone RV</option><option>Coachmen</option>
+            <option>Heartland</option><option>Thor Industries</option>
+          </select>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="field">
+            <label class="flbl">Année</label>
+            <select class="fsel" id="fYear">
+              <option>2026</option><option>2025</option><option>2024</option><option>2023</option><option>2022</option><option>2021</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="flbl">Bon de travail</label>
+            <input class="finp" id="fBt" placeholder="BT-2025-XXXX"/>
+          </div>
+        </div>
+        <div class="field">
+          <label class="flbl">Modèle / Unité</label>
+          <input class="finp" id="fUnit" placeholder="ex: Reflection 303RLS"/>
+        </div>
+        <div class="field">
+          <label class="flbl">VIN</label>
+          <input class="finp" id="fVin" placeholder="17 caractères" style="font-family:var(--fm);font-size:14px;letter-spacing:1px"/>
+        </div>
+        <div class="field">
+          <label class="flbl">Date de mise en service</label>
+          <input class="finp" id="fServiceDate" placeholder="ex: 2024-06-15"/>
+        </div>
+        <div class="field">
+          <label class="flbl">Catégorie de défaut</label>
+          <select class="fsel" id="fCat">
+            <option value="">-- Sélectionner --</option>
+            <option>Électrique / 12V</option><option>Électrique / 120V</option>
+            <option>Plomberie / eau froide</option><option>Plomberie / eau chaude</option>
+            <option>Slide room / extension</option><option>Structure / châssis</option>
+            <option>Toiture / étanchéité</option><option>Chauffage / Furnace</option>
+            <option>Climatisation / A/C</option><option>Réfrigérateur</option>
+            <option>Awning / store</option><option>Portes et fenêtres</option>
+            <option>Levelers / stabilisateurs</option><option>Autre</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="flbl">Description du problème (en tes mots)</label>
+          <textarea class="ftxt" id="fDesc" placeholder="Décris le problème simplement et clairement. L'IA va reformuler dans le bon langage pour le manufacturier..."></textarea>
+        </div>
+      </div>
+
+      <!-- ═══ ÉTAPE 3 — PHOTOS DU DÉFAUT ═══ -->
+      <div class="section-card">
+        <div class="section-title">📷 Photos du défaut <span class="section-badge">ÉTAPE 3</span></div>
+
+        <!-- Inputs -->
+        <input type="file" id="photoCam" accept="image/*" capture="environment" multiple style="display:none" onchange="addDefectPhotos(event)"/>
+        <input type="file" id="photoGal" accept="image/*" multiple style="display:none" onchange="addDefectPhotos(event)"/>
+
+        <div class="photo-btns">
+          <button class="photo-btn" onclick="document.getElementById('photoCam').click()">
+            <span class="photo-btn-icon">📸</span>
+            <span class="photo-btn-label">Prendre une photo</span>
+            <span class="photo-btn-sub">Appareil photo</span>
+          </button>
+          <button class="photo-btn" onclick="document.getElementById('photoGal').click()">
+            <span class="photo-btn-icon">🖼️</span>
+            <span class="photo-btn-label">Choisir de la galerie</span>
+            <span class="photo-btn-sub">Photos existantes</span>
+          </button>
+        </div>
+
+        <div class="photo-grid" id="photoGrid" style="display:none"></div>
+        <div id="photoEmpty" style="font-size:13px;color:var(--muted);text-align:center;padding:12px 0">
+          Aucune photo ajoutée. Prenez au moins 1 photo du défaut.
+        </div>
+        <div class="photo-count" id="photoCount" style="display:none"></div>
+      </div>
+
+      <!-- ═══ ÉTAPE 4 — ANALYSE IA ═══ -->
+      <div class="section-card">
+        <div class="section-title">🤖 Analyse IA <span class="section-badge">ÉTAPE 4</span></div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:14px">
+          L'IA va rédiger la description officielle dans le bon langage pour le manufacturier et suggérer les pièces nécessaires.
+        </div>
+        <button class="submit-btn" onclick="runAI()" id="aiBtn" style="position:relative;clip-path:none;border-radius:10px;padding:14px">
+          ⚡ Analyser avec l'IA
+        </button>
+        <div class="ai-result" id="aiResult">
+          <div class="ai-result-label"><div style="width:6px;height:6px;border-radius:50%;background:var(--ore);animation:spin 2s linear infinite"></div>Description officielle</div>
+          <div class="ai-result-text" id="aiDesc"></div>
+          <div class="ai-prob-row">
+            <div>
+              <div class="ai-prob-label">Probabilité d'approbation</div>
+              <div class="ai-prob-pct" id="aiPct">—</div>
+            </div>
+            <div style="flex:1">
+              <div class="ai-prob-bar"><div class="ai-prob-fill" id="aiProbFill"></div></div>
+              <div style="font-family:var(--fm);font-size:10px;color:var(--muted);margin-top:4px" id="aiReason"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /mainForm -->
+
+  <!-- SUCCESS -->
+  <div class="success-screen" id="successScreen">
+    <div class="success-circle">✅</div>
+    <div class="success-title">CLAIM SOUMIS !</div>
+    <div class="success-id" id="successId"></div>
+    <div class="success-sub">Votre claim a été envoyé au dashboard LUKANE RV et sera traité par le directeur de service.</div>
+    <button class="success-new-btn" onclick="resetForm()">+ Nouveau claim</button>
+  </div>
+
+  <!-- STICKY SUBMIT -->
+  <div class="submit-bar" id="submitBar">
+    <button class="submit-btn" id="submitBtn" onclick="submitClaim()">💾 Soumettre le claim</button>
+  </div>
+
+</div><!-- /app -->
+
+<script>
+/* ══ CONFIG ══ */
+const SUPA_URL = 'https://zxprifyiqhsxysdfeyti.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4cHJpZnlpcWhzeHlzZGZleXRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3MzU0MTgsImV4cCI6MjA5NjMxMTQxOH0.F9yZWgDt7xxRKpb3nJByBIHmsozsHjZDR5Egk_QgWTA';
+const AI_MODEL = 'claude-sonnet-4-5';
+const sb = window.supabase?.createClient(SUPA_URL, SUPA_KEY);
+
+var USER = null;
+var DEFECT_PHOTOS = [];
+var OCR_DATA = null;
+var AI_RESULT = null;
+
+/* ══ THEME ══ */
+function initTheme() {
+  var t = localStorage.getItem('lukane_theme') || 'light';
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('themeIcon').textContent = t==='dark' ? '☀️' : '🌙';
+}
+function toggleTheme() {
+  var cur = document.documentElement.getAttribute('data-theme');
+  var next = cur==='dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('lukane_theme', next);
+  document.getElementById('themeIcon').textContent = next==='dark' ? '☀️' : '🌙';
+}
+
+/* ══ AUTH ══ */
+async function doLogin() {
+  var email = document.getElementById('lEmail').value.trim();
+  var pass  = document.getElementById('lPassword').value;
+  var err   = document.getElementById('loginErr');
+  var btn   = document.getElementById('loginBtn');
+  if (!email || !pass) { err.textContent='⚠️ Remplis tous les champs.'; err.classList.add('show'); return; }
+  btn.disabled=true; btn.innerHTML='<span class="spinner-sm"></span> Connexion...';
+  try {
+    var res = await sb.auth.signInWithPassword({ email, password: pass });
+    if (res.error) throw res.error;
+    USER = res.data.user;
+    showApp();
+  } catch(e) {
+    err.textContent = '❌ ' + (e.message?.includes('Invalid') ? 'Courriel ou mot de passe incorrect.' : e.message);
+    err.classList.add('show');
+    btn.disabled=false; btn.textContent='Se connecter';
+  }
+}
+
+function doLogout() {
+  if (sb) sb.auth.signOut();
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+}
+
+function showApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  updateSteps(1);
+}
+
+/* ══ STEPS ══ */
+function updateSteps(active) {
+  [1,2,3,4].forEach(function(n) {
+    var el = document.getElementById('step'+n);
+    el.classList.remove('active','done');
+    if (n < active) el.classList.add('done');
+    else if (n === active) el.classList.add('active');
+  });
+}
+
+/* ══ OCR — SCAN BT ══ */
+var OCR_IMG = null;
+
+async function scanBT(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  var apiKey = localStorage.getItem('lukane_anthropic_key');
+  if (!apiKey) {
+    var k = prompt('Entrez votre clé API Anthropic (sk-ant-...) :');
+    if (!k) return;
+    localStorage.setItem('lukane_anthropic_key', k);
+    apiKey = k;
+  }
+
+  var reader = new FileReader();
+  reader.onload = async function(e) {
+    OCR_IMG = e.target.result;
+    var zone = document.getElementById('ocrZone');
+    document.getElementById('ocrIdle').style.display = 'none';
+    document.getElementById('ocrScanning').style.display = 'flex';
+    document.getElementById('ocrBtns').style.display = 'none';
+
+    try {
+      var base64   = OCR_IMG.split(',')[1];
+      var mimeType = OCR_IMG.split(';')[0].split(':')[1];
+      var res = await fetch('https://api.anthropic.com/v1/messages', {
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version':'2023-06-01',
+          'anthropic-dangerous-direct-browser-access':'true'
+        },
+        body: JSON.stringify({
+          model: AI_MODEL,
+          max_tokens: 600,
+          messages:[{
+            role:'user',
+            content:[
+              { type:'image', source:{ type:'base64', media_type:mimeType, data:base64 } },
+              { type:'text', text:'Ceci est un bon de travail ou RO d\'un concessionnaire RV. Extrais en JSON uniquement sans backticks:\n{"manufacturier":null,"modele":null,"annee":null,"vin":null,"date_service":null,"no_bon_travail":null,"technicien":null,"client":null}\nMets null si non visible.' }
+            ]
+          }]
+        })
+      });
+      if (!res.ok) throw new Error('Erreur API');
+      var data = await res.json();
+      var text = (data.content||[]).map(function(b){ return b.text||''; }).join('');
+      var extracted = JSON.parse(text.replace(/```json|```/g,'').trim());
+      OCR_DATA = extracted;
+      populateFromOCR(extracted);
+      showOCRResult(extracted);
+      updateSteps(2);
+    } catch(err) {
+      document.getElementById('ocrIdle').style.display = 'block';
+      document.getElementById('ocrScanning').style.display = 'none';
+      document.getElementById('ocrBtns').style.display = 'grid';
+      alert('Erreur de lecture : ' + err.message);
+    }
+    event.target.value='';
+  };
+  reader.readAsDataURL(file);
+}
+
+function populateFromOCR(d) {
+  var MFR = {
+    'grand design':'Grand Design','jayco':'Jayco',
+    'forest river':'Forest River','winnebago':'Winnebago',
+    'keystone':'Keystone RV','coachmen':'Coachmen',
+    'heartland':'Heartland','thor':'Thor Industries'
+  };
+  if (d.manufacturier) {
+    var k = d.manufacturier.toLowerCase();
+    var match = Object.keys(MFR).find(function(m){ return k.includes(m); });
+    if (match) {
+      var sel = document.getElementById('fMfr');
+      for (var i=0; i<sel.options.length; i++) {
+        if (sel.options[i].value===MFR[match]) { sel.selectedIndex=i; break; }
+      }
+    }
+  }
+  if (d.modele)         document.getElementById('fUnit').value = d.modele;
+  if (d.vin)            document.getElementById('fVin').value  = d.vin.replace(/\s/g,'').toUpperCase();
+  if (d.no_bon_travail) document.getElementById('fBt').value   = d.no_bon_travail;
+  if (d.technicien)     document.getElementById('fTech') && (document.getElementById('fTech').value = d.technicien);
+  if (d.date_service)   document.getElementById('fServiceDate').value = d.date_service;
+  if (d.annee) {
+    var sel = document.getElementById('fYear');
+    for (var i=0; i<sel.options.length; i++) {
+      if (sel.options[i].value===d.annee) { sel.selectedIndex=i; break; }
+    }
+  }
+}
+
+function showOCRResult(d) {
+  document.getElementById('ocrZone').style.display = 'none';
+  document.getElementById('ocrBtns').style.display = 'none';
+  document.getElementById('ocrPreview').src = OCR_IMG;
+  var fields = [
+    {label:'Manufacturier', val:d.manufacturier},
+    {label:'Modèle',        val:d.modele},
+    {label:'Année',         val:d.annee},
+    {label:'VIN',           val:d.vin, hl:true},
+    {label:'Mise en service',val:d.date_service},
+    {label:'Bon de travail',val:d.no_bon_travail, hl:true},
+    {label:'Technicien',    val:d.technicien},
+    {label:'Client',        val:d.client},
+  ];
+  document.getElementById('ocrExtracted').innerHTML = fields.filter(function(f){ return f.val; }).map(function(f) {
+    return '<div class="ocr-field-row"><span class="ocr-fkey">'+f.label+'</span><span class="ocr-fval'+(f.hl?' hl':'')+'">'+(f.val||'—')+'</span></div>';
+  }).join('');
+  document.getElementById('ocrResult').style.display = 'block';
+}
+
+function ocrRescan() {
+  ocrClear();
+  setTimeout(function(){ document.getElementById('ocrCam').click(); }, 100);
+}
+
+function ocrClear() {
+  OCR_IMG = null; OCR_DATA = null;
+  document.getElementById('ocrZone').style.display = 'block';
+  document.getElementById('ocrBtns').style.display = 'grid';
+  document.getElementById('ocrIdle').style.display = 'block';
+  document.getElementById('ocrScanning').style.display = 'none';
+  document.getElementById('ocrResult').style.display = 'none';
+  updateSteps(1);
+}
+
+/* ══ DEFECT PHOTOS ══ */
+function addDefectPhotos(event) {
+  var files = Array.from(event.target.files);
+  files.forEach(function(file) {
+    if (!file.type.startsWith('image/')) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      DEFECT_PHOTOS.push({ url:e.target.result, name:file.name });
+      renderPhotos();
+      updateSteps(3);
+    };
+    reader.readAsDataURL(file);
+  });
+  event.target.value='';
+}
+
+function renderPhotos() {
+  var grid  = document.getElementById('photoGrid');
+  var empty = document.getElementById('photoEmpty');
+  var count = document.getElementById('photoCount');
+  grid.style.display  = DEFECT_PHOTOS.length ? 'grid' : 'none';
+  empty.style.display = DEFECT_PHOTOS.length ? 'none'  : 'block';
+  count.style.display = DEFECT_PHOTOS.length ? 'block' : 'none';
+  count.textContent   = DEFECT_PHOTOS.length + ' photo(s) ajoutée(s)';
+  grid.innerHTML = DEFECT_PHOTOS.map(function(p, i) {
+    return '<div class="photo-thumb"><img src="'+p.url+'" alt="Photo '+(i+1)+'"/><button class="photo-del" onclick="delPhoto('+i+')">✕</button></div>';
+  }).join('');
+}
+
+function delPhoto(i) {
+  DEFECT_PHOTOS.splice(i, 1);
+  renderPhotos();
+}
+
+/* ══ AI ANALYSIS ══ */
+async function runAI() {
+  var apiKey = localStorage.getItem('lukane_anthropic_key');
+  if (!apiKey) { alert('Configurez votre clé API dans le dashboard.'); return; }
+  var unit = document.getElementById('fUnit').value.trim();
+  var desc = document.getElementById('fDesc').value.trim();
+  var cat  = document.getElementById('fCat').value;
+  if (!unit || !desc || !cat) { alert('Remplissez le modèle, la catégorie et la description avant d\'analyser.'); return; }
+
+  var btn = document.getElementById('aiBtn');
+  btn.disabled=true; btn.innerHTML='<span class="spinner-sm"></span> Analyse en cours...';
+
+  var mfr  = document.getElementById('fMfr').value;
+  var year = document.getElementById('fYear').value;
+  var ctx  = 'Manufacturier:'+mfr+'\nModèle:'+unit+'\nAnnée:'+year+'\nCatégorie:'+cat+'\nDescription:'+desc;
+
+  try {
+    var callAI = async function(system) {
+      var r = await fetch('https://api.anthropic.com/v1/messages', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+        body:JSON.stringify({ model:AI_MODEL, max_tokens:800, system:system, messages:[{role:'user',content:ctx}] })
+      });
+      var d = await r.json();
+      return (d.content||[]).map(function(b){ return b.text||''; }).join('');
+    };
+
+    var results = await Promise.all([
+      callAI('Expert garanties VR '+mfr+'. Rédige une description professionnelle du défaut en français, 3-5 phrases, en langage attendu par le manufacturier. Uniquement la description.'),
+      callAI('Expert garanties VR. Évalue la probabilité d\'approbation. Réponds UNIQUEMENT en JSON sans backticks: {"probability":75,"reason":"Raison courte en français"}')
+    ]);
+
+    var desc_ai = results[0];
+    var prob_raw = JSON.parse(results[1].replace(/```json|```/g,'').trim());
+    AI_RESULT = { desc: desc_ai, prob: prob_raw };
+
+    document.getElementById('aiDesc').textContent = desc_ai;
+    var pct = prob_raw.probability;
+    var col = pct>=75?'var(--green)':pct>=50?'#d4a820':'var(--red)';
+    document.getElementById('aiPct').textContent = pct+'%';
+    document.getElementById('aiPct').style.color = col;
+    document.getElementById('aiProbFill').style.width = pct+'%';
+    document.getElementById('aiProbFill').style.background = col;
+    document.getElementById('aiReason').textContent = '💡 '+prob_raw.reason;
+    document.getElementById('aiResult').style.display = 'block';
+    updateSteps(4);
+    btn.disabled=false; btn.textContent='⚡ Relancer l\'analyse';
+  } catch(e) {
+    btn.disabled=false; btn.textContent='⚡ Analyser avec l\'IA';
+    alert('Erreur IA : '+e.message);
+  }
+}
+
+/* ══ SUBMIT ══ */
+async function submitClaim() {
+  var unit = document.getElementById('fUnit').value.trim();
+  var cat  = document.getElementById('fCat').value;
+  var desc = document.getElementById('fDesc').value.trim();
+  if (!unit || !cat || !desc) { alert('Remplissez le modèle, la catégorie et la description avant de soumettre.'); return; }
+
+  var btn = document.getElementById('submitBtn');
+  btn.disabled=true; btn.innerHTML='<span class="spinner-sm"></span> Soumission...';
+
+  var now = new Date();
+  var id  = 'CLM-'+now.getFullYear()+'-'+String(Math.floor(Math.random()*9000)+1000);
+  var claim = {
+    id, user_id: USER?.id,
+    source:'technicien_mobile',
+    mfr:   document.getElementById('fMfr').value,
+    unit,
+    vin:   document.getElementById('fVin').value.trim(),
+    year:  document.getElementById('fYear').value,
+    category: cat,
+    description: desc,
+    work_order:  document.getElementById('fBt').value.trim(),
+    status:'new', prob: AI_RESULT?.prob?.probability||0,
+    ai_desc: AI_RESULT?.desc||'',
+    parts:[], notes:'',
+    photos:     DEFECT_PHOTOS.map(function(p){ return {url:p.url, source:'technicien_mobile'}; }),
+    form_photos: OCR_IMG ? [{url:OCR_IMG, source:'ocr_bt'}] : [],
+    created_at: now.toISOString(),
+  };
+
+  try {
+    if (sb && USER) {
+      var res = await sb.from('claims').insert(claim);
+      if (res.error) throw res.error;
+    }
+    document.getElementById('mainForm').style.display  = 'none';
+    document.getElementById('submitBar').style.display = 'none';
+    document.getElementById('successId').textContent   = id;
+    document.getElementById('successScreen').classList.add('show');
+  } catch(e) {
+    btn.disabled=false; btn.textContent='💾 Soumettre le claim';
+    alert('Erreur : '+e.message);
+  }
+}
+
+function resetForm() {
+  DEFECT_PHOTOS=[]; OCR_DATA=null; OCR_IMG=null; AI_RESULT=null;
+  ['fUnit','fVin','fBt','fDesc','fServiceDate'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.value='';
+  });
+  document.getElementById('fCat').value='';
+  renderPhotos(); ocrClear();
+  document.getElementById('aiResult').style.display='none';
+  document.getElementById('mainForm').style.display='block';
+  document.getElementById('submitBar').style.display='block';
+  document.getElementById('successScreen').classList.remove('show');
+  updateSteps(1);
+}
+
+/* ══ INIT ══ */
+(async function() {
+  initTheme();
+  if (!sb) return;
+  try {
+    var s = await sb.auth.getSession();
+    if (s.data?.session) { USER=s.data.session.user; showApp(); }
+  } catch(e) {}
+})();
+
+document.addEventListener('keydown', function(e) {
+  if (e.key==='Enter') {
+    if (document.getElementById('loginScreen').style.display!=='none') doLogin();
+  }
+});
+</script>
+</body>
+</html>
